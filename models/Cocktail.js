@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const cocktailSchema = new mongoose.Schema({
   name: String,
@@ -9,4 +9,4 @@ const cocktailSchema = new mongoose.Schema({
   reviews: [{ user: String, rating: Number, comment: String }]
 });
 
-module.exports = mongoose.model('Cocktail', cocktailSchema);
+module.exports = mongoose.model("Cocktail", cocktailSchema);

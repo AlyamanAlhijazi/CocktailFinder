@@ -1,6 +1,7 @@
 {
   "name": "cocktailfinder",
   "version": "1.0.0",
+  "type": "module",
   "description": "een cocktail finder app",
   "main": "server.js",
   "scripts": {
