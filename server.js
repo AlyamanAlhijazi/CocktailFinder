@@ -11,3 +11,10 @@ mongoose.connect(process.env.MONGO_URI)
   .catch(err => console.error('Database connectie mislukt:', err));
 
 app.listen(PORT, () => console.log(`Server draait op http://localhost:${PORT}`));
+
+// routes
+const cocktailRoutes = require('./routes/cocktailRoutes');
+const userRoutes = require('./routes/userRoutes');
+
+app.use('/cocktails', cocktailRoutes);
+app.use('/users', userRoutes);
