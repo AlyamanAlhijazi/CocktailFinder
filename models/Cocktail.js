@@ -1,12 +1,22 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
+// Definieer het schema
 const cocktailSchema = new mongoose.Schema({
-  name: String,
-  ingredients: [String],
-  category: String,
-  alcohol: Boolean,
+  name: { type: String, required: true },
+  ingredients: { type: [String], required: true },
+  category: { type: String },
+  alcohol: { type: Boolean },
   rating: { type: Number, default: 0 },
-  reviews: [{ user: String, rating: Number, comment: String }]
+  reviews: [
+    {
+      user: { type: String },
+      rating: { type: Number },
+      comment: { type: String },
+    },
+  ],
 });
 
-module.exports = mongoose.model("Cocktail", cocktailSchema);
+// Maak en exporteer het Cocktail model
+const Cocktail = mongoose.model("Cocktail", cocktailSchema);
+export default Cocktail;
+

@@ -1,20 +1,27 @@
-require("dotenv").config();
-const express = require("express");
-const mongoose = require("mongoose");
+import "dotenv/config";
+import express from "express";
+import mongoose from "mongoose";
+
+import cocktailRoutes from "./routes/cocktailRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Database connectie
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("Verbonden met MongoDB"))
-  .catch(err => console.error("Database connectie mislukt:", err));
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+  .then(() => console.log("✅ Verbonden met MongoDB"))
+  .catch(err => console.error("❌ Database connectie mislukt:", err));
 
-app.listen(PORT, () => console.log(`Server draait op http://localhost:${PORT}`));
+app.use(express.json()); // Nodig voor JSON-body parsing
 
-// routes
-const cocktailRoutes = require("./routes/cocktailRoutes");
-const userRoutes = require("./routes/userRoutes");
-
+// Routes
 app.use("/cocktails", cocktailRoutes);
 app.use("/users", userRoutes);
+
+// Start de server
+app.listen(PORT, () => console.log(`🚀 Server draait op http://localhost:${PORT}`));
+

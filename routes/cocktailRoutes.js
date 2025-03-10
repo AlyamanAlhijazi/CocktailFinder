@@ -1,15 +1,20 @@
-const express = require("express");
+import express from "express";
+import Cocktail from "../models/Cocktail.js";  // gebruik 'import' en zorg voor '.js' extensie
 const router = express.Router();
-const Cocktail = require("../models/Cocktail");
 
 // Zoek op naam of ingrediënten
 router.get("/search", async (req, res) => {
   const { query } = req.query;
-  const cocktails = await Cocktail.find({
-    $or: [{ name: new RegExp(query, "i") }, { ingredients: new RegExp(query, "i") }]
-  });
-  res.json(cocktails);
+  try {
+    const cocktails = await Cocktail.find({
+      $or: [{ name: new RegExp(query, "i") }, { ingredients: new RegExp(query, "i") }]
+    });
+    res.json(cocktails);
+  } catch (err) {
+    res.status(500).json({ error: "Er is een fout opgetreden bij het ophalen van cocktails." });
+  }
 });
 
-module.exports = router;
+export default router;
+
 
