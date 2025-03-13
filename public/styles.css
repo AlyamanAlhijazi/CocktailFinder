@@ -1,0 +1,40 @@
+nav{
+    width: 90%;
+    /* height: 3em; */
+    background-color: #FED0D0;
+    position: fixed;
+    bottom: 0;
+
+
+}
+
+
+nav ul{
+    
+    
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    background-color: antiquewhite;
+    list-style-type: none;
+    
+    
+}
+ul li a{
+    width: 3em;
+    height: 3em;
+    list-style-type: none;
+}
+ul li a svg{
+    width: 3em;
+    height: 3em;
+}
+.floating-nav{
+    width: 1.6em;
+    height: 1.6em;
+    /* color: black; */
+    background-color: red;
+   
+
+}

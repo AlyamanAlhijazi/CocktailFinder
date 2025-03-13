@@ -9,6 +9,7 @@ dotenv.config();
 
 const app = express();
 app.use(express.json()); // Zorgt dat we JSON-data kunnen verwerken
+app.use(express.static('public'));
 
 // 📌 DATABASE CONNECTIE
 mongoose.connect(process.env.MONGO_URI)
