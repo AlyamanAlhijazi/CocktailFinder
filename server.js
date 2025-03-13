@@ -96,7 +96,12 @@ app.set('view engine', 'ejs');
 app.set('views', 'views');
 
 app.get('/', onhome);
+app.get('/instructies', instructionPage  )
 
 function onhome(req, res) {
   res.render('index.ejs');
 }
+
+function instructionPage(req, res) {
+    res.render('instructies.ejs');
+  }
