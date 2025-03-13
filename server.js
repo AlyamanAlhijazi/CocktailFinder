@@ -89,3 +89,29 @@ app.get("/cocktails/search", async (req, res) => {
 // 🔹 START SERVER
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server draait op http://localhost:${PORT}`));
+
+
+// API data ophalen 
+const API = 'https://www.thecocktaildb.com/api/json/v2/961249867/'
+
+async function fetchData(url) {
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    return(data);
+}
+
+//deze line gebruiken om de data op te vragen
+//fetchData(API + 'rest van link');
+
+
+// popular coctails laten zien op pagina
+async function popularCocktails() {
+  const data = await fetchData(API + 'popular.php');
+  // console.log(data);
+  for(let i = 0; i < data.length; i++) {
+    console.log(i)
+  }
+}
+
+popularCocktails()
