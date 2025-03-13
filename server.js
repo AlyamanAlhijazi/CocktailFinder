@@ -91,6 +91,18 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server draait op http://localhost:${PORT}`));
 
 
+//views
+app.set('view engine', 'ejs');
+app.set('views', 'views');
+
+app.get('/', onhome);
+
+function onhome(req, res) {
+  res.render('index.ejs');
+}
+
+
+
 // API data ophalen 
 const API = 'https://www.thecocktaildb.com/api/json/v2/961249867/'
 
