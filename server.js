@@ -135,6 +135,7 @@ app.listen(PORT, () => console.log(`🚀 Server draait op http://localhost:${POR
 
 
 //views
+app.use(express.static('public'))
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 

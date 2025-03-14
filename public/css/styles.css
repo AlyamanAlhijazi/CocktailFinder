@@ -1,25 +1,38 @@
-h1 {
-    color: blue;
-}
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
+
 body{
+    font-family: 'Nunito', sans-serif;
     width: 100%;
     height: 100%;
 }
 
-header{
+:root {
+	--color-text: #011627;
+	--color-background: #FAFAFA;
+	--button-color: #ED8A01;
+	--nav-color: #FD9FA1;
+}
+
+
+
+h1 {
+    color: blue;
+}
+
+footer{
     width: 100%;
 }
-header nav{
+footer nav{
     width: 90%;
     /* height: 3em; */
-    background-color: #FED0D0;
+    background-color: var(--nav-color)
     position: fixed;
     bottom: 0;
     border-top-right-radius: 30px;
     border-top-left-radius: 30px;
     box-shadow: 0px 30px 0px 25px #fff;  
 }
-header nav ul{   
+footer nav ul{   
     display: flex;
     flex-direction: row;
     justify-content: space-around;
@@ -28,19 +41,19 @@ header nav ul{
     list-style-type: none; 
     padding: 0;
 }
-header ul li a svg{
+footer ul li a svg{
     width: 4em;
     height: 4em;
     color: #B8A1A9;
 }
-header ul button{
+footer ul button{
     width: 6em;
     height: 6em;
     background-color: rgb(42, 46, 46);
     border-radius: 50%;
     
 }
-header nav ul li:nth-of-type(2){
+footer nav ul li:nth-of-type(2){
     /* position: relative; */
     position: absolute;
     bottom: calc(100% - 30px);
