@@ -102,10 +102,6 @@ function onhome(req, res) {
   res.render('index.ejs');
 }
 
-async function popular(req, res) {
-    let drank = await fetchData(API + 'popular.php');
-    res.render('populair.ejs', {data: drank});
-}
 
 
 // API data ophalen 
