@@ -96,7 +96,37 @@ app.set('view engine', 'ejs');
 app.set('views', 'views');
 
 app.get('/', onhome);
+app.get('/popular', popularCocktails)
 
 function onhome(req, res) {
   res.render('index.ejs');
 }
+
+
+
+// API data ophalen 
+const API = 'https://www.thecocktaildb.com/api/json/v2/961249867/'
+
+async function fetchData(url) {
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    return(data);
+}
+
+//deze line gebruiken om de data op te vragen
+//fetchData(API + 'rest van link');
+
+
+// popular coctails laten zien op pagina
+async function popularCocktails(req, res) {
+  const data = await fetchData(API + 'popular.php');
+  const cocktails = data.drinks;
+  for(let i = 0; i < cocktails.length; i++) {
+    let cocktail = cocktails[i]
+    res.render('cocktail_list', {cocktails, cocktail});
+  }
+}
+
+
+

@@ -1,0 +1,8 @@
+<div class="cocktail-list">
+        <% cocktails.forEach(cocktail => { %>
+            <div class="cocktail-card">
+                <h2><%= cocktail.strDrink %></h2>
+                <img src="<%= cocktail.strDrinkThumb %>" alt="<%= cocktail.strDrink %>">
+            </div>
+        <% }) %>
+    </div>
