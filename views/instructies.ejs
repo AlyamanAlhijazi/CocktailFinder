@@ -4,11 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="/public/styles.css">
 </head>
 <body>
     <main>
         <h1><%= cocktail.name %></h1>
         <img src="<%= cocktail.image %>" alt="<%= cocktail.name %>">
+        <p>Glass: <% cocktail.glass</p>
+        <p><%= cocktail.alchoholic %></p>
+        <div>
+            <button>Ingredients</button>
+            <button>Steps</button>
+        </div>
+        <div>
+            <p><%= cocktail.ingredient1 %></p>
+            <p><%= cocktail.ingredient2 %></p>
+            <p><%= cocktail.ingredient3 %></p>
+            <p><%= cocktail.ingredient4 %></p>
+            <p><%= cocktail.ingredient5 %></p>
+        </div>
+        <div>
+            <p><%= cocktail.instructions</p>
+        </div>
     </main>
 </body>
 </html>
