@@ -8,9 +8,9 @@ body{
 
 :root {
 	--color-text: #011627;
-	--color-background: #ffdbdb;
-	--nav-color: #ED8A01;
-	--button-color: #FD9FA1;
+	--color-background: #FAFAFA;
+	--button-color: #ED8A01;
+	--nav-color: #FD9FA1;
 }
 
 
@@ -25,7 +25,7 @@ footer{
 footer nav{
     width: 90%;
     /* height: 3em; */
-    background-color: #FED0D0;
+    background-color: var(--nav-color)
     position: fixed;
     bottom: 0;
     border-top-right-radius: 30px;
