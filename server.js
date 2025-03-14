@@ -96,11 +96,16 @@ app.set('view engine', 'ejs');
 app.set('views', 'views');
 
 app.get('/', onhome);
+app.get('/popular', popularCocktails)
 
 function onhome(req, res) {
   res.render('index.ejs');
 }
 
+async function popular(req, res) {
+    let drank = await fetchData(API + 'popular.php');
+    res.render('populair.ejs', {data: drank});
+}
 
 
 // API data ophalen 
@@ -118,12 +123,14 @@ async function fetchData(url) {
 
 
 // popular coctails laten zien op pagina
-async function popularCocktails() {
+async function popularCocktails(req, res) {
   const data = await fetchData(API + 'popular.php');
-  // console.log(data);
-  for(let i = 0; i < data.length; i++) {
-    console.log(i)
+  const cocktails = data.drinks;
+  for(let i = 0; i < cocktails.length; i++) {
+    let cocktail = cocktails[i]
+    res.render('cocktail_list', {cocktails, cocktail});
   }
 }
 
-popularCocktails()
+
+
