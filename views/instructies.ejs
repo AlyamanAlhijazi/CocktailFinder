@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="/public/styles.css">
+</head>
+<body>
+    <main>
+        <h1><%= cocktail.strDrink %></h1>
+        <img src="<%= cocktail.strDrinkThumb %>" alt="<%= cocktail.strDrink %>">
+        <p>Glass: <% cocktail.strGlass %></p>
+        <p><%= cocktail.strAlchoholic %></p>
+        <div>
+            <button>Ingredients</button>
+            <button>Steps</button>
+        </div>
+        <section>
+            <div>
+                <p><%= cocktail.strIngredient1 %></p>
+                <p><%= cocktail.strMeasure1 %></p>
+            </div>
+            <div>
+                <p><%= cocktail.strIngredient2 %></p>
+                <p><%= cocktail.strMeasure2 %></p>
+            </div>
+            <div>
+                <p><%= cocktail.strIngredient3 %></p>
+                <p><%= cocktail.strMeasure3 %></p>
+            </div>
+            <div>
+                <p><%= cocktail.strIngredient3 %></p>
+                <p><%= cocktail.strMeasure3 %></p>
+            </div>
+            <div>
+                <p><%= cocktail.strIngredient3 %></p>
+                <p><%= cocktail.strMeasure3 %></p>
+            </div>
+            <div>
+                <p><%= cocktail.strIngredient3 %></p>
+                <p><%= cocktail.strMeasure3 %></p>
+            </div>
+        </section>
+        <div>
+            <p><%= cocktail.strInstructions %></p>
+        </div>
+    </main>
+</body>
+</html>
