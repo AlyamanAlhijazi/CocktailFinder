@@ -8,23 +8,42 @@
 </head>
 <body>
     <main>
-        <h1><%= cocktail.name %></h1>
-        <img src="<%= cocktail.image %>" alt="<%= cocktail.name %>">
-        <p>Glass: <% cocktail.glass</p>
-        <p><%= cocktail.alchoholic %></p>
+        <h1><%= cocktail.strDrink %></h1>
+        <img src="<%= cocktail.strDrinkThumb %>" alt="<%= cocktail.strDrink %>">
+        <p>Glass: <% cocktail.strGlass %></p>
+        <p><%= cocktail.strAlchoholic %></p>
         <div>
             <button>Ingredients</button>
             <button>Steps</button>
         </div>
+        <section>
+            <div>
+                <p><%= cocktail.strIngredient1 %></p>
+                <p><%= cocktail.strMeasure1 %></p>
+            </div>
+            <div>
+                <p><%= cocktail.strIngredient2 %></p>
+                <p><%= cocktail.strMeasure2 %></p>
+            </div>
+            <div>
+                <p><%= cocktail.strIngredient3 %></p>
+                <p><%= cocktail.strMeasure3 %></p>
+            </div>
+            <div>
+                <p><%= cocktail.strIngredient3 %></p>
+                <p><%= cocktail.strMeasure3 %></p>
+            </div>
+            <div>
+                <p><%= cocktail.strIngredient3 %></p>
+                <p><%= cocktail.strMeasure3 %></p>
+            </div>
+            <div>
+                <p><%= cocktail.strIngredient3 %></p>
+                <p><%= cocktail.strMeasure3 %></p>
+            </div>
+        </section>
         <div>
-            <p><%= cocktail.ingredient1 %></p>
-            <p><%= cocktail.ingredient2 %></p>
-            <p><%= cocktail.ingredient3 %></p>
-            <p><%= cocktail.ingredient4 %></p>
-            <p><%= cocktail.ingredient5 %></p>
-        </div>
-        <div>
-            <p><%= cocktail.instructions</p>
+            <p><%= cocktail.strInstructions %></p>
         </div>
     </main>
 </body>
