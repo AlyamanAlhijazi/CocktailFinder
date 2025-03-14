@@ -1,0 +1,19 @@
+<form action="/cocktails/upload" method="POST" enctype="multipart/form-data">
+    <label for="name">Cocktail Name:</label>
+    <input type="text" id="name" name="name" required>
+  
+    <label for="picture">Cocktail Picture (URL):</label>
+    <input type="text" id="picture" name="picture" required>
+  
+    <label for="description">Description:</label>
+    <textarea id="description" name="description" required></textarea>
+  
+    <label for="steps">Steps:</label>
+    <textarea id="steps" name="steps" required></textarea>
+  
+    <label for="glassType">Glass Type:</label>
+    <input type="text" id="glassType" name="glassType" required>
+  
+    <button type="submit">Upload Cocktail</button>
+  </form>
+  
