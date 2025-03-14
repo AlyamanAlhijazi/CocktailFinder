@@ -96,17 +96,7 @@ app.set('view engine', 'ejs');
 app.set('views', 'views');
 
 app.get('/', onhome);
-app.get('/instructions', instructionPage  )
-app.get('/upload', uploadRecipe)
 
 function onhome(req, res) {
   res.render('index.ejs');
-}
-
-function instructionPage(req, res) {
-    res.render('instructies.ejs');
-  }
-
-function uploadRecipe(req, res){
-    res.render('uploadrecept.ejs')
 }
