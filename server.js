@@ -2,13 +2,25 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import expressSession from "express-session";
 
 // Laad omgevingsvariabelen
 dotenv.config();
 
 const app = express();
+app.set('view engine', 'ejs');
 app.use(express.json()); // Zorgt dat we JSON-data kunnen verwerken
+app.use(express.static("public"));
+
+// Sessies instellen
+app.use(
+    expressSession({
+        secret: process.env.SESSION_SECRET, // Kies een geheime sleutel
+        resave: false, // Niet elke keer opnieuw opslaan
+        saveUninitialized: true, // Sla onbewerkte sessies op
+        cookie: { secure: false }, // Dit moet `true` zijn als je HTTPS gebruikt
+    })
+);
 
 // 📌 DATABASE CONNECTIE
 mongoose.connect(process.env.MONGO_URI)
@@ -19,7 +31,8 @@ mongoose.connect(process.env.MONGO_URI)
 const userSchema = new mongoose.Schema({
     username: String,
     email: String,
-    password: String
+    password: String,
+    birthdate: Date
 });
 const User = mongoose.model("User", userSchema);
 
@@ -34,44 +47,74 @@ const cocktailSchema = new mongoose.Schema({
 });
 const Cocktail = mongoose.model("Cocktail", cocktailSchema);
 
+// 🔹 REGISTRATIE (GET)
+app.get('/register', async (req, res) => {
+    res.render('register');
+});
+
 // 🔹 REGISTRATIE (POST)
 app.post("/users/register", async (req, res) => {
-    const { username, email, password } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ username, email, password: hashedPassword });
-    await user.save();
-    res.json({ message: "User registered!" });
+    const { username, email, password, birthdate } = req.body;
+
+    // Validatie 
+    if (!username || !email || !password || !birthdate) {
+        return res.status(400).json({ message: "Alle velden zijn verplicht!" });
+    }
+    try {
+        // Controleer of de gebruiker al bestaat
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: "Try a different email address" });
+        }
+        // Converteer birthdate naar een Date object 
+        const formattedBirthdate = new Date(birthdate);
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const user = new User({ username, email, password: hashedPassword, birthdate: formattedBirthdate });
+        await user.save();
+
+        // Sessies instellen na registratie (direct inloggen)
+        req.session.userId = user._id;  // Zet de gebruikers-ID in de sessie
+        res.status(201).json({ message: "Account succesvol geregistreerd!", 
+                               redirect: "/login" });
+
+    } catch (err) {
+        res.status(500).json({ message: "Er is een fout opgetreden, probeer het opnieuw" });
+    }
 });
 
 // 🔹 LOGIN (POST)
 app.post("/users/login", async (req, res) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: "User not found" });
+    if (!user) return res.status(400).json({ message: "Gebruiker niet gevonden" });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
+    if (!isMatch) return res.status(400).json({ message: "Ongeldige inloggegevens" });
 
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
-    res.json({ token });
+    // Sessies instellen bij succesvolle login
+    req.session.userId = user._id; // Zet de gebruikers-ID in de sessie
+    res.json({ message: "Succesvol ingelogd!" });
 });
 
-// 🔹 BESCHERMDE ROUTE (GET)
-app.get("/users/protected", authenticateToken, (req, res) => {
-    res.json({ message: "Je hebt toegang!", user: req.user });
-});
-
-// Middleware voor token-verificatie
-function authenticateToken(req, res, next) {
-    const token = req.header("Authorization");
-    if (!token) return res.status(401).json({ message: "Geen token, toegang geweigerd" });
-
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) return res.status(403).json({ message: "Ongeldige token" });
-        req.user = user;
-        next();
+// 🔹 LOGOUT (POST)
+app.post("/users/logout", (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            return res.status(500).json({ message: "Fout bij uitloggen" });
+        }
+        res.json({ message: "Succesvol uitgelogd" });
     });
-}
+});
+
+// 🔹 BEVEILIGDE ROUTE (bijvoorbeeld: Favorieten, uploaden van cocktails)
+app.get("/cocktails/favorites", (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).json({ message: "Je moet ingelogd zijn om toegang te krijgen" });
+    }
+
+    res.json({ message: "Dit is de beveiligde favorieten route" });
+});
 
 // 🔹 ZOEK COCKTAILS (GET)
 app.get("/cocktails/search", async (req, res) => {
