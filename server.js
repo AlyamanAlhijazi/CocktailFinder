@@ -99,7 +99,7 @@ app.set('views', 'views');
 app.get('/', onhome);
 
 function onhome(req, res) {
-  res.render('index.ejs');
+  res.render('navbar.ejs');
 }
 
 
