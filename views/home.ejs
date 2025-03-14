@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-    <% include('partials/head.ejs') %>
+    <%- include('partials/head.ejs') %>
 <body>
     <main>
         <h1>All cocktails</h1>
@@ -13,5 +13,8 @@
             <% }) %>
         </div>
     </main>
+    <footer>
+        <%- include ('partials/nav.ejs') %>
+    </footer>
 </body>
 </html>
