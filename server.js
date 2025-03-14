@@ -95,8 +95,22 @@ app.listen(PORT, () => console.log(`🚀 Server draait op http://localhost:${POR
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 
-app.get('/', onhome);
-app.get('/popular', popularCocktails)
+
+app.get("/", async (req, res) => {
+    res.render("cocktail_list.ejs", {});
+})
+app.get("/instructions", async (req, res) => {
+    res.render("instructies.ejs", {});
+});
+app.get("/upload", async (req, res) => {
+    res.render("uploadrecept.ejs", {});
+});
+app.get("/profile", async (req, res) => {
+    res.render("profile.ejs", {});
+});
+
+
+
 
 function onhome(req, res) {
   res.render('index.ejs');
