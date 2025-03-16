@@ -1,20 +1,21 @@
-// import mongoose from "mongoose";
+import mongoose from "mongoose";
 
-// // Definieer het schema
-// const cocktailSchema = new mongoose.Schema({
-//   name: { type: String, required: true },
-//   ingredients: { type: [String], required: true },
-//   category: { type: String },
-//   alcohol: { type: Boolean },
-//   rating: { type: Number, default: 0 },
-//   reviews: [
-//     {
-//       user: { type: String },
-//       rating: { type: Number },
-//       comment: { type: String },
-//     },
-//   ],
-// });
+// Definieer het schema
+const cocktailSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  ingredients: { type: [String], required: true },
+  measurements: {type: Number, required: true},
+  category: { type: String },
+  alcohol: { type: Boolean },
+  rating: { type: Number, default: 0 },
+  reviews: [
+    {
+      user: { type: String },
+      rating: { type: Number },
+      comment: { type: String },
+    },
+  ],
+});
 
 // // Maak en exporteer het Cocktail model
 // const Cocktail = mongoose.model("Cocktail", cocktailSchema);

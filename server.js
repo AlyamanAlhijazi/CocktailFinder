@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import bcrypt from "bcrypt";
 import expressSession from "express-session";
+import multer from "multer";
 
 // Laad omgevingsvariabelen
 dotenv.config();
@@ -40,7 +41,7 @@ const User = mongoose.model("User", userSchema);
 // 📌 COCKTAIL MODEL
 const cocktailSchema = new mongoose.Schema({
     name: String,
-    ingredients: [String],
+    ingredient1: [String],
     category: String,
     alcohol: Boolean,
     rating: { type: Number, default: 0 },
@@ -153,13 +154,27 @@ app.listen(PORT, () => console.log(`🚀 Server draait op http://localhost:${POR
 
 
 //views
+app.use(express.static('public'))
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 
 
-app.get("/", async (req, res) => {
-    res.render("cocktail_list.ejs", {});
-})
+app.get('/home', async (req, res) => {
+    try {
+        const data = await fetchData(API + 'popular.php');
+        const cocktails = data.drinks;
+
+        if (!cocktails) {
+            return res.status(404).send("Geen cocktails gevonden.");
+        }
+
+        res.render('home.ejs', { cocktails }); 
+    } catch (error) {
+        console.error("Fout bij ophalen van cocktails:", error);
+        res.status(500).send("Er is een probleem met het laden van cocktails.");
+    }
+});
+
 app.get("/instructions", async (req, res) => {
     res.render("instructies.ejs", {});
 });
@@ -174,7 +189,7 @@ app.get("/profile", async (req, res) => {
 
 
 function onhome(req, res) {
-  res.render('index.ejs');
+  res.render('navbar.ejs');
 }
 
 
@@ -203,5 +218,13 @@ async function popularCocktails(req, res) {
   }
 }
 
-
-
+// Multer storage
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'public/uploads/'); ]
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname));
+    }
+});
+const upload = multer({ storage: storage });
