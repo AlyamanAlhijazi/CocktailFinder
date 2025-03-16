@@ -1,7 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
 :root {
 	--color-text: #011627;
-<<<<<<< HEAD:public/styles.css
 	--color-background: #ffdbdb;
 	--nav-color: #ED8A01;
 	--button-color: #FD9FA1;
@@ -36,7 +35,6 @@ header nav{
     height: 100%;
     /* background-color: #FED0D0; */
     background-color: var(--navbar-color);
-=======
 	--color-background: #FAFAFA;
 	--button-color: #ED8A01;
 	--nav-color: #FD9FA1;
@@ -45,7 +43,8 @@ header nav{
 
 
 h1 {
-    color: blue;
+    color: var(--color-text);
+    padding-left: 3.5em;
 }
 
 footer{
@@ -54,40 +53,34 @@ footer{
 footer nav{
     width: 90%;
     /* height: 3em; */
-    background-color: var(--nav-color)
+    background-color: var(--nav-color);
     position: fixed;
     bottom: 0;
->>>>>>> 58db780cf5742fa538a03b05d5e9b687b4c29c8b:public/css/styles.css
     border-top-right-radius: 30px;
     border-top-left-radius: 30px;
     box-shadow: 0px 30px 0px 25px #fff;  
 }
-<<<<<<< HEAD:public/styles.css
 header nav ul{  
     width: 100%;
     height: 100%; 
     padding: 0;
     margin: 0;
-=======
+
 footer nav ul{   
->>>>>>> 58db780cf5742fa538a03b05d5e9b687b4c29c8b:public/css/styles.css
     display: flex;
     flex-direction: row;
     justify-content: space-around;
     align-items: center;
+    /* background-color: antiquewhite; */
     list-style-type: none; 
-<<<<<<< HEAD:public/styles.css
 }  
 header ul li{
-=======
     padding: 0;
 }
 footer ul li a svg{
->>>>>>> 58db780cf5742fa538a03b05d5e9b687b4c29c8b:public/css/styles.css
     width: 4em;
     height: 4em;
 }
-<<<<<<< HEAD:public/styles.css
 
 header ul li a svg{
     width: 3.5em;
@@ -96,8 +89,7 @@ header ul li a svg{
     align-self: center;
     
 }
-header ul li:nth-of-type(2){
-=======
+
 footer ul button{
     width: 6em;
     height: 6em;
@@ -112,9 +104,65 @@ footer nav ul li:nth-of-type(2){
 
 }
 .floating-nav a svg{
->>>>>>> 58db780cf5742fa538a03b05d5e9b687b4c29c8b:public/css/styles.css
     width: 4em;
     height: 4em;
+    color: #B8A1A9;
+    /* order: 2;   */
+}
+/* stijling cocktails op home */
+
+/* Container voor cocktails */
+.cocktail-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2vw;
+    justify-content: center;
+    padding: 2vw;
+}
+
+/* Stijl voor elke cocktailkaart */
+.cocktail-card {
+    background-color: white;
+    border-radius: 1.2em;
+    box-shadow: 0 0.3em 1em rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    width: 20vw;
+    max-width: 25em;
+    max-height: 20em;
+    min-width: 15em;
+    text-align: center;
+    transition: transform 0.2s ease-in-out;
+}
+
+.cocktail-card:hover {
+    transform: scale(1.05);
+}
+
+/* Stijl voor de cocktailnaam */
+.cocktail-card h2 {
+    font-size: 1.5em;
+    margin: 0.5em;
+    color: #333;
+}
+
+/* Stijl voor de afbeelding */
+.cocktail-card img {
+    width: 100%;
+    height: auto;
+}
+
+/* Responsiveness voor kleinere schermen */
+@media (max-width: 768px) {
+    .cocktail-list {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .cocktail-card {
+        width: 80vw;
+    }
+}
+
     /* background-color:   #FED0D0; */
     background-color: var(--navbar-color);
 
