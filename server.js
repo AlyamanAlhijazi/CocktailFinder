@@ -141,7 +141,9 @@ app.set('views', 'views');
 
 
 app.get("/", async (req, res) => {
-    res.render("cocktail_list.ejs", {});
+    // res.render("cocktail_list.ejs", {});
+    res.render("home.ejs", {}) 
+    
 })
 app.get("/instructions", async (req, res) => {
     res.render("instructies.ejs", {});
