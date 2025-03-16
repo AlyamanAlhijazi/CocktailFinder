@@ -140,9 +140,22 @@ app.set('view engine', 'ejs');
 app.set('views', 'views');
 
 
-app.get("/", async (req, res) => {
-    res.render("cocktail_list.ejs", {});
-})
+app.get('/home', async (req, res) => {
+    try {
+        const data = await fetchData(API + 'popular.php');
+        const cocktails = data.drinks;
+
+        if (!cocktails) {
+            return res.status(404).send("Geen cocktails gevonden.");
+        }
+
+        res.render('home.ejs', { cocktails }); 
+    } catch (error) {
+        console.error("Fout bij ophalen van cocktails:", error);
+        res.status(500).send("Er is een probleem met het laden van cocktails.");
+    }
+});
+
 app.get("/instructions", async (req, res) => {
     res.render("instructies.ejs", {});
 });

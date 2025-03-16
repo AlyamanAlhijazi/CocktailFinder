@@ -16,7 +16,8 @@ body{
 
 
 h1 {
-    color: blue;
+    color: var(--color-text);
+    padding-left: 3.5em;
 }
 
 footer{
@@ -64,4 +65,57 @@ footer nav ul li:nth-of-type(2){
     height: 4em;
     color: #B8A1A9;
     /* order: 2;   */
+}
+/* stijling cocktails op home */
+
+/* Container voor cocktails */
+.cocktail-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2vw;
+    justify-content: center;
+    padding: 2vw;
+}
+
+/* Stijl voor elke cocktailkaart */
+.cocktail-card {
+    background-color: white;
+    border-radius: 1.2em;
+    box-shadow: 0 0.3em 1em rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    width: 20vw;
+    max-width: 25em;
+    max-height: 20em;
+    min-width: 15em;
+    text-align: center;
+    transition: transform 0.2s ease-in-out;
+}
+
+.cocktail-card:hover {
+    transform: scale(1.05);
+}
+
+/* Stijl voor de cocktailnaam */
+.cocktail-card h2 {
+    font-size: 1.5em;
+    margin: 0.5em;
+    color: #333;
+}
+
+/* Stijl voor de afbeelding */
+.cocktail-card img {
+    width: 100%;
+    height: auto;
+}
+
+/* Responsiveness voor kleinere schermen */
+@media (max-width: 768px) {
+    .cocktail-list {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .cocktail-card {
+        width: 80vw;
+    }
 }
