@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import bcrypt from "bcrypt";
 import expressSession from "express-session";
+import multer from "multer";
 
 // Laad omgevingsvariabelen
 dotenv.config();
@@ -11,6 +12,7 @@ const app = express();
 app.set('view engine', 'ejs');
 app.use(express.json()); // Zorgt dat we JSON-data kunnen verwerken
 app.use(express.static("public"));
+app.use(express.urlencoded({ extended: true }));
 
 // Sessies instellen
 app.use(
@@ -39,7 +41,7 @@ const User = mongoose.model("User", userSchema);
 // 📌 COCKTAIL MODEL
 const cocktailSchema = new mongoose.Schema({
     name: String,
-    ingredients: [String],
+    ingredient1: [String],
     category: String,
     alcohol: Boolean,
     rating: { type: Number, default: 0 },
@@ -58,7 +60,7 @@ app.post("/users/register", async (req, res) => {
 
     // Validatie 
     if (!username || !email || !password || !birthdate) {
-        return res.status(400).json({ message: "Alle velden zijn verplicht!" });
+        return res.status(400).json({ message: "All fields are required!" });
     }
     try {
         // Controleer of de gebruiker al bestaat
@@ -75,26 +77,43 @@ app.post("/users/register", async (req, res) => {
 
         // Sessies instellen na registratie (direct inloggen)
         req.session.userId = user._id;  // Zet de gebruikers-ID in de sessie
-        res.status(201).json({ message: "Account succesvol geregistreerd!", 
+        res.status(201).json({ message: "Account has been succesfully registerd!", 
                                redirect: "/login" });
 
     } catch (err) {
-        res.status(500).json({ message: "Er is een fout opgetreden, probeer het opnieuw" });
+        res.status(500).json({ message: "Something went wrong, try again" });
     }
 });
+
+
+// 🔹 LOGIN (GET)
+app.get('/login', async (req, res) => {
+    res.render('login');
+});
+
 
 // 🔹 LOGIN (POST)
 app.post("/users/login", async (req, res) => {
     const { email, password } = req.body;
+    console.log("Inlogpoging voor email:", email); // Controleer de ingevoerde email
+
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: "Gebruiker niet gevonden" });
+    console.log("Gevonden gebruiker:", user); // Controleer of een gebruiker wordt gevonden
+
+    if (!user) return res.status(400).json({ message: "User not found" });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: "Ongeldige inloggegevens" });
+    console.log("Wachtwoord correct:", isMatch); // Controleer of het wachtwoord klopt
+
+    if (!isMatch) return res.status(400).json({ message: "try a diffrent email or password" });
 
     // Sessies instellen bij succesvolle login
     req.session.userId = user._id; // Zet de gebruikers-ID in de sessie
-    res.json({ message: "Succesvol ingelogd!" });
+    req.session.username = user.username; // Sla de gebruikersnaam op in de sessie
+
+    res.status(201).json({ message: "You're logged in!",
+                           redirect: "/home.ejs"
+     });
 });
 
 // 🔹 LOGOUT (POST)
@@ -140,11 +159,22 @@ app.set('view engine', 'ejs');
 app.set('views', 'views');
 
 
-app.get("/", async (req, res) => {
-    // res.render("cocktail_list.ejs", {});
-    res.render("home.ejs", {}) 
-    
-})
+app.get('/home', async (req, res) => {
+    try {
+        const data = await fetchData(API + 'popular.php');
+        const cocktails = data.drinks;
+
+        if (!cocktails) {
+            return res.status(404).send("Geen cocktails gevonden.");
+        }
+
+        res.render('home.ejs', { cocktails }); 
+    } catch (error) {
+        console.error("Fout bij ophalen van cocktails:", error);
+        res.status(500).send("Er is een probleem met het laden van cocktails.");
+    }
+});
+
 app.get("/instructions", async (req, res) => {
     res.render("instructies.ejs", {});
 });
@@ -188,5 +218,13 @@ async function popularCocktails(req, res) {
   }
 }
 
-
-
+// Multer storage
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'public/uploads/'); ]
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname));
+    }
+});
+const upload = multer({ storage: storage });
