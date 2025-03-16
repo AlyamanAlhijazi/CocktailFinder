@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/head.ejs') %>
+</head>
+<body>
+    <header>
+        <%- include('partials/header.ejs') %>
+    </header>
+    <main>
+        <h1>Uploaded Cocktails</h1>
+        <div class="cocktail-list">
+            <% cocktails.forEach(cocktail => { %>
+                <div class="cocktail-card">
+                    <h2><%= cocktail.name %></h2>
+                    <img src="/uploads/<%= cocktail.image %>" alt="<%= cocktail.name %>">
+                </div>
+            <% }) %>
+        </div>
+    </main>
+</body>
+</html>

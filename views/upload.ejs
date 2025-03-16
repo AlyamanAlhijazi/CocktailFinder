@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/head.ejs') %>
+</head>
+<body>
+    <header>
+        <%- include('partials/header.ejs') %>
+    </header>
+    <main>
+        <h1>Upload a Cocktail</h1>
+        <form action="/upload-cocktail" method="POST" enctype="multipart/form-data">
+            <label for="name">Cocktail Name:</label>
+            <input type="text" name="name" required>
+
+            <label for="ingredients">Ingredients (comma-separated):</label>
+            <input type="text" name="ingredients" required>
+
+            <label for="measurements">Measurements:</label>
+            <input type="number" name="measurements" required>
+
+            <label for="category">Category:</label>
+            <input type="text" name="category">
+
+            <label for="alcohol">Contains Alcohol?</label>
+            <select name="alcohol">
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+            </select>
+
+            <label for="image">Upload Image:</label>
+            <input type="file" name="image" accept="image/*">
+
+            <button type="submit">Upload</button>
+        </form>
+    </main>
+</body>
+</html>
