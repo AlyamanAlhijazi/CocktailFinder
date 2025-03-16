@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import bcrypt from "bcrypt";
 import expressSession from "express-session";
+import multer from "multer";
 
 // Laad omgevingsvariabelen
 dotenv.config();
@@ -39,7 +40,7 @@ const User = mongoose.model("User", userSchema);
 // 📌 COCKTAIL MODEL
 const cocktailSchema = new mongoose.Schema({
     name: String,
-    ingredients: [String],
+    ingredient1: [String],
     category: String,
     alcohol: Boolean,
     rating: { type: Number, default: 0 },
@@ -199,5 +200,13 @@ async function popularCocktails(req, res) {
   }
 }
 
-
-
+// Multer storage
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'public/uploads/'); ]
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname));
+    }
+});
+const upload = multer({ storage: storage });
