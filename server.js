@@ -182,7 +182,7 @@ app.get("/upload", async (req, res) => {
     res.render("uploadrecept.ejs", {});
 });
 app.get("/profile", async (req, res) => {
-    res.render("profile.ejs", {});
+    res.render("profile", {});
 });
 
 
