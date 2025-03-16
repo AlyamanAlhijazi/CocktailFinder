@@ -168,7 +168,11 @@ app.get('/home', async (req, res) => {
             return res.status(404).send("Geen cocktails gevonden.");
         }
 
-        res.render('home.ejs', { cocktails }); 
+        res.render('home.ejs', { cocktails,
+            isHomeActive: true,
+            isProfileActive: false
+
+         }); 
     } catch (error) {
         console.error("Fout bij ophalen van cocktails:", error);
         res.status(500).send("Er is een probleem met het laden van cocktails.");
@@ -182,7 +186,12 @@ app.get("/upload", async (req, res) => {
     res.render("uploadrecept.ejs", {});
 });
 app.get("/profile", async (req, res) => {
-    res.render("profile", {});
+    res.render("profile", {
+        isHomeActive: false,
+        isProfileActive: true
+
+
+    });
 });
 
 
@@ -221,7 +230,7 @@ async function popularCocktails(req, res) {
 // Multer storage
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'public/uploads/'); ]
+        cb(null, 'public/uploads/'); 
     },
     filename: (req, file, cb) => {
         cb(null, Date.now() + path.extname(file.originalname));
