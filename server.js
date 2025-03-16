@@ -14,6 +14,7 @@ const app = express();
 app.set('view engine', 'ejs');
 app.use(express.json()); // Zorgt dat we JSON-data kunnen verwerken
 app.use(express.static("public"));
+app.use(express.urlencoded({ extended: true }));
 
 // Sessies instellen
 app.use(
@@ -67,7 +68,7 @@ app.get('/register', async (req, res) => {
 app.post("/users/register", async (req, res) => {
     const { username, email, password, birthdate } = req.body;
     if (!username || !email || !password || !birthdate) {
-        return res.status(400).json({ message: "Alle velden zijn verplicht!" });
+        return res.status(400).json({ message: "All fields are required!" });
     }
     try {
         const existingUser = await User.findOne({ email });
@@ -81,24 +82,45 @@ app.post("/users/register", async (req, res) => {
         const user = new User({ username, email, password: hashedPassword, birthdate: formattedBirthdate });
         await user.save();
 
-        req.session.userId = user._id; 
-        res.status(201).json({ message: "Account succesvol geregistreerd!", redirect: "/login" });
+        // Sessies instellen na registratie (direct inloggen)
+        req.session.userId = user._id;  // Zet de gebruikers-ID in de sessie
+        res.status(201).json({ message: "Account has been succesfully registerd!", 
+                               redirect: "/login" });
+
     } catch (err) {
-        res.status(500).json({ message: "Er is een fout opgetreden, probeer het opnieuw" });
+        res.status(500).json({ message: "Something went wrong, try again" });
     }
 });
+
+
+// 🔹 LOGIN (GET)
+app.get('/login', async (req, res) => {
+    res.render('login');
+});
+
 
 // 🔹 LOGIN (POST)
 app.post("/users/login", async (req, res) => {
     const { email, password } = req.body;
+    console.log("Inlogpoging voor email:", email); // Controleer de ingevoerde email
+
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: "Gebruiker niet gevonden" });
+    console.log("Gevonden gebruiker:", user); // Controleer of een gebruiker wordt gevonden
+
+    if (!user) return res.status(400).json({ message: "User not found" });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: "Ongeldige inloggegevens" });
+    console.log("Wachtwoord correct:", isMatch); // Controleer of het wachtwoord klopt
 
-    req.session.userId = user._id; 
-    res.json({ message: "Succesvol ingelogd!" });
+    if (!isMatch) return res.status(400).json({ message: "try a diffrent email or password" });
+
+    // Sessies instellen bij succesvolle login
+    req.session.userId = user._id; // Zet de gebruikers-ID in de sessie
+    req.session.username = user.username; // Sla de gebruikersnaam op in de sessie
+
+    res.status(201).json({ message: "You're logged in!",
+                           redirect: "/home.ejs"
+     });
 });
 
 // 🔹 LOGOUT (POST)
@@ -152,6 +174,50 @@ app.get('/home', async (req, res) => {
     }
 });
 
+app.get("/instructions", async (req, res) => {
+    res.render("instructies.ejs", {});
+});
+app.get("/upload", async (req, res) => {
+    res.render("uploadrecept.ejs", {});
+});
+app.get("/profile", async (req, res) => {
+    res.render("profile", {});
+});
+
+
+
+
+function onhome(req, res) {
+  res.render('navbar.ejs');
+}
+
+
+
+// API data ophalen 
+const API = 'https://www.thecocktaildb.com/api/json/v2/961249867/'
+
+async function fetchData(url) {
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    return(data);
+}
+
+//deze line gebruiken om de data op te vragen
+//fetchData(API + 'rest van link');
+
+
+// popular coctails laten zien op pagina
+async function popularCocktails(req, res) {
+  const data = await fetchData(API + 'popular.php');
+  const cocktails = data.drinks;
+  for(let i = 0; i < cocktails.length; i++) {
+    let cocktail = cocktails[i]
+    res.render('cocktail_list', {cocktails, cocktail});
+  }
+}
+
+// Multer storage
 app.get("/instructions", (req, res) => res.render("instructies.ejs"));
 app.get("/upload", (req, res) => res.render("upload.ejs"));
 app.get("/profile", (req, res) => res.render("profile.ejs"));
