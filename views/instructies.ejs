@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-    <% include('partials/head.ejs') %>
+    <%- include('partials/head.ejs') %>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -47,5 +47,8 @@
             <p><%= cocktail.strInstructions %></p>
         </div>
     </main>
+    <footer>
+        <%- include ('partials/nav.ejs') %>
+    </footer>
 </body>
 </html>

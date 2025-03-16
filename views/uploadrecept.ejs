@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
-    <% include('partials/head.ejs') %>
+    <%- include('partials/head.ejs') %>
 <body>
-    
     <main>
         <form action="/cocktails/upload" method="POST" enctype="multipart/form-data">
         <label for="name">Cocktail Name:</label>
@@ -23,5 +22,8 @@
         <button type="submit">Upload Cocktail</button>
         </form>
     </main>
+    <footer>
+        <%- include ('partials/nav.ejs') %>
+    </footer>
 </body>
   
