@@ -12,6 +12,7 @@ const app = express();
 app.set('view engine', 'ejs');
 app.use(express.json()); // Zorgt dat we JSON-data kunnen verwerken
 app.use(express.static("public"));
+app.use(express.urlencoded({ extended: true }));
 
 // Sessies instellen
 app.use(
@@ -59,7 +60,7 @@ app.post("/users/register", async (req, res) => {
 
     // Validatie 
     if (!username || !email || !password || !birthdate) {
-        return res.status(400).json({ message: "Alle velden zijn verplicht!" });
+        return res.status(400).json({ message: "All fields are required!" });
     }
     try {
         // Controleer of de gebruiker al bestaat
@@ -76,26 +77,43 @@ app.post("/users/register", async (req, res) => {
 
         // Sessies instellen na registratie (direct inloggen)
         req.session.userId = user._id;  // Zet de gebruikers-ID in de sessie
-        res.status(201).json({ message: "Account succesvol geregistreerd!", 
+        res.status(201).json({ message: "Account has been succesfully registerd!", 
                                redirect: "/login" });
 
     } catch (err) {
-        res.status(500).json({ message: "Er is een fout opgetreden, probeer het opnieuw" });
+        res.status(500).json({ message: "Something went wrong, try again" });
     }
 });
+
+
+// 🔹 LOGIN (GET)
+app.get('/login', async (req, res) => {
+    res.render('login');
+});
+
 
 // 🔹 LOGIN (POST)
 app.post("/users/login", async (req, res) => {
     const { email, password } = req.body;
+    console.log("Inlogpoging voor email:", email); // Controleer de ingevoerde email
+
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: "Gebruiker niet gevonden" });
+    console.log("Gevonden gebruiker:", user); // Controleer of een gebruiker wordt gevonden
+
+    if (!user) return res.status(400).json({ message: "User not found" });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: "Ongeldige inloggegevens" });
+    console.log("Wachtwoord correct:", isMatch); // Controleer of het wachtwoord klopt
+
+    if (!isMatch) return res.status(400).json({ message: "try a diffrent email or password" });
 
     // Sessies instellen bij succesvolle login
     req.session.userId = user._id; // Zet de gebruikers-ID in de sessie
-    res.json({ message: "Succesvol ingelogd!" });
+    req.session.username = user.username; // Sla de gebruikersnaam op in de sessie
+
+    res.status(201).json({ message: "You're logged in!",
+                           redirect: "/home.ejs"
+     });
 });
 
 // 🔹 LOGOUT (POST)
