@@ -166,6 +166,17 @@ async function fetchData(url) {
 app.get('/home', async (req, res) => {
     try {
         const data = await fetchData(API + 'popular.php');
+        const cocktails = data.drinks;
+
+        if (!cocktails) {
+            return res.status(404).send("Geen cocktails gevonden.");
+        }
+
+        res.render('home.ejs', { cocktails,
+            isHomeActive: true,
+            isProfileActive: false
+
+         }); 
         const cocktails = data.drinks || [];
         res.render('home.ejs', { cocktails });
     } catch (error) {
@@ -181,7 +192,12 @@ app.get("/upload", async (req, res) => {
     res.render("uploadrecept.ejs", {});
 });
 app.get("/profile", async (req, res) => {
-    res.render("profile", {});
+    res.render("profile", {
+        isHomeActive: false,
+        isProfileActive: true
+
+
+    });
 });
 
 
