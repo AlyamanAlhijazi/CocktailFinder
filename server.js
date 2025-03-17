@@ -159,6 +159,17 @@ app.get("/cocktails/search", async (req, res) => {
 app.get(['/', '/home'], async (req, res) => {
     try {
         const data = await fetchData(API + 'popular.php');
+        const cocktails = data.drinks;
+
+        if (!cocktails) {
+            return res.status(404).send("Geen cocktails gevonden.");
+        }
+
+        res.render('home.ejs', { cocktails,
+            isHomeActive: true,
+            isProfileActive: false
+
+         }); 
         const cocktails = data.drinks || [];
 
         res.render('home', {
@@ -180,9 +191,10 @@ app.get("/instructions", async (req, res) => {
 app.get("/upload", async (req, res) => {
     res.render("upload", {});
 });
+
 app.get("/profile", (req, res) => {
     res.render("profile", { isHomeActive: false, isProfileActive: true });
-});
+
 
 
 // API data ophalen 
