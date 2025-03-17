@@ -20,7 +20,7 @@ app.use(
         secret: process.env.SESSION_SECRET, // Kies een geheime sleutel
         resave: false, // Niet elke keer opnieuw opslaan
         saveUninitialized: true, // Sla onbewerkte sessies op
-        cookie: { secure: false }, // Dit moet `true` zijn als je HTTPS gebruikt
+        cookie: { secure: false, httpOnly: true }, // Dit moet `true` zijn als je HTTPS gebruikt
     })
 );
 
@@ -77,8 +77,8 @@ app.post("/users/register", async (req, res) => {
 
         // Sessies instellen na registratie (direct inloggen)
         req.session.userId = user._id;  // Zet de gebruikers-ID in de sessie
-        res.status(201).json({ message: "Account has been succesfully registerd!", 
-                               redirect: "/login" });
+        res.status(201).json({ message: "Account has been succesfully registerd!", redirect: "/login"});
+
 
     } catch (err) {
         res.status(500).json({ message: "Something went wrong, try again" });
@@ -111,18 +111,32 @@ app.post("/users/login", async (req, res) => {
     req.session.userId = user._id; // Zet de gebruikers-ID in de sessie
     req.session.username = user.username; // Sla de gebruikersnaam op in de sessie
 
-    res.status(201).json({ message: "You're logged in!",
-                           redirect: "/home.ejs"
-     });
+    res.status(201).json({ message: "You are logged in", redirect: "/profile"});
+
+    console.log("Sessie na login:", req.session);
+});
+
+
+// Check of de gebruiker ingelogd is
+app.get('/check-session', (req, res) => {
+
+    console.log("Huidige sessie bij check:", req.session);
+
+    if (req.session.user) {
+        res.json({ loggedIn: true, user: req.session.user });
+    } else {
+        res.json({ loggedIn: false });
+    }
 });
 
 // 🔹 LOGOUT (POST)
 app.post("/users/logout", (req, res) => {
     req.session.destroy((err) => {
         if (err) {
-            return res.status(500).json({ message: "Fout bij uitloggen" });
+            return res.status(500).json({ message: "Something went wrong!" });
         }
-        res.json({ message: "Succesvol uitgelogd" });
+        res.json({ message: "You are logged out",
+                   redirect: "/home" });
     });
 });
 
@@ -182,7 +196,7 @@ app.get("/upload", async (req, res) => {
     res.render("uploadrecept.ejs", {});
 });
 app.get("/profile", async (req, res) => {
-    res.render("profile.ejs", {});
+    res.render('profile');
 });
 
 
@@ -194,15 +208,15 @@ function onhome(req, res) {
 
 
 
-// API data ophalen 
-const API = 'https://www.thecocktaildb.com/api/json/v2/961249867/'
+// // API data ophalen 
+// const API = 'https://www.thecocktaildb.com/api/json/v2/961249867/'
 
-async function fetchData(url) {
-    const response = await fetch(url);
-    const data = await response.json();
+// async function fetchData(url) {
+//     const response = await fetch(url);
+//     const data = await response.json();
     
-    return(data);
-}
+//     return(data);
+// }
 
 //deze line gebruiken om de data op te vragen
 //fetchData(API + 'rest van link');

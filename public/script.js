@@ -1,3 +1,4 @@
+console.log("Script.js is geladen!");
 // // // // // REGISTRATIE // // // //
 document.getElementById("registrationForm").addEventListener("submit", async function(event) {
     event.preventDefault(); // Voorkomt dat het formulier op de traditionele manier wordt ingediend
@@ -41,9 +42,9 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
             document.getElementById("message").innerText = `Fout: ${data.message}`;
         }
     } catch (error) {
-        document.getElementById("message").innerText = `Er is een fout opgetreden: ${error}`;
+        document.getElementById("message").innerText = `Something went wrong: ${error}`;
     }
-});d
+});
 
 
 // // // // // LOGIN // // // //
@@ -78,14 +79,34 @@ try {
     if (response.ok) {
         // Als de login succesvol is,  de gebruiker doorverwijzen naar de homepagina
         document.getElementById("message").innerText = "You are logged in";
-        window.location.href = data.redirect; // Hier kun je aanpassen naar de juiste pagina
+        window.location.href = data.redirect; 
     } else {
         // Als er een fout is, geef een bericht weer
-        document.getElementById("message").innerText = `Fout: ${data.message}`;
+        document.getElementById("message").innerText = `Error: ${data.message}`;
     }
 } catch (error) {
-    document.getElementById("error-message").innerText = `Er is een fout opgetreden: ${error}`;
+    document.getElementById("message").innerText = `Something went wrong: ${error}`;
 }
 });
 
-<script defer src="/script.js"></script>
+// // // // // LOGOUT // // // //
+document.getElementById("logoutButton")?.addEventListener("click", async ()=>{
+    const confirmLogout = confirm("Are you sure you want to log out?");
+
+    if (confirmLogout) {
+        try{
+            const response = await fetch("/users/logout", {method: "POST"});
+
+            if (response.ok) {
+                const result = await response.json();
+                window.location.href = result.redirect;
+            } else {
+                console.error("faild to log out")
+            }
+        } catch (error) {
+            console.error("something went wrong at logging out", error);
+        }
+    }
+});
+
+// {/* <script defer src="/script.js"></script> */}
