@@ -119,7 +119,7 @@ app.post("/users/login", async (req, res) => {
     req.session.username = user.username; // Sla de gebruikersnaam op in de sessie
 
     res.status(201).json({ message: "You're logged in!",
-                           redirect: "/home.ejs"
+                           redirect: "/home"
      });
 });
 
@@ -155,13 +155,6 @@ app.get("/cocktails/search", async (req, res) => {
 });
 
 // 🔹 HOME PAGE & API FETCHING
-const API = 'https://www.thecocktaildb.com/api/json/v2/961249867/';
-
-async function fetchData(url) {
-    const response = await fetch(url);
-    const data = await response.json();
-    return data;
-}
 
 app.get('/home', async (req, res) => {
     res.locals.currentpath = req.path;
@@ -184,9 +177,11 @@ app.get('/home', async (req, res) => {
     }
 });
 
+
 app.get("/instructions", async (req, res) => {
-    res.render("instructies.ejs", {});
+    res.render("instructies", {});
 });
+
 app.get("/upload", async (req, res) => {
     res.locals.currentpath = req.path; //automatically set currentpath
     res.render("upload.ejs", {});
@@ -201,20 +196,15 @@ app.get("/profile", async (req, res) => {
 
 
 
+// API connect
+const API = 'https://www.thecocktaildb.com/api/json/v2/961249867/'
 
-// API data ophalen 
-// const API = 'https://www.thecocktaildb.com/api/json/v2/961249867/'
-
-// async function fetchData(url) {
-//     const response = await fetch(url);
-//     const data = await response.json();
+async function fetchData(url) {
+    const response = await fetch(url);
+    const data = await response.json();
     
-//     return(data);
-// }
-
-//deze line gebruiken om de data op te vragen
-//fetchData(API + 'rest van link');
-
+    return(data);
+}
 
 // popular coctails laten zien op pagina
 async function popularCocktails(req, res) {
@@ -226,10 +216,6 @@ async function popularCocktails(req, res) {
   }
 }
 
-// Multer storage
-app.get("/instructions", (req, res) => res.render("instructies.ejs"));
-app.get("/upload", (req, res) => res.render("upload.ejs"));
-app.get("/profile", (req, res) => res.render("profile.ejs"));
 
 // 🔹 MULTER FILE UPLOAD
 app.use('/uploads', express.static('uploads'));
@@ -271,20 +257,31 @@ app.post('/upload-cocktail', upload.single('image'), async (req, res) => {
 app.get('/usercocktails', async (req, res) => {
     try {
         const cocktails = await userCocktail.find();
-        res.render('user_cocktails.ejs', { cocktails });
+        res.render('user_cocktails', { cocktails });
     } catch (error) {
         res.status(500).json({ error: 'Error fetching cocktails' });
     }
 });
 
-// Middlewere to set currentpath
-// app.use((req, res, next) => {
+app.get('/cocktail/:cocktailName', async (req, res) => {
+    try {
+        const cocktailName = req.params.cocktailName; 
+        const data = await fetchData(API + 'search.php?s=' + cocktailName); 
+        const cocktail = data.drinks ? data.drinks[0] : null;
 
-//     res.locals.currentpath = req.path; //automatically set currentpath
-//     console.log("res.locals.currentpath", res.locals.currentpath);
-    
-//     next();
-// });
+        if (!cocktail) {
+            return res.status(404).send('Cocktail not found');
+        }
+
+        res.render('instructies.ejs', {
+            cocktail: cocktail
+        });
+    } catch (error) {
+        console.error("Error fetching cocktail details:", error);
+        res.status(500).send("Error fetching cocktail details.");
+    }
+});
+
 
 // 🔹 START SERVER
 const PORT = process.env.PORT || 3000;

@@ -1,54 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
     <%- include('partials/head.ejs') %>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="/public/styles.css">
-</head>
 <body>
+    <header>
+        <%- include('partials/header.ejs') %>
+    </header>
     <main>
-        <h1><%= cocktail.strDrink %></h1>
-        <img src="<%= cocktail.strDrinkThumb %>" alt="<%= cocktail.strDrink %>">
-        <p>Glass: <% cocktail.strGlass %></p>
-        <p><%= cocktail.strAlchoholic %></p>
-        <div>
-            <button>Ingredients</button>
-            <button>Steps</button>
-        </div>
-        <section>
+        <div class="cocktail-details">
+            <h1><%= cocktail.strDrink %></h1>
+            <img src="<%= cocktail.strDrinkThumb %>" alt="<%= cocktail.strDrink %>">
+            <div class="toggle-buttons">
+                <button>Ingredients</button>
+                <button>Instructions</button>
+            </div> 
             <div>
-                <p><%= cocktail.strIngredient1 %></p>
-                <p><%= cocktail.strMeasure1 %></p>
-            </div>
-            <div>
-                <p><%= cocktail.strIngredient2 %></p>
-                <p><%= cocktail.strMeasure2 %></p>
-            </div>
-            <div>
-                <p><%= cocktail.strIngredient3 %></p>
-                <p><%= cocktail.strMeasure3 %></p>
-            </div>
-            <div>
-                <p><%= cocktail.strIngredient3 %></p>
-                <p><%= cocktail.strMeasure3 %></p>
-            </div>
-            <div>
-                <p><%= cocktail.strIngredient3 %></p>
-                <p><%= cocktail.strMeasure3 %></p>
-            </div>
-            <div>
-                <p><%= cocktail.strIngredient3 %></p>
-                <p><%= cocktail.strMeasure3 %></p>
-            </div>
-        </section>
-        <div>
-            <p><%= cocktail.strInstructions %></p>
+                <h3>Ingredients:</h3>
+                <ul>
+                    <% for (let i = 1; i <= 15; i++) { %>
+                        <% if (cocktail['strIngredient' + i]) { %>
+                            <li><%= cocktail['strIngredient' + i] %> - <%= cocktail['strMeasure' + i] || 'To taste' %></li>
+                        <% } %>
+                    <% } %>
+                </ul>
+                <h3>Instructions</h3>
+                <p><%= cocktail.strInstructions %></p>
+            </div>  
         </div>
     </main>
-    <footer>
-        <%- include ('partials/nav.ejs') %>
-    </footer>
 </body>
 </html>

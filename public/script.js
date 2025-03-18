@@ -1,4 +1,6 @@
 // // // // // REGISTRATIE // // // //
+console.log("JavaScript is loaded!");
+
 document.getElementById("registrationForm").addEventListener("submit", async function(event) {
     event.preventDefault(); // Voorkomt dat het formulier op de traditionele manier wordt ingediend
 
@@ -87,5 +89,3 @@ try {
     document.getElementById("error-message").innerText = `Er is een fout opgetreden: ${error}`;
 }
 });
-
-<script defer src="/script.js"></script>
