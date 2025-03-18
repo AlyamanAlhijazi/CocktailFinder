@@ -50,7 +50,16 @@ header nav ul{
     align-items: center;
     list-style-type: none; 
     position: relative;
-}  
+} 
+@media (min-width: 768px) {
+    header nav ul{
+        justify-content: center;
+        gap: 8em;
+
+    }
+
+
+}
 header ul li{
     width: 4em;
     height: 4em;
