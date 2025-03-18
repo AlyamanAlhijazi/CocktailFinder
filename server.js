@@ -164,20 +164,19 @@ async function fetchData(url) {
 }
 
 app.get('/home', async (req, res) => {
+    res.locals.currentpath = req.path;
+    
     try {
         const data = await fetchData(API + 'popular.php');
-        const cocktails = data.drinks;
+        // const cocktails = data.drinks;
+        const cocktails = data.drinks || [];
 
         if (!cocktails) {
             return res.status(404).send("Geen cocktails gevonden.");
         }
 
-        res.render('home.ejs', { cocktails,
-            isHomeActive: true,
-            isProfileActive: false
-
-         }); 
-        const cocktails = data.drinks || [];
+        
+        
         res.render('home.ejs', { cocktails });
     } catch (error) {
         console.error("Fout bij ophalen van cocktails:", error);
@@ -189,35 +188,29 @@ app.get("/instructions", async (req, res) => {
     res.render("instructies.ejs", {});
 });
 app.get("/upload", async (req, res) => {
-    res.render("uploadrecept.ejs", {});
+    res.locals.currentpath = req.path; //automatically set currentpath
+    res.render("upload.ejs", {});
+
 });
 app.get("/profile", async (req, res) => {
-    res.render("profile", {
-        isHomeActive: false,
-        isProfileActive: true
-
-
-    });
+    res.locals.currentpath = req.path; //automatically set currentpath
+    res.render("profile", {});
 });
 
 
 
-
-function onhome(req, res) {
-  res.render('navbar.ejs');
-}
 
 
 
 // API data ophalen 
-const API = 'https://www.thecocktaildb.com/api/json/v2/961249867/'
+// const API = 'https://www.thecocktaildb.com/api/json/v2/961249867/'
 
-async function fetchData(url) {
-    const response = await fetch(url);
-    const data = await response.json();
+// async function fetchData(url) {
+//     const response = await fetch(url);
+//     const data = await response.json();
     
-    return(data);
-}
+//     return(data);
+// }
 
 //deze line gebruiken om de data op te vragen
 //fetchData(API + 'rest van link');
@@ -250,6 +243,8 @@ const storage = multer.diskStorage({
     }
 });
 
+
+
 const upload = multer({ storage: storage });
 
 app.post('/upload-cocktail', upload.single('image'), async (req, res) => {
@@ -281,6 +276,15 @@ app.get('/usercocktails', async (req, res) => {
         res.status(500).json({ error: 'Error fetching cocktails' });
     }
 });
+
+// Middlewere to set currentpath
+// app.use((req, res, next) => {
+
+//     res.locals.currentpath = req.path; //automatically set currentpath
+//     console.log("res.locals.currentpath", res.locals.currentpath);
+    
+//     next();
+// });
 
 // 🔹 START SERVER
 const PORT = process.env.PORT || 3000;
