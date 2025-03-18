@@ -2,6 +2,9 @@
 <html lang="en">
     <%- include('partials/head.ejs') %>
 <body>  
+    <header>
+        <%- include('partials/header.ejs') %>
+    </header>
      <main>     
         <h1>All cocktails</h1>
         <form id="searchForm" action="/home" method="GET">
@@ -19,7 +22,7 @@
                     </a>
                 </li>
             <% }) %>
-        </ul>        
+        </ul>             
     </main>
 
 </body>

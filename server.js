@@ -196,20 +196,15 @@ app.get("/profile", async (req, res) => {
 
 
 
+// API connect
+const API = 'https://www.thecocktaildb.com/api/json/v2/961249867/'
 
-// API data ophalen 
-// const API = 'https://www.thecocktaildb.com/api/json/v2/961249867/'
-
-// async function fetchData(url) {
-//     const response = await fetch(url);
-//     const data = await response.json();
+async function fetchData(url) {
+    const response = await fetch(url);
+    const data = await response.json();
     
     return(data);
 }
-
-//deze line gebruiken om de data op te vragen
-//fetchData(API + 'rest van link');
-
 
 // popular coctails laten zien op pagina
 async function popularCocktails(req, res) {

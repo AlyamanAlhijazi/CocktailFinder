@@ -95,16 +95,6 @@ header ul li a svg{
 
 /* stijling cocktails op home */
 
-/* Container voor cocktails */
-.cocktail-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 2vw;
-    justify-content: center;
-    padding: 2vw;
-}
-
-/* Stijl voor elke cocktailkaart */
 .cocktail-list {
     list-style: none;
     padding: 0;
@@ -112,73 +102,63 @@ header ul li a svg{
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 1em;
+    gap: 1.5em;
 }
 
 .cocktail-list li {
-    width: calc(50% - 1em);
-    max-width: 200px;
+    flex: 1 1 calc(25% - 1.5em); /* Zorgt voor 4 kolommen op grotere schermen */
+    max-width: 250px; /* Voorkomt dat ze te breed worden */
     text-align: center;
 }
 
+/* Fix voor overlappende links */
 .cocktail-link {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    display: block;
+    width: 100%;
+    height: 100%;
     text-decoration: none;
     color: inherit;
-    background: var(--white);
+    background-color: var(--white);
     border-radius: 1.2em;
-    padding: 1em;
     box-shadow: 0 0.3em 1em rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
     overflow: hidden;
+    padding: 1em;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
 .cocktail-link:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 0.5em 1.2em rgba(0, 0, 0, 0.15);
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.cocktail-link h2 {
+    font-size: 1.3em;
+    margin: 0.5em 0;
+    font-weight: bold;
 }
 
 .cocktail-link img {
     width: 100%;
+    height: 150px; /* Behoudt een consistente hoogte */
     border-radius: 10px;
     object-fit: cover;
 }
 
-.cocktail-link h2 {
-    font-size: 1em;
-    margin-top: 0.5em;
-    text-align: center;
-    color: var(--color-text);
+/* Responsive: 2 kolommen op kleinere schermen */
+@media (max-width: 768px) {
+    .cocktail-list li {
+        flex: 1 1 calc(50% - 1.5em);
+    }
 }
 
-/* Specifiek voor cocktail-cards */
-.cocktail-card {
-    width: 20vw;
-    max-width: 25em;
-    min-width: 15em;
-    max-height: 17em;
-    text-align: center;
-    transition: transform 0.2s ease-in-out;
+/* Responsive: 1 kolom op mobiele schermen */
+@media (max-width: 480px) {
+    .cocktail-list li {
+        flex: 1 1 100%;
+    }
 }
 
-.cocktail-card:hover {
-    transform: scale(1.05);
-}
 
-.cocktail-card img {
-    width: 100%;
-    height: auto;
-}
-
-header nav ul li a.IshomeActive{
-    background-color: white;
-}
-header nav ul li a.IsprofileActive{
-    background-color: white;
-
-}
 
 #searchForm {
     width: 80%;
