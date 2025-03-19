@@ -1,30 +1,39 @@
+// Packages importeren
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import bcrypt from "bcrypt";
-import expressSession from "express-session";
+import session from "express-session";
+import flash from "express-flash";
 import multer from "multer";
 import path from "path"; 
 import { fileURLToPath } from "url";
 
-// Laad omgevingsvariabelen
+// Laad enviroment variabelen
 dotenv.config();
 
+// express initaliseren
 const app = express();
+
+// App settings configureren
 app.set('view engine', 'ejs');
+app.set('views', 'views');
+
+// Middleware toevoegen 
 app.use(express.json()); // Zorgt dat we JSON-data kunnen verwerken
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
-
 // Sessies instellen
-app.use(
-    expressSession({
-        secret: process.env.SESSION_SECRET, 
-        resave: false,
-        saveUninitialized: true,
-        cookie: { secure: false },
+app.use(session({
+        secret: process.env.SESSION_SECRET, // Kies een geheime sleutel
+        resave: false, // Niet elke keer opnieuw opslaan
+        saveUninitialized: true, // Sla onbewerkte sessies op
+        cookie: { secure: false, httpOnly: true }, // Dit moet `true` zijn als je HTTPS gebruikt
     })
 );
+// flash messages instellen
+app.use(flash());
+
 
 // 📌 DATABASE CONNECTIE
 mongoose.connect(process.env.MONGO_URI)
@@ -68,12 +77,14 @@ app.get('/register', async (req, res) => {
 app.post("/users/register", async (req, res) => {
     const { username, email, password, birthdate } = req.body;
     if (!username || !email || !password || !birthdate) {
-        return res.status(400).json({ message: "All fields are required!" });
+        req.flash('error', "All fields are required!");
+        return res.redirect('/register');
     }
     try {
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            return res.status(400).json({ message: "Try a different email address" });
+            req.flash('error', "try a different email address");
+            return res.redirect('/register')
         }
 
         const formattedBirthdate = new Date(birthdate);
@@ -84,11 +95,10 @@ app.post("/users/register", async (req, res) => {
 
         // Sessies instellen na registratie (direct inloggen)
         req.session.userId = user._id;  // Zet de gebruikers-ID in de sessie
-        res.status(201).json({ message: "Account has been succesfully registerd!", 
-                               redirect: "/login" });
-
+        req.flash('success', "Account has been succesfully registerd!");
+        res.redirect('/login');
     } catch (err) {
-        res.status(500).json({ message: "Something went wrong, try again" });
+        res.redirect('register');
     }
 });
 
@@ -107,31 +117,68 @@ app.post("/users/login", async (req, res) => {
     const user = await User.findOne({ email });
     console.log("Gevonden gebruiker:", user); // Controleer of een gebruiker wordt gevonden
 
-    if (!user) return res.status(400).json({ message: "User not found" });
+    if (!user) {
+        req.flash('error',"User not found");
+        return res.redirect('/login');
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
     console.log("Wachtwoord correct:", isMatch); // Controleer of het wachtwoord klopt
 
-    if (!isMatch) return res.status(400).json({ message: "try a diffrent email or password" });
+    if (!isMatch) {
+        req.flash('error', "try a different email or password");
+        return res.redirect('/login');
+      }
 
     // Sessies instellen bij succesvolle login
     req.session.userId = user._id; // Zet de gebruikers-ID in de sessie
     req.session.username = user.username; // Sla de gebruikersnaam op in de sessie
+    
+    req.flash('success', "You are logged in");
+    res.redirect('/profile');
+    console.log("Sessie na login:", req.session);
+});
 
-    res.status(201).json({ message: "You're logged in!",
-                           redirect: "/home"
-     });
+
+// Check of de gebruiker ingelogd is
+app.get('/check-session', (req, res) => {
+
+    console.log("Huidige sessie bij check:", req.session);
+
+    if (req.session.user) {
+        res.json({ loggedIn: true, user: req.session.user });
+    } else {
+        res.json({ loggedIn: false });
+    }
+});
+
+// 🔹 LOGOUT (GET)
+app.get('/logout', async (req, res) => {
+    res.render('logout');
 });
 
 // 🔹 LOGOUT (POST)
-app.post("/users/logout", (req, res) => {
-    req.session.destroy((err) => {
-        if (err) {
-            return res.status(500).json({ message: "Fout bij uitloggen" });
-        }
-        res.json({ message: "Succesvol uitgelogd" });
-    });
+app.post('/logout', (req, res) => {
+    if (req.session) {
+        // Flash berichten instellen voordat de sessie wordt vernietigd
+        req.flash('success', 'You have been successfully logged out.');
+
+        req.session.destroy((err) => {
+            if (err) {
+                console.error('A failed logout:', err);
+                req.flash('error', 'Something went wrong while logging out. Try again.');
+                return res.redirect('/profile');
+            }
+
+            res.clearCookie('connect.sid'); // Verwijder de sessie cookie
+            res.redirect('/home'); // Redirect naar register pagina
+        });
+    } else {
+        // Als er geen actieve sessie is, redirect naar register pagina
+        res.redirect('/home');
+    }
 });
+
 
 // 🔹 BEVEILIGDE ROUTE (bijvoorbeeld: Favorieten, uploaden van cocktails)
 app.get("/cocktails/favorites", (req, res) => {
@@ -188,23 +235,28 @@ app.get("/upload", async (req, res) => {
 
 });
 app.get("/profile", async (req, res) => {
-    res.locals.currentpath = req.path; //automatically set currentpath
-    res.render("profile", {});
+    res.render('profile');
 });
 
 
 
 
 
-// API connect
-const API = 'https://www.thecocktaildb.com/api/json/v2/961249867/'
 
-async function fetchData(url) {
-    const response = await fetch(url);
-    const data = await response.json();
+
+// // API data ophalen 
+// const API = 'https://www.thecocktaildb.com/api/json/v2/961249867/'
+
+// async function fetchData(url) {
+//     const response = await fetch(url);
+//     const data = await response.json();
     
-    return(data);
-}
+//     return(data);
+// }
+
+//deze line gebruiken om de data op te vragen
+//fetchData(API + 'rest van link');
+
 
 // popular coctails laten zien op pagina
 async function popularCocktails(req, res) {
@@ -222,6 +274,7 @@ app.use('/uploads', express.static('uploads'));
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
+        cb(null, 'public/uploads/');
         cb(null, 'public/uploads/');
     },
     filename: (req, file, cb) => {
