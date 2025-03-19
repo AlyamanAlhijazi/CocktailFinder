@@ -65,6 +65,7 @@ header nav ul{
     height: 100%; 
     padding: 0;
     margin: 0;
+}
 
 footer nav ul{   
     display: flex;
@@ -74,9 +75,11 @@ footer nav ul{
     /* background-color: antiquewhite; */
     list-style-type: none; 
 }  
+
 header ul li{
     padding: 0;
 }
+
 footer ul li a svg{
     width: 4em;
     height: 4em;
@@ -163,11 +166,6 @@ footer nav ul li:nth-of-type(2){
     }
 }
 
-    /* background-color:   #FED0D0; */
-    background-color: var(--navbar-color);
-
-    border-radius: 50%; 
-}
 header nav ul li:nth-of-type(2){
     position: absolute;
     bottom: 2.89em;

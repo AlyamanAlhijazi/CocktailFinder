@@ -12,6 +12,7 @@ const app = express();
 app.set('view engine', 'ejs');
 app.use(express.json()); // Zorgt dat we JSON-data kunnen verwerken
 app.use(express.static("public"));
+app.use(express.urlencoded({ extended: true }));
 
 // Sessies instellen
 app.use(
@@ -19,7 +20,7 @@ app.use(
         secret: process.env.SESSION_SECRET, // Kies een geheime sleutel
         resave: false, // Niet elke keer opnieuw opslaan
         saveUninitialized: true, // Sla onbewerkte sessies op
-        cookie: { secure: false }, // Dit moet `true` zijn als je HTTPS gebruikt
+        cookie: { secure: false, httpOnly: true }, // Dit moet `true` zijn als je HTTPS gebruikt
     })
 );
 
@@ -59,7 +60,7 @@ app.post("/users/register", async (req, res) => {
 
     // Validatie 
     if (!username || !email || !password || !birthdate) {
-        return res.status(400).json({ message: "Alle velden zijn verplicht!" });
+        return res.status(400).json({ message: "All fields are required!" });
     }
     try {
         // Controleer of de gebruiker al bestaat
@@ -76,35 +77,66 @@ app.post("/users/register", async (req, res) => {
 
         // Sessies instellen na registratie (direct inloggen)
         req.session.userId = user._id;  // Zet de gebruikers-ID in de sessie
-        res.status(201).json({ message: "Account succesvol geregistreerd!", 
-                               redirect: "/login" });
+        res.status(201).json({ message: "Account has been succesfully registerd!", redirect: "/login"});
+
 
     } catch (err) {
-        res.status(500).json({ message: "Er is een fout opgetreden, probeer het opnieuw" });
+        res.status(500).json({ message: "Something went wrong, try again" });
     }
 });
+
+
+// 🔹 LOGIN (GET)
+app.get('/login', async (req, res) => {
+    res.render('login');
+});
+
 
 // 🔹 LOGIN (POST)
 app.post("/users/login", async (req, res) => {
     const { email, password } = req.body;
+    console.log("Inlogpoging voor email:", email); // Controleer de ingevoerde email
+
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: "Gebruiker niet gevonden" });
+    console.log("Gevonden gebruiker:", user); // Controleer of een gebruiker wordt gevonden
+
+    if (!user) return res.status(400).json({ message: "User not found" });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: "Ongeldige inloggegevens" });
+    console.log("Wachtwoord correct:", isMatch); // Controleer of het wachtwoord klopt
+
+    if (!isMatch) return res.status(400).json({ message: "try a diffrent email or password" });
 
     // Sessies instellen bij succesvolle login
     req.session.userId = user._id; // Zet de gebruikers-ID in de sessie
-    res.json({ message: "Succesvol ingelogd!" });
+    req.session.username = user.username; // Sla de gebruikersnaam op in de sessie
+
+    res.status(201).json({ message: "You are logged in", redirect: "/profile"});
+
+    console.log("Sessie na login:", req.session);
+});
+
+
+// Check of de gebruiker ingelogd is
+app.get('/check-session', (req, res) => {
+
+    console.log("Huidige sessie bij check:", req.session);
+
+    if (req.session.user) {
+        res.json({ loggedIn: true, user: req.session.user });
+    } else {
+        res.json({ loggedIn: false });
+    }
 });
 
 // 🔹 LOGOUT (POST)
 app.post("/users/logout", (req, res) => {
     req.session.destroy((err) => {
         if (err) {
-            return res.status(500).json({ message: "Fout bij uitloggen" });
+            return res.status(500).json({ message: "Something went wrong!" });
         }
-        res.json({ message: "Succesvol uitgelogd" });
+        res.json({ message: "You are logged out",
+                   redirect: "/home" });
     });
 });
 
@@ -164,7 +196,7 @@ app.get("/upload", async (req, res) => {
     res.render("uploadrecept.ejs", {});
 });
 app.get("/profile", async (req, res) => {
-    res.render("profile.ejs", {});
+    res.render('profile');
 });
 
 
@@ -176,15 +208,15 @@ function onhome(req, res) {
 
 
 
-// API data ophalen 
-const API = 'https://www.thecocktaildb.com/api/json/v2/961249867/'
+// // API data ophalen 
+// const API = 'https://www.thecocktaildb.com/api/json/v2/961249867/'
 
-async function fetchData(url) {
-    const response = await fetch(url);
-    const data = await response.json();
+// async function fetchData(url) {
+//     const response = await fetch(url);
+//     const data = await response.json();
     
-    return(data);
-}
+//     return(data);
+// }
 
 //deze line gebruiken om de data op te vragen
 //fetchData(API + 'rest van link');
@@ -203,7 +235,7 @@ async function popularCocktails(req, res) {
 // Multer storage
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'public/uploads/'); ]
+        cb(null, 'public/uploads/');
     },
     filename: (req, file, cb) => {
         cb(null, Date.now() + path.extname(file.originalname));
