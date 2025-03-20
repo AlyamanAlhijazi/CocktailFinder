@@ -202,6 +202,7 @@ app.get("/cocktails/search", async (req, res) => {
 });
 
 // 🔹 HOME PAGE & API FETCHING
+const API = process.env.API_URL
 
 app.get('/home', async (req, res) => {
     res.locals.currentpath = req.path;
@@ -243,7 +244,7 @@ app.get("/profile", async (req, res) => {
 
 
 
-const API = 'https://www.thecocktaildb.com/api/json/v2/961249867/'
+
 
 async function fetchData(url) {
     const response = await fetch(url);
@@ -334,3 +335,7 @@ app.get('/cocktail/:cocktailName', async (req, res) => {
 // 🔹 START SERVER
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server draait op http://localhost:${PORT}`));
+
+
+// OPHALEN EN FILTEREN API
+
