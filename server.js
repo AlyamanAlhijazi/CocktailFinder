@@ -338,4 +338,89 @@ app.listen(PORT, () => console.log(`🚀 Server draait op http://localhost:${POR
 
 
 // OPHALEN EN FILTEREN API
+let ingredients = ['Orange Juice'];
+let alcoholic = 0;    // 0= no prefrance, 1= alcaholic, 2 = non_alcaholic
+let category = 'Cocktail'  
+let glass = ''
 
+function alcohol(object) {
+    if(alcoholic == 1 && object.strAlcoholic == 'Alcoholic'){
+        return true;
+    }else if(alcoholic == 2 && object.strAlcoholic == 'Non alcoholic'){
+        return true;
+    }else if(alcoholic == 0) {
+        return true;
+    }else {
+        return false;
+    }
+}
+
+function categoryFilter(object) {
+   if(category != ''){
+    return object.strCategory == category;
+   }else {
+    return true;
+   }
+    
+
+}
+
+function glassFilter(object) {
+    if(glass != ''){
+        return object.strGlass == glass;
+    }else {
+        return true;
+    }
+    
+}
+
+async function fetch_drinks(soort) {
+    let detail_list = [];
+    const data = await fetchData(API + '/filter.php?' + soort);
+    const cocktails = data.drinks;
+    
+    for(let i = 0; i < cocktails.length && i < 28; i++) {
+        let cocktailID = cocktails[i].idDrink
+        let detail = await fetchData(API + 'lookup.php?i=' + cocktailID);
+        detail_list.push(detail.drinks.shift());
+    }
+    return(detail_list);
+}
+
+
+async function filteren_alcahol() {
+    let detail_list = [];
+    let detail_list2 = [];
+    if(alcoholic == 1){
+        detail_list = await fetch_drinks('a=Alcoholic', 50);
+    }else if(alcoholic == 2){
+        detail_list = await fetch_drinks('a=Non_Alcoholic', 50);
+    }else {
+        detail_list = await fetch_drinks('a=Alcoholic', 28);
+        detail_list2 = await fetch_drinks('a=Non_Alcoholic', 28);
+        detail_list = detail_list.concat(detail_list2)
+    }
+    return(detail_list);
+}
+
+// INGREDIENTEN ZIJN ER REST NIET
+async function filter_ingredienten() {
+    let detail_list = [];
+    let filter = 'i=' + ingredients;
+    detail_list = await fetch_drinks(filter, 50);
+    detail_list = detail_list.filter(alcohol);
+    return(detail_list);
+}
+
+
+async function filteren() {
+    let detail_list = []
+    if(ingredients.length == 0){
+        detail_list = await filteren_alcahol();
+    } else {
+        detail_list = await filter_ingredienten();
+    }
+    detail_list = detail_list.filter(categoryFilter);
+    detail_list = detail_list.filter(glassFilter);
+    return(detail_list);
+}
