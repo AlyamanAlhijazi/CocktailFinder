@@ -1,112 +1,118 @@
 console.log("Script.js is geladen!");
-// // // // // REGISTRATIE // // // //
-document.getElementById("registrationForm").addEventListener("submit", async function(event) {
-    event.preventDefault(); // Voorkomt dat het formulier op de traditionele manier wordt ingediend
 
-    // Verzamel de gegevens van het formulier
-    const username = document.getElementById("username").value;
-    const birthdate = document.getElementById("birthdate").value;
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-    const confirmPassword = document.getElementById("confirmPassword").value;
+// REGISTRATIE
+document.addEventListener("DOMContentLoaded", function() {
+  const registrationForm = document.getElementById("registrationForm");
+  if (registrationForm) {
+    registrationForm.addEventListener("submit", async function(event) {
+      event.preventDefault();
 
-    // Controleer of de wachtwoorden overeenkomen
-    if (password !== confirmPassword) {
-        document.getElementById("message").innerText = "Wachtwoorden komen niet overeen!";
+      const username = document.getElementById("username").value;
+      const birthdate = document.getElementById("birthdate").value;
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
+
+      if (password !== confirmPassword) {
+        document.getElementById("message").innerText = "Passwords do not match";
         return;
-    }
+      }
 
-    // Maak een object voor de gegevens
-    const userData = {
-        username,
-        birthdate,
-        email,
-        password
-    };
+      const userData = { username, birthdate, email, password };
 
-    try {
-        // Verstuur de gegevens naar de server
-        const response = await fetch("http://localhost:3000/users/register", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(userData)
+      try {
+        const response = await fetch("/users/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(userData),
         });
 
-        const data = await response.json();
-        if (response.ok) {
-            document.getElementById("message").innerText = "Registratie succesvol!";
-            window.location.href = data.redirect;
+        if (response.redirected) {
+          window.location.href = response.url;
         } else {
-            document.getElementById("message").innerText = `Fout: ${data.message}`;
+          const data = await response.json();
+          document.getElementById("message").innerText = data.message || "Something went wrong.";
         }
-    } catch (error) {
+      } catch (error) {
         document.getElementById("message").innerText = `Something went wrong: ${error}`;
-    }
-});
-
-
-// // // // // LOGIN // // // //
-document.getElementById("loginForm").addEventListener("submit", async function(event) {
-    event.preventDefault(); // Voorkomt dat het formulier op de traditionele manier wordt ingediend
-// Verzamel de gegevens van het formulier
-const email = document.getElementById("email").value;
-const password = document.getElementById("password").value;
-
-console.log("Ingevoerde email:", email); // Debug log
-console.log("Ingevoerde wachtwoord:", password); // Debug log
-
-// Maak een object voor de gegevens
-const loginData = {
-    email,
-    password
-};
-
-try {
-    // Verstuur de gegevens naar de server
-    const response = await fetch("http://localhost:3000/users/login", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(loginData)
+      }
     });
+  }
 
-    const data = await response.json();
-    console.log(loginData);
-    
-    if (response.ok) {
-        // Als de login succesvol is,  de gebruiker doorverwijzen naar de homepagina
-        document.getElementById("message").innerText = "You are logged in";
-        window.location.href = data.redirect; 
-    } else {
-        // Als er een fout is, geef een bericht weer
-        document.getElementById("message").innerText = `Error: ${data.message}`;
-    }
-} catch (error) {
-    document.getElementById("message").innerText = `Something went wrong: ${error}`;
-}
-});
+  // LOGIN
+  const loginForm = document.getElementById("loginForm");
+  if (loginForm) {
+    loginForm.addEventListener("submit", async function(event) {
+      event.preventDefault();
 
-// // // // // LOGOUT // // // //
-document.getElementById("logoutButton")?.addEventListener("click", async ()=>{
-    const confirmLogout = confirm("Are you sure you want to log out?");
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
 
-    if (confirmLogout) {
-        try{
-            const response = await fetch("/users/logout", {method: "POST"});
+      console.log("Ingevoerde email:", email);
+      console.log("Ingevoerde wachtwoord:", password);
 
-            if (response.ok) {
-                const result = await response.json();
-                window.location.href = result.redirect;
-            } else {
-                console.error("faild to log out")
-            }
-        } catch (error) {
-            console.error("something went wrong at logging out", error);
+      const loginData = { email, password };
+
+      try {
+        const response = await fetch("/users/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(loginData),
+        });
+
+        console.log(loginData);
+
+        if (response.redirected) {
+          window.location.href = response.url;
+        } else {
+          const data = await response.json();
+          document.getElementById("message").innerText = data.message || "Something went wrong";
         }
-    }
+      } catch (error) {
+        document.getElementById("message").innerText = `Something went wrong: ${error}`;
+      }
+    });
+  }
+
+  // LOGOUT
+  const logoutButton = document.getElementById("logoutButton");
+  if (logoutButton) {
+    logoutButton.addEventListener("click", async () => {
+      console.log("Logout button clicked!");
+      const confirmLogout = confirm("Are you sure you want to log out?");
+
+      if (confirmLogout) {
+        try {
+          const response = await fetch("/logout", { method: "POST" });
+          if (response.redirected) {
+            window.location.href = response.url;
+          } else {
+            console.error("Failed to log out");
+          }
+        } catch (error) {
+          console.error("Something went wrong while logging out", error);
+        }
+      }
+    });
+  }
 });
 
-// {/* <script defer src="/script.js"></script> */}
+
+// UPLOAD
+function addIngredient() {
+  const ingredientsDiv = document.getElementById("ingredients");
+  const newRow = document.createElement("div");
+  newRow.className = "ingredient-row";
+  newRow.innerHTML = `
+        <input type="text" name="ingredientName[]" placeholder="Ingredient name" required>
+        <input type="number" name="ingredientAmount[]" placeholder="Amount" required step="0.01">
+        <select name="ingredientUnit[]" required>
+            <option value="ml">ml</option>
+            <option value="cl">cl</option>
+            <option value="oz">oz</option>
+        </select>
+        <input type="checkbox" name="isAlcoholic[]"> Alcoholic
+        <input type="number" name="alcoholPercentage[]" placeholder="Alcohol %" min="0" max="100" step="0.1"> %
+    `;
+  ingredientsDiv.appendChild(newRow);
+}

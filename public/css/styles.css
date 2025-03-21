@@ -1,18 +1,30 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
+
+* {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
 :root {
 	--color-text: #011627;
 	--color-background: #ffdbdb;
 	--nav-color: #ED8A01;
 	--button-color: #FD9FA1;
     --navbar-color: #78CCEE;
+    --white: white;
+    --svg-color: #011627;
 }
 body{
     font-family: 'Nunito', sans-serif;
     width: 100%;
     height: 100%;
+    overflow-x: hidden; 
+    width: 100vw;
 }
+
 h1 {
-    color: blue;
+    color: var(--color-text);
+    padding-left: 3em;
 }
 header{
     width: 100%;
@@ -22,151 +34,238 @@ header{
     left:0;
     bottom: 0;
 }
-header div{
-    width: 7em;
-    height: 4em;
-    position: absolute;
-    top: -0.05em;
-    left: calc(50% - 7em / 2);
-    color: white; 
-}
 header nav{
     width: 100%;
-    height: 100%;
-    /* background-color: #FED0D0; */
-    background-color: var(--navbar-color);
-	--color-background: #FAFAFA;
-	--button-color: #ED8A01;
-	--nav-color: #FD9FA1;
-}
-
-
-
-h1 {
-    color: var(--color-text);
-    padding-left: 3.5em;
-}
-
-footer{
-    width: 100%;
-}
-footer nav{
-    width: 90%;
-    /* height: 3em; */
-    background-color: var(--nav-color);
-    position: fixed;
-    bottom: 0;
-    border-top-right-radius: 30px;
-    border-top-left-radius: 30px;
-    box-shadow: 0px 30px 0px 25px #fff;  
+    height: 5em;
+    background-color:  var(--navbar-color) ;
 }
 header nav ul{  
     width: 100%;
     height: 100%; 
     padding: 0;
     margin: 0;
-}
-
-footer nav ul{   
     display: flex;
     flex-direction: row;
     justify-content: space-around;
     align-items: center;
-    /* background-color: antiquewhite; */
     list-style-type: none; 
-}  
+    position: relative;
+} 
+@media (min-width: 768px) {
+    header nav ul{
+        justify-content: center;
+        gap: 8em;
 
-header ul li{
-    padding: 0;
+    }
+
+
 }
-
-footer ul li a svg{
+header ul li{
     width: 4em;
     height: 4em;
+    border-radius: 50%; 
 }
-
+header nav ul li a{
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+}
 header ul li a svg{
     width: 3.5em;
     height: 3.5em;
-    color: #B8A1A9;
-    align-self: center;
-    
+    color: var(--svg-color);
+    align-self: center;  
+}
+.active{
+    background-color: var(--white);
+    transform: translateY(-2em);
+    box-shadow: 0 0.5em .5em rgba(0, 0, 0, 0.5);
 }
 
-footer ul button{
-    width: 6em;
-    height: 6em;
-    background-color: rgb(42, 46, 46);
-    border-radius: 50%;
-    
-}
-footer nav ul li:nth-of-type(2){
-    /* position: relative; */
-    position: absolute;
-    bottom: calc(100% - 30px);
-
-}
-.floating-nav a svg{
-    width: 4em;
-    height: 4em;
-    color: #B8A1A9;
-    /* order: 2;   */
-}
 /* stijling cocktails op home */
 
-/* Container voor cocktails */
 .cocktail-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
     display: flex;
     flex-wrap: wrap;
-    gap: 2vw;
     justify-content: center;
-    padding: 2vw;
+    gap: 1.5em;
 }
 
-/* Stijl voor elke cocktailkaart */
-.cocktail-card {
-    background-color: white;
+.cocktail-list li {
+    flex: 1 1 calc(25% - 1.5em); /* Zorgt voor 4 kolommen op grotere schermen */
+    max-width: 250px; /* Voorkomt dat ze te breed worden */
+    text-align: center;
+}
+
+/* Fix voor overlappende links */
+.cocktail-link {
+    display: block;
+    width: 100%;
+    height: 100%;
+    text-decoration: none;
+    color: inherit;
+    background-color: var(--white);
     border-radius: 1.2em;
     box-shadow: 0 0.3em 1em rgba(0, 0, 0, 0.1);
     overflow: hidden;
-    width: 20vw;
-    max-width: 25em;
-    max-height: 20em;
-    min-width: 15em;
-    text-align: center;
-    transition: transform 0.2s ease-in-out;
+    padding: 1em;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
-.cocktail-card:hover {
+.cocktail-link:hover {
     transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
 }
 
-/* Stijl voor de cocktailnaam */
-.cocktail-card h2 {
-    font-size: 1.5em;
-    margin: 0.5em;
-    color: #333;
+.cocktail-link h2 {
+    font-size: 1.3em;
+    margin: 0.5em 0;
+    font-weight: bold;
 }
 
-/* Stijl voor de afbeelding */
-.cocktail-card img {
+.cocktail-link img {
     width: 100%;
-    height: auto;
+    height: 150px; /* Behoudt een consistente hoogte */
+    border-radius: 10px;
+    object-fit: cover;
 }
 
-/* Responsiveness voor kleinere schermen */
+/* Responsive: 2 kolommen op kleinere schermen */
 @media (max-width: 768px) {
-    .cocktail-list {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .cocktail-card {
-        width: 80vw;
+    .cocktail-list li {
+        flex: 1 1 calc(50% - 1.5em);
     }
 }
 
-header nav ul li:nth-of-type(2){
+/* Responsive: 1 kolom op mobiele schermen */
+@media (max-width: 480px) {
+    .cocktail-list li {
+        flex: 1 1 100%;
+    }
+}
+
+
+
+#searchForm {
+    width: 80%;
+    margin: 2em auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+#searchInput {
+    width: 100%;
+    padding: 0.75em;
+    padding-right: 3.5em;
+    font-size: 1rem;
+    border: 2px solid var(--button-color);
+    border-radius: 25px;
+    outline: none;
+    background-color: #fff;
+    color: #333;
+    box-sizing: border-box;
+}
+
+#searchInput:focus {
+    border-color: var(--navbar-color); 
+}
+
+#searchForm button {
+    width: 3em;
     position: absolute;
-    bottom: 2.89em;
+    right: 0.5em; 
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.5em;
+}
+
+#searchForm button svg {
+    width: 1.2em;
+    height: 1.2em;
+    fill: #B8A1A9;
+}
+
+#searchForm button:hover svg {
+    fill: var(--navbar-color); 
+}
+
+/* Container for the cocktail details */
+.cocktail-details {
+    width: 80%;
+    margin: 2em auto;
+    padding: 20px;
+}
+
+/* Heading for the cocktail name */
+.cocktail-details h1 {
+    font-size: 2.5em;
+    text-align: center;
+    color: var(--color-text);
+    padding-left: 0;
+}
+
+/* Image of the cocktail */
+.cocktail-details img {
+    display: block;
+    margin: 2em auto;
+    max-width: 65%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Instructions section */
+.cocktail-details h3 {
+    font-size: 1.5em;
+    color: var(--color-text);
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+/* The paragraph containing the instructions */
+.cocktail-details p {
+    font-size: 1.1em;
+    line-height: 1.6;
+    color: var(--color-text);
+}
+
+/* Ingredients list */
+.cocktail-details ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 15px;
+}
+
+.cocktail-details li {
+    font-size: 1.1em;
+    margin-bottom: 8px;
+    color: #555;
+}
+/* Buttons */
+.cocktail-details button {
+    background-color: var(--button-color);
+    border-radius: 3em;
+    padding: 1em;
+    border: 0;
+    color: var(--white);
+    font-size: larger;
+    cursor: pointer;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+}
+.toggle-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    gap: 2em;
 }
