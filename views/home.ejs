@@ -5,8 +5,25 @@
     <header>
         <%- include('partials/header.ejs') %>
     </header>
-     <main>     
-        <h1>All cocktails</h1>
+    <main>    
+        <h1>The place to find cocktails!</h1> 
+        <section class="random-user-cocktails">
+            <h2>User Cocktails</h2>
+            <div class="cocktail-scroll-container">
+                <ul class="cocktail-scroll-list">
+                    <% userCocktails.forEach(cocktail => { %>
+                        <li class="cocktail-card">
+                            <a href="/cocktail/<%= cocktail.name %>" class="cocktail-link">
+                                <img src="/uploads/<%= cocktail.image %>" alt="<%= cocktail.name %>">
+                                <h3><%= cocktail.name %></h3>
+                            </a>
+                        </li>
+                    <% }) %>
+                </ul>
+            </div>
+        </section>
+
+        <h2>All Cocktails</h2>
         <form id="searchForm" action="/home" method="GET">
             <input id="searchInput" type="text" name="query" placeholder="Search for cocktails..." />
             <button type="submit">
@@ -24,6 +41,5 @@
             <% }) %>
         </ul>             
     </main>
-
 </body>
 </html>

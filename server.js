@@ -331,26 +331,24 @@ app.get("/cocktails/search", async (req, res) => {
 
 // 🔹 HOME PAGE & API FETCHING
 
-app.get("/home", async (req, res) => {
-  res.locals.currentpath = req.path;
-    
-  try {
-    const data = await fetchData(API + "popular.php");
-    // const cocktails = data.drinks;
-    const cocktails = data.drinks || [];
+app.get('/home', async (req, res) => {
+    res.locals.currentpath = req.path;
 
-    if (!cocktails) {
-      return res.status(404).send("Geen cocktails gevonden.");
+    try {
+        const data = await fetchData(API + 'popular.php');
+        const cocktails = data.drinks || [];
+
+        const allUserCocktails = await userCocktail.find();
+
+        const randomUserCocktails = allUserCocktails.sort(() => 0.5 - Math.random()).slice(0, 10);
+
+        res.render('home.ejs', { cocktails, userCocktails: randomUserCocktails });
+    } catch (error) {
+        console.error("Fout bij ophalen van cocktails:", error);
+        res.status(500).send("Er is een probleem met het laden van cocktails.");
     }
-
-        
-        
-    res.render("home.ejs", { cocktails });
-  } catch (error) {
-    console.error("Fout bij ophalen van cocktails:", error);
-    res.status(500).send("Er is een probleem met het laden van cocktails.");
-  }
 });
+
 
 
 app.get("/instructions", async (req, res) => {
@@ -396,13 +394,12 @@ async function popularCocktails(req, res) {
 app.use("/uploads", express.static("uploads"));
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "public/uploads/");
-    cb(null, "public/uploads/");
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
+    destination: (req, file, cb) => {
+        cb(null, 'public/uploads/');
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname));
+    }
 });
 const upload = multer({ storage: storage });
 
@@ -473,14 +470,40 @@ app.get("/usercocktails", async (req, res) => {
   }
 });
 
-app.get("/cocktail/:cocktailName", async (req, res) => {
-  try {
-    const cocktailName = req.params.cocktailName; 
-    const data = await fetchData(API + "search.php?s=" + cocktailName); 
-    const cocktail = data.drinks ? data.drinks[0] : null;
+import Cocktail from './models/Cocktail.js'; 
 
-    if (!cocktail) {
-      return res.status(404).send("Cocktail not found");
+
+app.get('/cocktail/:cocktailName', async (req, res) => {
+    try {
+        const cocktailName = req.params.cocktailName; 
+
+        console.log("🔍 Opgevraagde cocktail:", cocktailName);
+
+        const dbCocktail = await Cocktail.findOne({ 
+            name: { $regex: new RegExp("^" + cocktailName + "$", "i") } 
+        });
+
+        console.log("📌 Resultaat uit usercocktails:", dbCocktail);
+
+        if (dbCocktail) {
+            return res.render('instructies.ejs', { cocktail: dbCocktail, source: 'database' });
+        }
+
+        const data = await fetchData(API + 'search.php?s=' + cocktailName); 
+        const apiCocktail = data.drinks ? data.drinks[0] : null;
+
+        console.log("📌 Resultaat uit API:", apiCocktail);
+
+        if (!apiCocktail) {
+            return res.status(404).send('Cocktail not found');
+        }
+
+        res.render('instructies.ejs', { cocktail: apiCocktail, source: 'api' });
+
+    } catch (error) {
+        console.error("❌ Fout bij ophalen cocktail:", error);
+        res.status(500).send("Er is een probleem met het laden van de cocktail.");
+
     }
 
     res.render("instructies.ejs", {
@@ -491,6 +514,9 @@ app.get("/cocktail/:cocktailName", async (req, res) => {
     res.status(500).send("Error fetching cocktail details.");
   }
 });
+
+
+
 
 
 // 🔹 START SERVER
