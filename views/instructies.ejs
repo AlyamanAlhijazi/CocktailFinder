@@ -7,23 +7,33 @@
     </header>
     <main>
         <div class="cocktail-details">
-            <h1><%= cocktail.strDrink %></h1>
-            <img src="<%= cocktail.strDrinkThumb %>" alt="<%= cocktail.strDrink %>">
+            <h1><%= cocktail.name || cocktail.strDrink %></h1>
+            <img src="<%= source === 'database' ? '/uploads/' + cocktail.image : cocktail.strDrinkThumb %>" 
+                 alt="<%= cocktail.name || cocktail.strDrink %>">
+            
             <div class="toggle-buttons">
                 <button>Ingredients</button>
                 <button>Instructions</button>
             </div> 
+            
             <div>
                 <h3>Ingredients:</h3>
                 <ul>
-                    <% for (let i = 1; i <= 15; i++) { %>
-                        <% if (cocktail['strIngredient' + i]) { %>
-                            <li><%= cocktail['strIngredient' + i] %> - <%= cocktail['strMeasure' + i] || 'To taste' %></li>
+                    <% if (source === 'database') { %> 
+                        <% cocktail.ingredients.forEach((ingredient, index) => { %>
+                            <li><%= ingredient %> - <%= cocktail.measurements[index] || 'To taste' %></li>
+                        <% }) %>
+                    <% } else { %>
+                        <% for (let i = 1; i <= 15; i++) { %>
+                            <% if (cocktail['strIngredient' + i]) { %>
+                                <li><%= cocktail['strIngredient' + i] %> - <%= cocktail['strMeasure' + i] || 'To taste' %></li>
+                            <% } %>
                         <% } %>
                     <% } %>
                 </ul>
+
                 <h3>Instructions</h3>
-                <p><%= cocktail.strInstructions %></p>
+                <p><%= source === 'database' ? 'No instructions available' : cocktail.strInstructions %></p>
             </div>  
         </div>
     </main>
