@@ -78,81 +78,85 @@ const reviewSchema = new mongoose.Schema({
 
 // 📌 COCKTAIL MODEL
 const cocktailSchema = new mongoose.Schema({
-  name: { 
-    type: String, 
-    required: true,
-    trim: true,
-    maxlength: 100,
-  },
-  ingredients: [{ 
-    name:{
-      type: String,
+    name: { 
+      type: String, 
       required: true,
       trim: true,
+      maxlength: 100,
     },
-    amount:{
-      type: Number, 
-      required: true,
-      trim: true,
-    },
-    unit: {
-      type: String,
-      required: true,
-      enum: ["ml", "cl", "oz"],
-    },
-    isAlcoholic: {
-      type: Boolean,
-      default: false,
-    },
+    ingredients: [{ 
+      name: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+      amount: {
+        type: Number, 
+        required: true,
+        trim: true,
+      },
+      unit: {
+        type: String,
+        required: true,
+        enum: ["ml", "cl", "oz"],
+      },
+      isAlcoholic: {
+        type: Boolean,
+        default: false,
+      },
+      alcoholPercentage: {
+        type: Number,
+        min: 0,
+        max: 100,
+      },
+    }],
     alcoholPercentage: {
       type: Number,
+      default: 0,
       min: 0,
       max: 100,
     },
-  }],
-  alcoholPercentage: {
-    type: Number,
-    default: 0,
-    min: 0,
-    max: 100,
-  },
-  strength: {
-    type: String,
-    enum: ["Light", "Medium", "Strong"],
-    default: "Medium",
-  },
-  instructions: { 
-    type: String, 
-    required: true, 
-    trim: true, 
-  },
-  category: { 
-    type: String,
-    required: true,
-    enum: ["Alcoholic", "Non-alcoholic", "Optional alcohol"],
-  },
-  glassType: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  image: {
-    type: String,
-    required: true,
-  },
-  createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  reviews: [reviewSchema],
-  averageRating: {
-    type: Number,
-    default: 0,
-    min: 0,
-    max: 5,
-  },
-}, { timestamps: true });
+    strength: {
+      type: String,
+      enum: ["Light", "Medium", "Strong"],
+      default: "Medium",
+    },
+    instructions: { 
+      type: String, 
+      required: true, 
+      trim: true, 
+    },
+    category: { 
+      type: String,
+      required: true,
+      enum: ["Alcoholic", "Non-alcoholic", "Optional alcohol"],
+    },
+    glassType: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    image: {
+      type: String,
+      required: true,
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    reviews: [reviewSchema],
+    averageRating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+    },
+  }, { 
+    collection: "usercocktails", 
+    timestamps: true 
+  });
+  
 
 //CL OMZETTEN NAAR ML
 function convertToMl(amount, unit){
@@ -403,62 +407,41 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-
-// 🔹 COCTAILS UPLOADEN (POST)
-// app.post('/upload-cocktail', upload.single('image'), async (req, res) => {
-//     try {
-//         const { name, ingredients, measurements, category, alcohol } = req.body;
-//         const image = req.file ? req.file.filename : null;
-
-//         const newCocktail = new userCocktail({
-//             name,
-//             ingredients: ingredients.split(','),
-//             measurements,
-//             category,
-//             alcohol: alcohol === 'true',
-//             image
-//         });
-
-//         await newCocktail.save();
-//         res.status(201).json({ message: 'Cocktail uploaded successfully!', cocktail: newCocktail });
-//     } catch (error) {
-//         res.status(500).json({ error: 'Error uploading cocktail' });
-//     }
-// });
 app.post("/upload", upload.single("image"), (req, res) => {
-  const { name, ingredientName, ingredientAmount, ingredientUnit, isAlcoholic, alcoholPercentage, instructions, category, glassType } = req.body;
-
-  const ingredients = ingredientName.map((name, index) => ({
-    name: name,
-    amount: parseFloat(ingredientAmount[index]),
-    unit: ingredientUnit[index],
-    isAlcoholic: isAlcoholic[index] === "on",
-    alcoholPercentage: isAlcoholic[index] === "on" ? (parseFloat(alcoholPercentage[index]) || 0) : 0,
-  }));
-
-  const createdBy = req.session.userId;
-
-  const newCocktail = new userCocktail({
-    name,
-    ingredients,
-    instructions,
-    category,
-    glassType,
-    image: req.file.path,
-    createdBy: createdBy // Zorg ervoor dat je de gebruiker-ID hebt
+    const { name, ingredientName, ingredientAmount, ingredientUnit, isAlcoholic, alcoholPercentage, instructions, category, glassType } = req.body;
+  
+    const ingredients = ingredientName.map((name, index) => ({
+      name: name,
+      amount: parseFloat(ingredientAmount[index]),
+      unit: ingredientUnit[index],
+      isAlcoholic: isAlcoholic[index] === "on",
+      alcoholPercentage: isAlcoholic[index] === "on" ? (parseFloat(alcoholPercentage[index]) || 0) : 0,
+    }));
+  
+    const createdBy = req.session.userId;
+  
+    const newCocktail = new userCocktail({
+      name,
+      ingredients,
+      instructions,
+      category,
+      glassType,
+      image: req.file.filename,
+      createdBy: createdBy // Zorg ervoor dat je de gebruiker-ID hebt
+    });
+  
+    if (!req.user) {
+      return res.status(401).send('Gebruiker niet ingelogd');
+    }
+  
+    newCocktail.save()
+      .then(() => res.redirect("/profile"))
+      .catch(err => {
+          console.error("Error saving cocktail:", err);
+          res.status(400).send("Error saving cocktail");
+      });
   });
   
-  if (!req.user) {
-    return res.status(401).send('Gebruiker niet ingelogd');
-}
-  newCocktail.save()
-    .then(() => res.redirect("/profile"))
-    .catch(err => {
-        console.error("Error saving cocktail:", err);
-        res.status(400).send("Error saving cocktail")
-
-    });
-});
 
 
 app.get("/usercocktails", async (req, res) => {
@@ -469,8 +452,6 @@ app.get("/usercocktails", async (req, res) => {
     res.status(500).json({ error: "Error fetching cocktails" });
   }
 });
-
-import Cocktail from './models/Cocktail.js'; 
 
 
 app.get('/cocktail/:cocktailName', async (req, res) => {
@@ -503,17 +484,9 @@ app.get('/cocktail/:cocktailName', async (req, res) => {
     } catch (error) {
         console.error("❌ Fout bij ophalen cocktail:", error);
         res.status(500).send("Er is een probleem met het laden van de cocktail.");
-
     }
-
-    res.render("instructies.ejs", {
-      cocktail: cocktail,
-    });
-  } catch (error) {
-    console.error("Error fetching cocktail details:", error);
-    res.status(500).send("Error fetching cocktail details.");
-  }
 });
+
 
 
 

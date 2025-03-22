@@ -20,8 +20,8 @@
                 <h3>Ingredients:</h3>
                 <ul>
                     <% if (source === 'database') { %> 
-                        <% cocktail.ingredients.forEach((ingredient, index) => { %>
-                            <li><%= ingredient %> - <%= cocktail.measurements[index] || 'To taste' %></li>
+                        <% cocktail.ingredients.forEach((ingredient) => { %>
+                            <li><%= ingredient.name %> - <%= ingredient.amount %> <%= ingredient.unit %></li>
                         <% }) %>
                     <% } else { %>
                         <% for (let i = 1; i <= 15; i++) { %>
@@ -30,10 +30,9 @@
                             <% } %>
                         <% } %>
                     <% } %>
-                </ul>
-
+                </ul>                
                 <h3>Instructions</h3>
-                <p><%= source === 'database' ? 'No instructions available' : cocktail.strInstructions %></p>
+                <p><%= source === 'database' ? cocktail.instructions : cocktail.strInstructions || "No instructions available" %></p>
             </div>  
         </div>
     </main>
