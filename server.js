@@ -458,13 +458,9 @@ app.get('/cocktail/:cocktailName', async (req, res) => {
     try {
         const cocktailName = req.params.cocktailName; 
 
-        console.log("🔍 Opgevraagde cocktail:", cocktailName);
-
         const dbCocktail = await Cocktail.findOne({ 
             name: { $regex: new RegExp("^" + cocktailName + "$", "i") } 
         });
-
-        console.log("📌 Resultaat uit usercocktails:", dbCocktail);
 
         if (dbCocktail) {
             return res.render('instructies.ejs', { cocktail: dbCocktail, source: 'database' });
@@ -472,8 +468,6 @@ app.get('/cocktail/:cocktailName', async (req, res) => {
 
         const data = await fetchData(API + 'search.php?s=' + cocktailName); 
         const apiCocktail = data.drinks ? data.drinks[0] : null;
-
-        console.log("📌 Resultaat uit API:", apiCocktail);
 
         if (!apiCocktail) {
             return res.status(404).send('Cocktail not found');
@@ -486,6 +480,35 @@ app.get('/cocktail/:cocktailName', async (req, res) => {
         res.status(500).send("Er is een probleem met het laden van de cocktail.");
     }
 });
+
+// Random cocktail
+app.get("/random", async (req, res) => {
+    try {
+        let cocktail;
+        let source;
+        if (Math.random() < 0.1) {
+            const cocktails = await userCocktail.find();
+            if (cocktails.length > 0) {
+                cocktail = cocktails[Math.floor(Math.random() * cocktails.length)];
+                source = "database";
+            }
+        }
+        if (!cocktail) {
+            const response = await fetch("https://www.thecocktaildb.com/api/json/v2/961249867/random.php");
+            const data = await response.json();
+            cocktail = data.drinks[0];
+            source = "api";
+        }
+
+        res.render("instructies", { cocktail, source });
+
+    } catch (err) {
+        console.error("❌ Error in /random route:", err);
+        res.status(500).send("Er is iets misgegaan");
+    }
+});
+
+
 
 
 
