@@ -7,6 +7,10 @@
     </header>
     <main>    
         <h1>The place to find cocktails!</h1> 
+        <section class="surprise-me">
+            <h3>Dont know what to make?</h3>
+            <button onclick="window.location.href='/random'">Surprise Me! </button>
+        </section>
         <section class="random-user-cocktails">
             <div class="view-all">
                 <h2>User Cocktails</h2>
@@ -25,24 +29,19 @@
                 </ul>
             </div>
         </section>
-
-        <h2>All Cocktails</h2>
-        <form id="searchForm" action="/home" method="GET">
-            <input id="searchInput" type="text" name="query" placeholder="Search for cocktails..." />
-            <button type="submit">
-                <svg aria-labelledby="title desc" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 19.9 19.7"><title id="title">Search Icon</title><desc id="desc">A magnifying glass icon.</desc><g class="search-path" fill="none" stroke="#848F91"><path stroke-linecap="square" d="M18.5 18.3l-5.4-5.4"/><circle cx="8" cy="8" r="7"/></g></svg>
-            </button>
-        </form>
-        <ul class="cocktail-list">
-            <% cocktails.forEach(cocktail => { %>
-                <li>
-                    <a href="/cocktail/<%= cocktail.strDrink %>" class="cocktail-link">
-                        <h3><%= cocktail.strDrink %></h3>
-                        <img loading="lazy" src="<%= cocktail.strDrinkThumb %>" alt="<%= cocktail.strDrink %>">
-                    </a>
-                </li>
-            <% }) %>
-        </ul>             
+        <section>
+            <h2>All Cocktails</h2>
+            <ul class="cocktail-list">
+                <% cocktails.forEach(cocktail => { %>
+                    <li>
+                        <a href="/cocktail/<%= cocktail.strDrink %>" class="cocktail-link">
+                            <h3><%= cocktail.strDrink %></h3>
+                            <img loading="lazy" src="<%= cocktail.strDrinkThumb %>" alt="<%= cocktail.strDrink %>">
+                        </a>
+                    </li>
+                <% }) %>
+            </ul> 
+        </section>              
     </main>
 </body>
 </html>
