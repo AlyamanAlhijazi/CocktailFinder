@@ -112,7 +112,35 @@ function addIngredient() {
             <option value="oz">oz</option>
         </select>
         <input type="checkbox" name="isAlcoholic[]"> Alcoholic
-        <input type="number" name="alcoholPercentage[]" placeholder="Alcohol %" min="0" max="100" step="0.1"> %
+        <input type="number" name="alcoholPercentage[]" placeholder="Alcohol %" min="0" max="100" step="0.1">
     `;
   ingredientsDiv.appendChild(newRow);
 }
+function removeIngredient() {
+  const ingredientsDiv = document.getElementById("ingredients");
+  const ingredientRows = ingredientsDiv.getElementsByClassName("ingredient-row");
+
+  if (ingredientRows.length > 1) {
+    ingredientsDiv.removeChild(ingredientRows[ingredientRows.length - 1]);
+  } else {
+    alert("You must have at least one ingredient.");
+  }
+}
+
+// Image displaying
+document.getElementById("image").addEventListener("change", function(event) {
+  const file = event.target.files[0];
+  if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+          const preview = document.getElementById("imagePreview");
+          const uploadBox = document.getElementById("uploadBox");
+
+          preview.src = e.target.result;
+          preview.style.display = "block"; // Show image
+          uploadBox.style.display = "none"; // Hide upload box
+      };
+      reader.readAsDataURL(file);
+  }
+});
+
