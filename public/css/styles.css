@@ -459,6 +459,41 @@ input[type="file"] {
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
 
+/* rating */
+.rating {
+    display: inline-block;
+}
+
+.rating input {
+    display: none;
+}
+
+.rating label {
+    float: right;
+    padding: 10px;
+    font-size: 30px;
+    color: #444;
+    transition: all 0.2s;
+}
+
+.rating input:checked ~ label {
+    color: #FDD017;
+}
+
+.rating label:hover,
+.rating label:hover ~ label {
+    color: #FDD017;
+}
+
+.favorite-btn {
+    background-color: #f0f0f0;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+
 
 /* Media queries */
 @media (max-width: 768px) {
