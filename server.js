@@ -311,7 +311,67 @@ app.post("/logout", (req, res) => {
   }
 });
 
+// 🔹 REVIEW (POST)
+app.post("/cocktail/:cocktailId/review", async (req, res) => {
+    const { cocktailId } = req.params;
+    const { rating, comment } = req.body;
+    const userId = req.session.userId; // Haal de userId uit de sessie
+  
+    try {
+      // Zoek de cocktail
+      const cocktail = await userCocktail.findById(cocktailId);
+  
+      if (!cocktail) {
+        return res.status(404).send("Cocktail niet gevonden");
+      }
+  
+      // Maak een nieuwe review
+      const newReview = {
+        user: userId,
+        rating: parseInt(rating),
+        comment: comment,
+      };
+  
+      // Voeg de review toe aan de cocktail
+      cocktail.reviews.push(newReview);
+  
+      // Update de gemiddelde rating
+      let totalRating = 0;
+      cocktail.reviews.forEach((review) => {
+        totalRating += review.rating;
+      });
+      cocktail.averageRating = totalRating / cocktail.reviews.length;
+  
+      // Sla de cocktail op
+      await cocktail.save();
+  
+      res.redirect(`/cocktail/${cocktail.name}`); // Redirect naar de cocktailpagina
+    } catch (error) {
+      console.error("Fout bij het opslaan van de review:", error);
+      res.status(500).send("Er is een fout opgetreden bij het opslaan van de review.");
+    }
+  });
 
+// // 🔹 REVIEW (GET)
+// app.get("/cocktail/:cocktailName", async (req, res) => {
+//     try {
+//       const cocktailName = req.params.cocktailName; 
+//       const data = await fetchData(API + "search.php?s=" + cocktailName); 
+//       const cocktail = data.drinks ? data.drinks[0] : null;
+  
+//       if (!cocktail) {
+//         return res.status(404).send("Cocktail not found");
+//       }
+  
+//       res.render("instructies.ejs", {
+//         cocktail: cocktail,
+//       });
+//     } catch (error) {
+//       console.error("Error fetching cocktail details:", error);
+//       res.status(500).send("Error fetching cocktail details.");
+//     }
+//   });
+  
 // 🔹 BEVEILIGDE ROUTE (bijvoorbeeld: Favorieten, uploaden van cocktails)
 app.get("/cocktails/favorites", (req, res) => {
   if (!req.session.userId) {
@@ -460,10 +520,10 @@ app.get('/cocktail/:cocktailName', async (req, res) => {
 
         const dbCocktail = await Cocktail.findOne({ 
             name: { $regex: new RegExp("^" + cocktailName + "$", "i") } 
-        });
+        }).populate("reviews.user");
 
         if (dbCocktail) {
-            return res.render('instructies.ejs', { cocktail: dbCocktail, source: 'database' });
+            return res.render('instructies.ejs', { cocktail: dbCocktail, source: 'database', reviews: dbCocktail.reviews });
         }
 
         const data = await fetchData(API + 'search.php?s=' + cocktailName); 
@@ -473,7 +533,7 @@ app.get('/cocktail/:cocktailName', async (req, res) => {
             return res.status(404).send('Cocktail not found');
         }
 
-        res.render('instructies.ejs', { cocktail: apiCocktail, source: 'api' });
+        res.render('instructies.ejs', { cocktail: apiCocktail, source: 'api', reviews: [] });
 
     } catch (error) {
         console.error("❌ Fout bij ophalen cocktail:", error);
