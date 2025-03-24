@@ -10,7 +10,7 @@
 	--color-background: #ffdbdb;
 	--nav-color: #ED8A01;
 	--button-color: linear-gradient(135deg, #ff9a8b, #ff6a88, #ff99ac);
-    --navbar-color: #78CCEE;
+    --navbar-gradient: linear-gradient(10deg, #78CCEE, #4A90E2);
     --white: white;
     --svg-color: #011627;
 }
@@ -46,7 +46,7 @@ header{
 header nav{
     width: 100%;
     height: 5em;
-    background-color:  var(--navbar-color) ;
+    background: var(--navbar-gradient);
 }
 header nav ul{  
     width: 100%;
@@ -80,9 +80,16 @@ header ul li a svg{
     align-self: center;  
 }
 .active{
-    background-color: var(--white);
+    background: var(--navbar-gradient);
     transform: translateY(-2em);
     box-shadow: 0 0.5em .5em rgba(0, 0, 0, 0.5);
+}
+
+#home, #plus, #profile{
+    fill: var(--white);
+}
+#home.active path{
+    stroke: var(--color-text);
 }
 
 /* stijling cocktails op home */
@@ -646,6 +653,7 @@ input[type="file"] {
 
 .rating input:checked ~ label {
     color: #FDD017;
+
 }
 
 .rating label:hover,
