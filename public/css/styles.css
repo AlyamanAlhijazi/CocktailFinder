@@ -9,21 +9,31 @@
 	--color-text: #011627;
 	--color-background: #ffdbdb;
 	--nav-color: #ED8A01;
-	--button-color: #FD9FA1;
+	--button-color: linear-gradient(135deg, #ff9a8b, #ff6a88, #ff99ac);
     --navbar-color: #78CCEE;
     --white: white;
     --svg-color: #011627;
 }
-body{
+body {
     font-family: 'Nunito', sans-serif;
-    height: 100%;
-    overflow-x: hidden; 
-    /* width: 100vw; */
+    margin: 0;
+    padding: 0;
+    padding-bottom: 10em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh; 
+    width: 100vw;
 }
+
 
 h1 {
     color: var(--color-text);
-    padding-left: 3em;
+    text-align: center;
+}
+h2 {
+    color: var(--color-text);
+    padding-left: 2.5em;
 }
 header{
     width: 100%;
@@ -50,15 +60,7 @@ header nav ul{
     list-style-type: none; 
     position: relative;
 } 
-@media (min-width: 768px) {
-    header nav ul{
-        justify-content: center;
-        gap: 8em;
 
-    }
-
-
-}
 header ul li{
     width: 4em;
     height: 4em;
@@ -85,6 +87,62 @@ header ul li a svg{
 
 /* stijling cocktails op home */
 
+.random-user-cocktails {
+    margin: 1.3em 0;
+    overflow: hidden;
+}
+
+.cocktail-scroll-container {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    display: flex;
+    gap: 1em;
+    padding: 0.7em 0;
+    white-space: nowrap;
+    padding-left: 3em;
+    scrollbar-width: none; 
+    -ms-overflow-style: none;
+}
+.cocktail-scroll-container::-webkit-scrollbar {
+    display: none; 
+}
+
+.cocktail-scroll-list {
+    display: flex;
+    gap: 1em;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.cocktail-scroll-list img {
+    width: 15vw; 
+    height: 20vw;
+}
+
+.cocktail-card {
+    flex: 0 0 auto;
+    max-width: 20em;
+    scroll-snap-align: center;
+    text-align: center;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+.cocktail-card img {
+    width: 100%;
+    height: auto;
+    border-radius: 10px 10px 0 0;
+}
+
+.cocktail-card h3 {
+    margin: 0.6em;
+    font-size: 16px;
+}
+
+
 .cocktail-list {
     list-style: none;
     padding: 0;
@@ -96,12 +154,11 @@ header ul li a svg{
 }
 
 .cocktail-list li {
-    flex: 1 1 calc(25% - 1.5em); /* Zorgt voor 4 kolommen op grotere schermen */
-    max-width: 250px; /* Voorkomt dat ze te breed worden */
+    flex: 1 1 calc(25% - 1.5em); 
+    max-width: 20em;
     text-align: center;
 }
 
-/* Fix voor overlappende links */
 .cocktail-link {
     display: block;
     width: 100%;
@@ -129,80 +186,29 @@ header ul li a svg{
 
 .cocktail-link img {
     width: 100%;
-    height: 150px; /* Behoudt een consistente hoogte */
+    height: 10em; 
     border-radius: 10px;
     object-fit: cover;
 }
-
-/* Responsive: 2 kolommen op kleinere schermen */
-@media (max-width: 768px) {
-    .cocktail-list li {
-        flex: 1 1 calc(50% - 1.5em);
-    }
+.view-all {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
 }
 
-/* Responsive: 1 kolom op mobiele schermen */
-@media (max-width: 480px) {
-    .cocktail-list li {
-        flex: 1 1 100%;
-    }
+.view-all h2 {
+    margin: 0; 
+}
+.view-all a {
+    text-decoration: none; 
+    margin: 0;
+    padding-right: 5em;
 }
 
-
-
-#searchForm {
-    width: 80%;
-    margin: 2em auto;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-}
-
-#searchInput {
-    width: 100%;
-    padding: 0.75em;
-    padding-right: 3.5em;
-    font-size: 1rem;
-    border: 2px solid var(--button-color);
-    border-radius: 25px;
-    outline: none;
-    background-color: #fff;
-    color: #333;
-    box-sizing: border-box;
-}
-
-#searchInput:focus {
-    border-color: var(--navbar-color); 
-}
-
-#searchForm button {
-    width: 3em;
-    position: absolute;
-    right: 0.5em; 
-    top: 50%;
-    transform: translateY(-50%);
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 0.5em;
-}
-
-#searchForm button svg {
-    width: 1.2em;
-    height: 1.2em;
-    fill: #B8A1A9;
-}
-
-#searchForm button:hover svg {
-    fill: var(--navbar-color); 
-}
-
-/* Container for the cocktail details */
 .cocktail-details {
     width: 80%;
     margin: 2em auto;
-    padding: 20px;
+    padding: 1.5em;
 }
 
 /* Heading for the cocktail name */
@@ -217,7 +223,7 @@ header ul li a svg{
 .cocktail-details img {
     display: block;
     margin: 2em auto;
-    max-width: 65%;
+    max-height: 25vw;
     height: auto;
     border-radius: 8px;
     box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
@@ -227,8 +233,8 @@ header ul li a svg{
 .cocktail-details h3 {
     font-size: 1.5em;
     color: var(--color-text);
-    margin-top: 20px;
-    margin-bottom: 10px;
+    margin-top: 1.3em;
+    margin-bottom: 0.1em;
 }
 
 /* The paragraph containing the instructions */
@@ -242,12 +248,11 @@ header ul li a svg{
 .cocktail-details ul {
     list-style: none;
     padding: 0;
-    margin-top: 15px;
+    margin-top: 1em;
 }
 
 .cocktail-details li {
     font-size: 1.1em;
-    margin-bottom: 8px;
     color: #555;
 }
 /* Buttons */
@@ -264,8 +269,8 @@ header ul li a svg{
 .toggle-buttons {
     display: flex;
     justify-content: center;
-    gap: 10px;
-    margin-bottom: 20px;
+    gap: 1em;
+    margin-bottom: 1.3em;
     gap: 2em;
 }
 
@@ -435,4 +440,290 @@ display: none;
         
     }
 
+}
+/* Forms */
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5em;
+    width: 80vw;
+    max-width: 60em;
+    padding: 2em;
+    padding-bottom: 3em;
+}
+
+/* Labels */
+label {
+    font-size: 1.2em;
+    font-weight: bold;
+    display: block;
+}
+.image-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.image-upload input[type="file"] {
+    display: none; 
+}
+
+.upload-box {
+    margin-top: 2em;
+    width: 100%;
+    max-width: 20em;
+    height: 12em;
+    border-radius: 1em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background-color: #f8f8f8;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.upload-box span {
+    color: var(--color-text);
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.upload-box:hover {
+    background-color: var(--button-color);
+    color: var(--white);
+    border: 2px dashed var(--nav-color);
+}
+
+.upload-box:active {
+    transform: scale(0.95);
+}
+
+#imagePreview {
+    margin-top: 2em;
+    max-width: 100%;
+    max-height: 12em;
+    border-radius: 1em;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+    display: none;
+}
+
+/* Input fields */
+input, select, textarea {
+    width: 70%;
+    padding: 0.8em;
+    font-size: 1em;
+    border: 0.1em solid #ccc;
+    border-radius: 0.8em;
+    outline: none;
+}
+
+/* Textarea */
+textarea {
+    height: 10em;
+    resize: none;
+}
+
+/* Buttons */
+button {
+    background: var(--button-color);
+    color: white;
+    border: none;
+    padding: 1em 2em;
+    font-size: 1.2em;
+    border-radius: 1em;
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
+}
+
+button:hover {
+    transform: scale(1.05);
+}
+
+#ingredients {
+    width: 100%;
+}
+.ingredient-row{
+    padding-bottom: 2em;
+}
+
+.ingredient-row {
+    display: flex;
+    gap: 1em;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.ingredient-row input[type="text"],
+.ingredient-row input[type="number"],
+.ingredient-row select {
+    width: 20%;
+    min-width: 8em;
+}
+
+input[type="checkbox"] {
+    width: 1.5em;
+    height: 1.5em;
+}
+
+.category-glass-container {
+    display: flex;
+    justify-content: center;
+    gap: 1em;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.category-glass-container label,
+.category-glass-container select,
+.category-glass-container input {
+    width: 45%;
+    min-width: 12em;
+}
+
+input[type="file"] {
+    border: none;
+    padding: 0;
+    width: 100%;
+}
+
+/* suprise me */
+.surprise-me {
+    text-align: center;
+    background: var(--button-color);
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    margin: 2rem auto;
+    max-width: 500px;
+}
+
+.surprise-me h3 {
+    font-size: 1.8rem;
+    color: #fff;
+    margin-bottom: 1rem;
+    font-weight: bold;
+}
+
+.surprise-me button {
+    background: #ffeb3b;
+    color: #333;
+    font-size: 1.4rem;
+    font-weight: bold;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+.surprise-me button:hover {
+    background: #ffd700;
+    transform: scale(1.1);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* rating */
+.rating {
+    display: inline-block;
+}
+
+.rating input {
+    display: none;
+}
+
+.rating label {
+    float: right;
+    padding: 10px;
+    font-size: 30px;
+    color: #444;
+    transition: all 0.2s;
+}
+
+.rating input:checked ~ label {
+    color: #FDD017;
+}
+
+.rating label:hover,
+.rating label:hover ~ label {
+    color: #FDD017;
+}
+
+.favorite-btn {
+    background-color: #f0f0f0;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+
+
+/* Media queries */
+@media (max-width: 768px) {
+    form {
+        width: 90vw;
+        max-width: none;
+        padding: 1.5em;
+    }
+
+    input, select, textarea, button {
+        width: 100%;
+    }
+
+    .ingredient-row,
+    .category-glass-container {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .ingredient-row input,
+    .ingredient-row select,
+    .category-glass-container select {
+        width: 100%;
+    }
+
+    input[type="checkbox"] {
+        width: 1.2em;
+        height: 1.2em;
+    }
+
+    label {
+        text-align: center;
+    }
+
+    .toggle-buttons {
+        flex-direction: column;
+        gap: 1em;
+        width: 100%;
+    }
+
+    button {
+        width: 100%;
+    }
+    
+}
+
+@media (max-width: 480px) {
+    .cocktail-list li {
+        flex: 1 1 100%;
+    }
+    .cocktail-details img{
+        max-height: 65vw;
+    }
+    h2{
+        padding-left: 1.6em;
+    }
+    .cocktail-scroll-container {
+        padding-left: 0em;
+    }
+    .view-all a {
+        text-decoration: none; 
+        margin: 0;
+        padding-right: 2em;
+    }
 }
