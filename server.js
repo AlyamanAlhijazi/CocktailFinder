@@ -413,7 +413,7 @@ app.get("/profile", async (req, res) => {
 
 
 
-const API = "https://www.thecocktaildb.com/api/json/v2/961249867/";
+const API = process.env.API_URL //iedereen URL van api even in env zetten
 
 async function fetchData(url) {
   const response = await fetch(url);
@@ -558,3 +558,120 @@ app.get("/random", async (req, res) => {
 // 🔹 START SERVER
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server draait op http://localhost:${PORT}`));
+
+
+// OPHALEN EN FILTEREN API
+//variabelen om toegepaste filters in op te slaan
+let ingredients = [];
+let alcoholic = 0;    // 0= no prefrance, 1= alcaholic, 2 = non_alcaholic
+let category = ''
+let glass = ''
+
+// ophalen van ingestelde filters en opslaan in variabelen
+app.post('/filter-list', (req, resp) => {
+    console.log(req.body);
+    ingredients = req.body.ingredients;
+    alcoholic = parseInt(req.body.alcoholic);
+    category = req.body.category;
+    glass = req.body.glass;
+    return resp.redirect('/filter');
+})
+
+//filter op alcahol
+function alcohol(object) {
+    if (alcoholic == 1 && object.strAlcoholic == 'Alcoholic') {
+        return true;
+    } else if (alcoholic == 2 && object.strAlcoholic == 'Non alcoholic') {
+        return true;
+    } else if (alcoholic == 0) {
+        return true;
+    } else {
+        return true;
+    }
+}
+//filter op cetegorie
+function categoryFilter(object) {
+    if (category != '') {
+        return object.strCategory == category;
+    } else {
+        return true;
+    }
+
+
+}
+//filteren op glas
+function glassFilter(object) {
+    if (glass != '') {
+        return object.strGlass == glass;
+    } else {
+        return true;
+    }
+
+
+}
+//filteren op ingredienten
+function filter_ingredients(object) {
+    // DIT MOET IK NOG EFFE FIXEN KOMT GOED :)
+    // const ingredientKeys = Object.keys(object).filter((element) => element.includes("strIngredient"));
+    // const matchingFilters =[];
+    // ingredientKeys.forEach((element) => {
+    //     const ingredientValue = object[element] ?? '';
+    //     if(ingredients.includes(ingredientValue.toLowerCase())){
+    //         matchingFilters.push(ingredientValue)
+    //     }
+    // })
+    // // TODO: MAKE IT SO THAT IT SUPPORTS ONLY ONE INGREDIENT MATCHES
+    // return matchingFilters.length === ingredients.length;
+    return true
+}
+
+// ophalen van alle drankjes en in array zetten zodat ze niet meerdere keren opgehaald hoeven worden
+let cocktail_list = [];
+async function fetch_letter() {
+    if (cocktail_list.length === 0) {
+        let drink_list = [];
+        const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+        for (let i = 0; i < letters.length; i++) {
+            let letter = letters[i];
+            const data = await fetchData(API + '/search.php?f=' + letter);
+            drink_list = drink_list.concat(data.drinks);
+        };
+        cocktail_list = drink_list.filter(drink => drink);
+    }
+
+    return cocktail_list;
+}
+
+//functie die je moet aanroepen al wil je filteren
+async function filteren() {
+    let detail_list = await fetch_letter();
+    detail_list = detail_list.filter(categoryFilter);
+    detail_list = detail_list.filter(alcohol);
+    detail_list = detail_list.filter(glassFilter);
+    detail_list = detail_list.filter(filter_ingredients);
+    return (detail_list);
+}
+
+//ophalen van lijst van opties voor filter
+async function fetch_list(type) {
+    let list = [];
+    try {
+        const data = await fetchData(API + 'list.php?' + type + '=list');
+        list = data.drinks;
+    } catch (e) {
+        console.log(e);
+    }
+    return (list);
+}
+
+app.get('/filter', show_filter);
+
+
+//filters laten zien  
+async function show_filter(req, res) {
+    let categories = await fetch_list('c');
+    let glasses = await fetch_list('g');
+    let ingredients = await fetch_list('i');
+    let cocktails = await filteren();
+    res.render('test', { categories, glasses, ingredients, cocktails });
+};

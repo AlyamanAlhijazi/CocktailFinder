@@ -1,0 +1,12 @@
+<ul class="cocktail-list"></ul>
+    <% cocktails.forEach(cocktail=> { %>
+        <li>
+            <a href="/cocktail/<%= cocktail.strDrink %>" class="cocktail-link">
+                <h2>
+                    <%= cocktail.strDrink %>
+                </h2>
+                <img src="<%= cocktail.strDrinkThumb %>" alt="<%= cocktail.strDrink %>">
+            </a>
+        </li>
+    <%}) %>
+</ul>
