@@ -352,26 +352,47 @@ app.post("/cocktail/:cocktailId/review", async (req, res) => {
     }
   });
 
-// // 🔹 REVIEW (GET)
-// app.get("/cocktail/:cocktailName", async (req, res) => {
-//     try {
-//       const cocktailName = req.params.cocktailName; 
-//       const data = await fetchData(API + "search.php?s=" + cocktailName); 
-//       const cocktail = data.drinks ? data.drinks[0] : null;
+
+// Middleware om API-cocktails op te slaan in de database
+const saveApiCocktailToDB = async (req, res, next) => {
+    const { cocktailName } = req.params;
   
-//       if (!cocktail) {
-//         return res.status(404).send("Cocktail not found");
-//       }
+    try {
+      // Zoek eerst of de cocktail al in de database staat
+      let dbCocktail = await userCocktail.findOne({
+        name: { $regex: new RegExp("^" + cocktailName + "$", "i") }
+      });
   
-//       res.render("instructies.ejs", {
-//         cocktail: cocktail,
-//       });
-//     } catch (error) {
-//       console.error("Error fetching cocktail details:", error);
-//       res.status(500).send("Error fetching cocktail details.");
-//     }
-//   });
+      if (!dbCocktail) {
+        // Als de cocktail niet in de database staat, haal deze op uit de API
+        const data = await fetchData(API + 'search.php?s=' + cocktailName);
+        const apiCocktail = data.drinks ? data.drinks[0] : null;
   
+        if (apiCocktail) {
+          // Converteer de API-cocktail naar een database-cocktail
+          dbCocktail = new userCocktail({
+            name: apiCocktail.strDrink,
+            // ingredients: convertApiIngredients(apiCocktail), // Maak een functie om de ingrediënten te converteren
+            instructions: apiCocktail.strInstructions,
+            category: apiCocktail.strCategory,
+            glassType: apiCocktail.strGlass,
+            image: apiCocktail.strDrinkThumb,
+            createdBy: req.session.userId, // Gebruik de huidige gebruiker
+            reviews: [], // Maak een lege review array
+          });
+  
+          // Sla de cocktail op in de database
+          await dbCocktail.save();
+        }
+      }
+      next();
+    } catch (error) {
+      console.error("Fout bij opslaan API cocktail in database:", error);
+      res.status(500).send("Er is een fout opgetreden bij het laden van de cocktail.");
+    }
+  };
+  
+
 // 🔹 BEVEILIGDE ROUTE (bijvoorbeeld: Favorieten, uploaden van cocktails)
 app.get("/cocktails/favorites", (req, res) => {
   if (!req.session.userId) {
@@ -393,8 +414,9 @@ app.get("/cocktails/search", async (req, res) => {
   }
 });
 
-// 🔹 HOME PAGE & API FETCHING
 
+
+// 🔹 HOME PAGE & API FETCHING
 app.get('/home', async (req, res) => {
     res.locals.currentpath = req.path;
 
@@ -514,33 +536,55 @@ app.get("/usercocktails", async (req, res) => {
 });
 
 
-app.get('/cocktail/:cocktailName', async (req, res) => {
+// app.get('/cocktail/:cocktailName', async (req, res) => {
+//     try {
+//         const cocktailName = req.params.cocktailName; 
+
+//         const dbCocktail = await Cocktail.findOne({ 
+//             name: { $regex: new RegExp("^" + cocktailName + "$", "i") } 
+//         }).populate("reviews.user");
+
+//         if (dbCocktail) {
+//             return res.render('instructies.ejs', { cocktail: dbCocktail, source: 'database', reviews: dbCocktail.reviews });
+//         }
+
+//         const data = await fetchData(API + 'search.php?s=' + cocktailName); 
+//         const apiCocktail = data.drinks ? data.drinks[0] : null;
+
+//         if (!apiCocktail) {
+//             return res.status(404).send('Cocktail not found');
+//         }
+
+//         res.render('instructies.ejs', { cocktail: apiCocktail, source: 'api', reviews: [] });
+
+//     } catch (error) {
+//         console.error("❌ Fout bij ophalen cocktail:", error);
+//         res.status(500).send("Er is een probleem met het laden van de cocktail.");
+//     }
+// });
+
+app.get('/cocktail/:cocktailName', saveApiCocktailToDB, async (req, res) => {
     try {
-        const cocktailName = req.params.cocktailName; 
-
-        const dbCocktail = await Cocktail.findOne({ 
-            name: { $regex: new RegExp("^" + cocktailName + "$", "i") } 
-        }).populate("reviews.user");
-
-        if (dbCocktail) {
-            return res.render('instructies.ejs', { cocktail: dbCocktail, source: 'database', reviews: dbCocktail.reviews });
-        }
-
-        const data = await fetchData(API + 'search.php?s=' + cocktailName); 
-        const apiCocktail = data.drinks ? data.drinks[0] : null;
-
-        if (!apiCocktail) {
-            return res.status(404).send('Cocktail not found');
-        }
-
-        res.render('instructies.ejs', { cocktail: apiCocktail, source: 'api', reviews: [] });
-
+      const cocktailName = req.params.cocktailName;
+  
+      // Zoek de cocktail in de database
+      const dbCocktail = await userCocktail.findOne({
+        name: { $regex: new RegExp("^" + cocktailName + "$", "i") }
+      }).populate('reviews.user');
+  
+      if (dbCocktail) {
+        return res.render('instructies.ejs', { cocktail: dbCocktail, source: 'database' });
+      }
+  
+      // Als niet gevonden, stuur een foutmelding (zou niet meer moeten gebeuren)
+      return res.status(404).send('Cocktail not found');
+  
     } catch (error) {
-        console.error("❌ Fout bij ophalen cocktail:", error);
-        res.status(500).send("Er is een probleem met het laden van de cocktail.");
+      console.error("❌ Fout bij ophalen cocktail:", error);
+      res.status(500).send("Er is een probleem met het laden van de cocktail.");
     }
-});
-
+  });
+  
 // Random cocktail
 app.get("/random", async (req, res) => {
     try {
