@@ -128,24 +128,28 @@ function removeIngredient() {
 }
 
 // Image displaying
-// document.addEventListener("DOMContentLoaded", function() {
-//   console.log(document.getElementById("image"))
-//   document.getElementById("image").addEventListener("change", function(event) {
-//     const file = event.target.files[0];
-//     if (file) {
-//       const reader = new FileReader();
-//       reader.onload = function(e) {
-//         const preview = document.getElementById("imagePreview");
-//         const uploadBox = document.getElementById("uploadBox");
-
-//         preview.src = e.target.result;
-//         preview.style.display = "block"; // Show image
-//         uploadBox.style.display = "none"; // Hide upload box
-//       };
-//       reader.readAsDataURL(file);
-//     }
-//   });
-// });
+document.addEventListener("DOMContentLoaded", function() {
+  console.log(document.getElementById("image"))
+  const image = document.getElementById("image")
+  if(image) {
+    image.addEventListener("change", function(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const preview = document.getElementById("imagePreview");
+          const uploadBox = document.getElementById("uploadBox");
+  
+          preview.src = e.target.result;
+          preview.style.display = "block"; // Show image
+          uploadBox.style.display = "none"; // Hide upload box
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+  
+});
 
 
 //FILTER
@@ -171,8 +175,9 @@ function add(){
     })
 }
 
-addIngredients.addEventListener('click', add);
-
+if(addIngredients) {
+  addIngredients.addEventListener('click', add);
+}
 
 if (filtersForm) {
     console.log(filtersForm)
