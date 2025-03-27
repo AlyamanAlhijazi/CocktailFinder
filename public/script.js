@@ -128,21 +128,24 @@ function removeIngredient() {
 }
 
 // Image displaying
-document.getElementById("image").addEventListener("change", function(event) {
-  const file = event.target.files[0];
-  if (file) {
+document.addEventListener("DOMContentLoaded", function() {
+  document.getElementById("image").addEventListener("change", function(event) {
+    const file = event.target.files[0];
+    if (file) {
       const reader = new FileReader();
       reader.onload = function(e) {
-          const preview = document.getElementById("imagePreview");
-          const uploadBox = document.getElementById("uploadBox");
+        const preview = document.getElementById("imagePreview");
+        const uploadBox = document.getElementById("uploadBox");
 
-          preview.src = e.target.result;
-          preview.style.display = "block"; // Show image
-          uploadBox.style.display = "none"; // Hide upload box
+        preview.src = e.target.result;
+        preview.style.display = "block"; // Show image
+        uploadBox.style.display = "none"; // Hide upload box
       };
       reader.readAsDataURL(file);
-  }
+    }
+  });
 });
+
 
 //FILTER
 //ingredienten
@@ -209,3 +212,27 @@ if (filtersForm) {
         }
     });
 }
+
+// instructie toggle
+const tabs = document.querySelectorAll('[data-tab-target]');
+const tabContents = document.querySelectorAll('[data-tab-content]');
+ 
+tabs.forEach(tab => {
+    tab.addEventListener('click', (e) => {
+        e.preventDefault();
+ 
+        tabContents.forEach(content => content.classList.remove('active'));
+ 
+    
+        tabs.forEach(t => t.classList.remove('active'));
+ 
+        
+        const target = document.querySelector(tab.dataset.tabTarget);
+ 
+        
+        if (target) {
+            target.classList.add('active');
+            tab.classList.add('active');   
+        }
+    });
+});

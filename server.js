@@ -351,26 +351,6 @@ app.post("/cocktail/:cocktailId/review", async (req, res) => {
       res.status(500).send("Er is een fout opgetreden bij het opslaan van de review.");
     }
   });
-
-// // 🔹 REVIEW (GET)
-// app.get("/cocktail/:cocktailName", async (req, res) => {
-//     try {
-//       const cocktailName = req.params.cocktailName; 
-//       const data = await fetchData(API + "search.php?s=" + cocktailName); 
-//       const cocktail = data.drinks ? data.drinks[0] : null;
-  
-//       if (!cocktail) {
-//         return res.status(404).send("Cocktail not found");
-//       }
-  
-//       res.render("instructies.ejs", {
-//         cocktail: cocktail,
-//       });
-//     } catch (error) {
-//       console.error("Error fetching cocktail details:", error);
-//       res.status(500).send("Error fetching cocktail details.");
-//     }
-//   });
   
 // 🔹 BEVEILIGDE ROUTE (bijvoorbeeld: Favorieten, uploaden van cocktails)
 app.get("/cocktails/favorites", (req, res) => {
@@ -401,12 +381,12 @@ app.get('/home', async (req, res) => {
     try {
         const data = await fetchData(API + 'popular.php');
         const cocktails = data.drinks || [];
-
+        const topCocktails = await Cocktail.find().sort({ averageRating: -1 }).limit(5);
         const allUserCocktails = await userCocktail.find();
 
         const randomUserCocktails = allUserCocktails.sort(() => 0.5 - Math.random()).slice(0, 10);
 
-        res.render('home.ejs', { cocktails, userCocktails: randomUserCocktails });
+        res.render('home', { cocktails, userCocktails: randomUserCocktails, topCocktails });
     } catch (error) {
         console.error("Fout bij ophalen van cocktails:", error);
         res.status(500).send("Er is een probleem met het laden van cocktails.");
