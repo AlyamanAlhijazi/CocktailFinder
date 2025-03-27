@@ -1,6 +1,6 @@
-<form id="filtersForm"></form>
+<form id="filtersForm">
     <select name="alcoholic" id="alcoholic">
-        <option value="0">no prefrance</option>
+        <option value="0">Optional alcohol</option>
         <option value="1">alcoholic</option>
         <option value="2">non alcoholic</option>
     </select>
@@ -21,7 +21,9 @@
             <option value="<%= ingredients[i].strIngredient1 %>"><%= ingredients[i].strIngredient1 %></option>
         <% } %>
     </datalist>
-    <button id="addIngredient" type="button">add ingredient</button> 
+    <button id="addIngredient" type="button">add ingredient</button>
+    <!-- <input type="checkbox" value="all" id="includeAll"> 
+    <label for="includeAll">Include all selected ingredients in results</label> -->
     <input type="submit">
     <!-- NOTE VOOR DE GENE DIE DIT GAAT STYLEN :) -->
     <!-- de butons en ingredienten inputs die worden toegevoegd met de knop hebben de class btnIngredient & fieldIngredient -->

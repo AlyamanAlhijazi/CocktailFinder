@@ -1,11 +1,11 @@
-<ul class="cocktail-list"></ul>
-    <% cocktails.forEach(cocktail=> { %>
+<ul class="cocktail-list">
+    <% drinks.forEach(drink=> { %>
         <li>
-            <a href="/cocktail/<%= cocktail.strDrink %>" class="cocktail-link">
+            <a href="/cocktail/<%= drink.strDrink %>" class="cocktail-link">
                 <h2>
-                    <%= cocktail.strDrink %>
+                    <%= drink.strDrink %>
                 </h2>
-                <img src="<%= cocktail.strDrinkThumb %>" alt="<%= cocktail.strDrink %>">
+                <img src="<%= drink.strDrinkThumb %>" alt="<%= drink.strDrink %>">
             </a>
         </li>
     <%}) %>
