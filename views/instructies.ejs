@@ -10,35 +10,35 @@
             <h1><%= cocktail.name || cocktail.strDrink %></h1>
             <img src="<%= source === 'database' ? '/uploads/' + cocktail.image : cocktail.strDrinkThumb %>" 
                  alt="<%= cocktail.name || cocktail.strDrink %>">
-            
-            <section class="toggle-buttons">
-                <button>Ingredients</button>
-                <button>Instructions</button>
-            </section> 
-            <section>
-                <h3>Ingredients:</h3>
-                <ul>
-                    <% if (source === 'database') { %> 
-                        <% cocktail.ingredients.forEach((ingredient) => { %>
-                            <li><%= ingredient.name %> - <%= ingredient.amount %> <%= ingredient.unit %></li>
-                        <% }) %>
-                    <% } else { %>
-                        <% for (let i = 1; i <= 15; i++) { %>
-                            <% if (cocktail['strIngredient' + i]) { %>
-                                <li><%= cocktail['strIngredient' + i] %> - <%= cocktail['strMeasure' + i] || 'To taste' %></li>
-                            <% } %>
-                        <% } %>
-                    <% } %>
-                </ul>                
-                <h3>Instructions</h3>
-                <p><%= source === 'database' ? cocktail.instructions : cocktail.strInstructions || "No instructions available" %></p>
-            </section> 
-            
-            <!-- Add to Favorites Button -->
-            <button class="favorite-btn">
+             <button class="favorite-btn">
                 ❤️ Add to Favorites
             </button>
-
+            <section class="ingredienttoggle">
+                <div>
+                    <button data-tab-target="#Ingredients">Ingredients</button>
+                    <button data-tab-target="#Instructions">Instructions</button>
+                </div>
+                <article id="Ingredients" data-tab-content class="active">
+                    <h3>Instructions</h3>
+                    <p><%= source === 'database' ? cocktail.instructions : cocktail.strInstructions || "No instructions available" %></p>
+                </article>
+                <article id="Instructions" data-tab-content>
+                    <h3>Ingredients:</h3>
+                        <ul>
+                            <% if (source === 'database') { %> 
+                                <% cocktail.ingredients.forEach((ingredient) => { %>
+                                    <li><%= ingredient.name %> - <%= ingredient.amount %> <%= ingredient.unit %></li>
+                                <% }) %>
+                            <% } else { %>
+                                <% for (let i = 1; i <= 15; i++) { %>
+                                    <% if (cocktail['strIngredient' + i]) { %>
+                                        <li><%= cocktail['strIngredient' + i] %> - <%= cocktail['strMeasure' + i] || 'To taste' %></li>
+                                    <% } %>
+                                <% } %>
+                            <% } %>
+                        </ul> 
+                </article>
+            </section>
             <!-- Star Rating Form -->
             <h3>Rate this Cocktail:</h3>
             <form action="/cocktail/<%= cocktail._id %>/review" method="POST">
@@ -70,5 +70,6 @@
             </ul>
         </section>
     </main>
+    <script defer src="/script.js"></script>
 </body>
 </html>
