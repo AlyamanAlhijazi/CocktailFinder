@@ -433,7 +433,7 @@ app.get("/profile", async (req, res) => {
 
 
 
-const API = "https://www.thecocktaildb.com/api/json/v2/961249867/";
+const API = process.env.API_URL //iedereen URL van api even in env zetten
 
 async function fetchData(url) {
   const response = await fetch(url);
