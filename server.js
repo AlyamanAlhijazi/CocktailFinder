@@ -372,7 +372,15 @@ app.get("/cocktails/search", async (req, res) => {
     res.status(500).json({ error: "Fout bij ophalen van cocktails." });
   }
 });
-
+// Check of gebruiker is ingelogd
+function isAuthenticated(req, res, next) {
+    if (!req.session.userId) {
+      req.flash("error", "You must be logged in to access this page");
+      return res.redirect("/login");
+    }
+    next();
+  }
+  
 // 🔹 HOME PAGE & API FETCHING
 
 app.get('/home', async (req, res) => {
@@ -393,25 +401,14 @@ app.get('/home', async (req, res) => {
     }
 });
 
-
-
-app.get("/instructions", async (req, res) => {
-  res.render("instructies", {});
-});
-
-app.get("/upload", async (req, res) => {
-  res.locals.currentpath = req.path; //automatically set currentpath
-  res.render("upload.ejs", {});
-
-});
-app.get("/profile", async (req, res) => {
-  res.render("profile");
-});
-
-
-
-
-
+app.get("/profile", isAuthenticated, async (req, res) => {
+    res.render("profile", { user: req.session.username });
+  });
+  
+  app.get("/upload", isAuthenticated, async (req, res) => {
+    res.locals.currentpath = req.path;
+    res.render("upload");
+  });  
 
 const API = "https://www.thecocktaildb.com/api/json/v2/961249867/";
 
