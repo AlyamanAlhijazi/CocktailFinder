@@ -60,13 +60,18 @@
             <!-- Bestaande reviews weergeven -->
             <h3>Reviews</h3>
             <ul class="reviews-list">
-                <% cocktail.reviews.forEach(review => { %>
+
+                <% if(cocktail.reviews) { %>
+                <%    cocktail.reviews.forEach(review => { %>
                     <li>
                         <p>Rating: <%= review.rating %>/5</p>
                         <p><%= review.comment %></p>
                         <small>By: <%= review.user.username %> on <%= review.createdAt.toLocaleDateString() %></small>
                     </li>
                 <% }) %>
+                <% } else{ %>
+                    <p>nog geen reviews</p>
+                <% } %>
             </ul>
         </section>
     </main>
