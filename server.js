@@ -393,8 +393,12 @@ app.get('/home', async (req, res) => {
         const allUserCocktails = await userCocktail.find();
 
         const randomUserCocktails = allUserCocktails.sort(() => 0.5 - Math.random()).slice(0, 10);
+        let categories = await fetch_list('c');
+        let glasses = await fetch_list('g');
+        let ingredients = await fetch_list('i');
+        let drinks = await filteren();
 
-        res.render('home', { cocktails, userCocktails: randomUserCocktails, topCocktails });
+        res.render('home', { cocktails, userCocktails: randomUserCocktails, topCocktails, categories, glasses, ingredients, drinks });
     } catch (error) {
         console.error("Fout bij ophalen van cocktails:", error);
         res.status(500).send("Er is een probleem met het laden van cocktails.");
@@ -566,12 +570,14 @@ let glass = ''
 
 // ophalen van ingestelde filters en opslaan in variabelen
 app.post('/filter-list', (req, resp) => {
-    console.log(req.body);
-    ingredients = req.body.ingredients;
     alcoholic = parseInt(req.body.alcoholic);
     category = req.body.category;
     glass = req.body.glass;
-    return resp.redirect('/filter');
+    ingredients = req.body.ingredients;
+    ingredients = ingredients.filter(function (e) {
+      return e;
+    });
+    return resp.redirect('/home');
 })
 
 //filter op alcahol
@@ -609,18 +615,20 @@ function glassFilter(object) {
 //filteren op ingredienten
 function filter_ingredients(object) {
     // DIT MOET IK NOG EFFE FIXEN KOMT GOED :)
-    // const ingredientKeys = Object.keys(object).filter((element) => element.includes("strIngredient"));
-    // const matchingFilters =[];
-    // ingredientKeys.forEach((element) => {
-    //     const ingredientValue = object[element] ?? '';
-    //     if(ingredients.includes(ingredientValue.toLowerCase())){
-    //         matchingFilters.push(ingredientValue)
-    //     }
-    // })
-    // // TODO: MAKE IT SO THAT IT SUPPORTS ONLY ONE INGREDIENT MATCHES
-    // return matchingFilters.length === ingredients.length;
-    return true
+    const ingredientKeys = Object.keys(object).filter((element) => element.includes("strIngredient"));
+    
+    const matchingFilters =[];
+    ingredientKeys.forEach((element) => {
+        const ingredientValue = object[element] ?? '';
+        if(ingredients.includes(ingredientValue.toLowerCase())){
+            matchingFilters.push(ingredientValue)
+        }
+    })
+    // TODO: MAKE IT SO THAT IT SUPPORTS ONLY ONE INGREDIENT MATCHES
+    return matchingFilters.length === ingredients.length;
+    
 }
+
 
 // ophalen van alle drankjes en in array zetten zodat ze niet meerdere keren opgehaald hoeven worden
 let cocktail_list = [];
@@ -661,7 +669,7 @@ async function fetch_list(type) {
     return (list);
 }
 
-app.get('/filter', show_filter);
+// app.get('/filter', show_filter);
 
 
 //filters laten zien  
@@ -670,5 +678,5 @@ async function show_filter(req, res) {
     let glasses = await fetch_list('g');
     let ingredients = await fetch_list('i');
     let cocktails = await filteren();
-    res.render('test', { categories, glasses, ingredients, cocktails });
+    res.render('home', { categories, glasses, ingredients, cocktails });
 };

@@ -129,27 +129,32 @@ function removeIngredient() {
 
 // Image displaying
 document.addEventListener("DOMContentLoaded", function() {
-  document.getElementById("image").addEventListener("change", function(event) {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const preview = document.getElementById("imagePreview");
-        const uploadBox = document.getElementById("uploadBox");
-
-        preview.src = e.target.result;
-        preview.style.display = "block"; // Show image
-        uploadBox.style.display = "none"; // Hide upload box
-      };
-      reader.readAsDataURL(file);
-    }
-  });
+  console.log(document.getElementById("image"))
+  const image = document.getElementById("image")
+  if(image) {
+    image.addEventListener("change", function(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const preview = document.getElementById("imagePreview");
+          const uploadBox = document.getElementById("uploadBox");
+  
+          preview.src = e.target.result;
+          preview.style.display = "block"; // Show image
+          uploadBox.style.display = "none"; // Hide upload box
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+  
 });
 
 
 //FILTER
 //ingredienten
-const addIngredient = document.getElementById("addIngredient");
+const addIngredients = document.getElementById("addIngredient");
 const filtersForm = document.getElementById("filtersForm");
 
 
@@ -170,10 +175,12 @@ function add(){
     })
 }
 
-addIngredient.addEventListener('click', add);
-
+if(addIngredients) {
+  addIngredients.addEventListener('click', add);
+}
 
 if (filtersForm) {
+    console.log(filtersForm)
     filtersForm.addEventListener("submit", async function(event) {
         event.preventDefault();
 
