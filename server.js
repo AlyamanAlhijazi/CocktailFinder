@@ -344,7 +344,7 @@ app.post("/cocktail/:cocktailId/review", async (req, res) => {
   
       // Sla de cocktail op
       await cocktail.save();
-  
+      
       res.redirect(`/cocktail/${cocktail.name}`); // Redirect naar de cocktailpagina
     } catch (error) {
       console.error("Fout bij het opslaan van de review:", error);
