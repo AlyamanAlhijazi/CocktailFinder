@@ -19,10 +19,6 @@
                     <button data-tab-target="#Instructions">Instructions</button>
                 </div>
                 <article id="Ingredients" data-tab-content class="active">
-                    <h3>Instructions</h3>
-                    <p><%= source === 'database' ? cocktail.instructions : cocktail.strInstructions || "No instructions available" %></p>
-                </article>
-                <article id="Instructions" data-tab-content>
                     <h3>Ingredients:</h3>
                         <ul>
                             <% if (source === 'database') { %> 
@@ -37,6 +33,10 @@
                                 <% } %>
                             <% } %>
                         </ul> 
+                </article>
+                <article id="Instructions" data-tab-content>
+                    <h3>Instructions</h3>
+                    <p><%= source === 'database' ? cocktail.instructions : cocktail.strInstructions || "No instructions available" %></p>
                 </article>
             </section>
             <!-- Star Rating Form -->
