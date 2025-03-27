@@ -5,8 +5,22 @@
     <header>
         <%- include('partials/header.ejs') %>
     </header>
-    <main>    
+    <main>
+        <img class="logo" src="/images/logo.png" alt="">    
         <h1>The place to find cocktails!</h1> 
+        <section class="top-cocktails">
+            <h2>Top Rated Cocktails</h2>
+            <ul>
+                <% topCocktails.forEach(cocktail => { %>
+                    <li>
+                        <img src="/uploads/<%= cocktail.image %>" alt="<%= cocktail.name %>">
+                        <h3><%= cocktail.name %></h3>
+                        <p>⭐ <%= cocktail.averageRating.toFixed(1) %> / 5</p>
+                        <a href="/cocktail/<%= cocktail.name %>">View Recipe</a>
+                    </li>
+                <% }) %>
+            </ul>
+        </section>
         <section class="surprise-me">
             <h3>Dont know what to make?</h3>
             <button onclick="window.location.href='/random'">Surprise Me! </button>
