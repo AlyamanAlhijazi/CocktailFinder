@@ -693,5 +693,5 @@ async function show_filter(req, res) {
     let glasses = await fetch_list('g');
     let ingredients = await fetch_list('i');
     let cocktails = await filteren();
-    res.render('filters', { categories, glasses, ingredients, cocktails });
+    res.render('test', { categories, glasses, ingredients, cocktails });
 };
