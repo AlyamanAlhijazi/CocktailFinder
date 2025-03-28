@@ -10,38 +10,36 @@
             <h1><%= cocktail.name || cocktail.strDrink %></h1>
             <img src="<%= source === 'database' ? '/uploads/' + cocktail.image : cocktail.strDrinkThumb %>" 
                  alt="<%= cocktail.name || cocktail.strDrink %>">
-            
-            <section class="toggle-buttons">
-                <button>Ingredients</button>
-                <button>Instructions</button>
-            </section> 
-            <section>
-                <h3>Ingredients:</h3>
-                <ul>
-                    <% if (source === 'database') { %> 
-                        <% cocktail.ingredients.forEach((ingredient) => { %>
-                            <li><%= ingredient.name %> - <%= ingredient.amount %> <%= ingredient.unit %></li>
-                        <% }) %>
-                    <% } else { %>
-                        <% for (let i = 1; i <= 15; i++) { %>
-                            <% if (cocktail['strIngredient' + i]) { %>
-                                <li><%= cocktail['strIngredient' + i] %> - <%= cocktail['strMeasure' + i] || 'To taste' %></li>
-                            <% } %>
-                        <% } %>
-                    <% } %>
-                </ul>                
-                <h3>Instructions</h3>
-                <p><%= source === 'database' ? cocktail.instructions : cocktail.strInstructions || "No instructions available" %></p>
-            </section> 
-            
-            <!-- Add to Favorites Button -->
             <button class="favorite-btn" data-cocktail-id="<%= cocktail._id %>">
                 <i class="far fa-heart empty-heart"></i>  <!-- Leeg hart icoon -->
                 <i class="fas fa-heart full-heart"></i>   <!-- Vol hart icoon -->
             </button>
-            
-            
-
+            <section class="ingredienttoggle">
+                <div>
+                    <button data-tab-target="#Ingredients">Ingredients</button>
+                    <button data-tab-target="#Instructions">Instructions</button>
+                </div>
+                <article id="Ingredients" data-tab-content class="active">
+                    <h3>Ingredients:</h3>
+                        <ul>
+                            <% if (source === 'database') { %> 
+                                <% cocktail.ingredients.forEach((ingredient) => { %>
+                                    <li><%= ingredient.name %> - <%= ingredient.amount %> <%= ingredient.unit %></li>
+                                <% }) %>
+                            <% } else { %>
+                                <% for (let i = 1; i <= 15; i++) { %>
+                                    <% if (cocktail['strIngredient' + i]) { %>
+                                        <li><%= cocktail['strIngredient' + i] %> - <%= cocktail['strMeasure' + i] || 'To taste' %></li>
+                                    <% } %>
+                                <% } %>
+                            <% } %>
+                        </ul> 
+                </article>
+                <article id="Instructions" data-tab-content>
+                    <h3>Instructions</h3>
+                    <p><%= source === 'database' ? cocktail.instructions : cocktail.strInstructions || "No instructions available" %></p>
+                </article>
+            </section>
             <!-- Star Rating Form -->
             <h3>Rate this Cocktail:</h3>
             <form action="/cocktail/<%= cocktail._id %>/review" method="POST">
@@ -63,13 +61,18 @@
             <!-- Bestaande reviews weergeven -->
             <h3>Reviews</h3>
             <ul class="reviews-list">
-                <% cocktail.reviews.forEach(review => { %>
+
+                <% if(cocktail.reviews) { %>
+                <%    cocktail.reviews.forEach(review => { %>
                     <li>
                         <p>Rating: <%= review.rating %>/5</p>
                         <p><%= review.comment %></p>
                         <small>By: <%= review.user.username %> on <%= review.createdAt.toLocaleDateString() %></small>
                     </li>
                 <% }) %>
+                <% } else{ %>
+                    <p>nog geen reviews</p>
+                <% } %>
             </ul>
         </section>
     </main>

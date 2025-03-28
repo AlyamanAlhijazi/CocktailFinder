@@ -343,7 +343,7 @@ app.post("/cocktail/:cocktailId/review", async (req, res) => {
   
       // Sla de cocktail op
       await cocktail.save();
-  
+      
       res.redirect(`/cocktail/${cocktail.name}`); // Redirect naar de cocktailpagina
     } catch (error) {
       console.error("Fout bij het opslaan van de review:", error);
@@ -486,9 +486,15 @@ app.get("/cocktails/search", async (req, res) => {
     res.status(500).json({ error: "Fout bij ophalen van cocktails." });
   }
 });
-
-
-
+// Check of gebruiker is ingelogd
+function isAuthenticated(req, res, next) {
+    if (!req.session.userId) {
+      req.flash("error", "You must be logged in to access this page");
+      return res.redirect("/login");
+    }
+    next();
+  }
+  
 // 🔹 HOME PAGE & API FETCHING
 app.get('/home', async (req, res) => {
     res.locals.currentpath = req.path;
@@ -496,37 +502,32 @@ app.get('/home', async (req, res) => {
     try {
         const data = await fetchData(API + 'popular.php');
         const cocktails = data.drinks || [];
-
+        const topCocktails = await Cocktail.find().sort({ averageRating: -1 }).limit(5);
         const allUserCocktails = await userCocktail.find();
 
         const randomUserCocktails = allUserCocktails.sort(() => 0.5 - Math.random()).slice(0, 10);
+        let categories = await fetch_list('c');
+        let glasses = await fetch_list('g');
+        let ingredients = await fetch_list('i');
+        let drinks = await filteren();
 
-        res.render('home.ejs', { cocktails, userCocktails: randomUserCocktails });
+        res.render('home', { cocktails, userCocktails: randomUserCocktails, topCocktails, categories, glasses, ingredients, drinks });
     } catch (error) {
         console.error("Fout bij ophalen van cocktails:", error);
         res.status(500).send("Er is een probleem met het laden van cocktails.");
     }
 });
 
+app.get("/profile", isAuthenticated, async (req, res) => {
+    res.render("profile", { user: req.session.username });
+  });
+  
+  app.get("/upload", isAuthenticated, async (req, res) => {
+    res.locals.currentpath = req.path;
+    res.render("upload");
+  });  
 
-
-app.get("/instructions", async (req, res) => {
-  res.render("instructies", {});
-});
-
-app.get("/upload", async (req, res) => {
-  res.locals.currentpath = req.path; //automatically set currentpath
-  res.render("upload.ejs", {});
-
-});
-
-
-
-
-
-
-
-const API = "https://www.thecocktaildb.com/api/json/v2/961249867/";
+const API = process.env.API_URL //iedereen URL van api even in env zetten
 
 async function fetchData(url) {
   const response = await fetch(url);
@@ -693,3 +694,124 @@ app.get("/random", async (req, res) => {
 // 🔹 START SERVER
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server draait op http://localhost:${PORT}`));
+
+
+// OPHALEN EN FILTEREN API
+//variabelen om toegepaste filters in op te slaan
+let ingredients = [];
+let alcoholic = 0;    // 0= no prefrance, 1= alcaholic, 2 = non_alcaholic
+let category = ''
+let glass = ''
+
+// ophalen van ingestelde filters en opslaan in variabelen
+app.post('/filter-list', (req, resp) => {
+    alcoholic = parseInt(req.body.alcoholic);
+    category = req.body.category;
+    glass = req.body.glass;
+    ingredients = req.body.ingredients;
+    ingredients = ingredients.filter(function (e) {
+      return e;
+    });
+    return resp.redirect('/home');
+})
+
+//filter op alcahol
+function alcohol(object) {
+    if (alcoholic == 1 && object.strAlcoholic == 'Alcoholic') {
+        return true;
+    } else if (alcoholic == 2 && object.strAlcoholic == 'Non alcoholic') {
+        return true;
+    } else if (alcoholic == 0) {
+        return true;
+    } else {
+        return true;
+    }
+}
+//filter op cetegorie
+function categoryFilter(object) {
+    if (category != '') {
+        return object.strCategory == category;
+    } else {
+        return true;
+    }
+
+
+}
+//filteren op glas
+function glassFilter(object) {
+    if (glass != '') {
+        return object.strGlass == glass;
+    } else {
+        return true;
+    }
+
+
+}
+//filteren op ingredienten
+function filter_ingredients(object) {
+    // DIT MOET IK NOG EFFE FIXEN KOMT GOED :)
+    const ingredientKeys = Object.keys(object).filter((element) => element.includes("strIngredient"));
+    
+    const matchingFilters =[];
+    ingredientKeys.forEach((element) => {
+        const ingredientValue = object[element] ?? '';
+        if(ingredients.includes(ingredientValue.toLowerCase())){
+            matchingFilters.push(ingredientValue)
+        }
+    })
+    // TODO: MAKE IT SO THAT IT SUPPORTS ONLY ONE INGREDIENT MATCHES
+    return matchingFilters.length === ingredients.length;
+    
+}
+
+
+// ophalen van alle drankjes en in array zetten zodat ze niet meerdere keren opgehaald hoeven worden
+let cocktail_list = [];
+async function fetch_letter() {
+    if (cocktail_list.length === 0) {
+        let drink_list = [];
+        const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+        for (let i = 0; i < letters.length; i++) {
+            let letter = letters[i];
+            const data = await fetchData(API + '/search.php?f=' + letter);
+            drink_list = drink_list.concat(data.drinks);
+        };
+        cocktail_list = drink_list.filter(drink => drink);
+    }
+
+    return cocktail_list;
+}
+
+//functie die je moet aanroepen al wil je filteren
+async function filteren() {
+    let detail_list = await fetch_letter();
+    detail_list = detail_list.filter(categoryFilter);
+    detail_list = detail_list.filter(alcohol);
+    detail_list = detail_list.filter(glassFilter);
+    detail_list = detail_list.filter(filter_ingredients);
+    return (detail_list);
+}
+
+//ophalen van lijst van opties voor filter
+async function fetch_list(type) {
+    let list = [];
+    try {
+        const data = await fetchData(API + 'list.php?' + type + '=list');
+        list = data.drinks;
+    } catch (e) {
+        console.log(e);
+    }
+    return (list);
+}
+
+// app.get('/filter', show_filter);
+
+
+//filters laten zien  
+async function show_filter(req, res) {
+    let categories = await fetch_list('c');
+    let glasses = await fetch_list('g');
+    let ingredients = await fetch_list('i');
+    let cocktails = await filteren();
+    res.render('home', { categories, glasses, ingredients, cocktails });
+};

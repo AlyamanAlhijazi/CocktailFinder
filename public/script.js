@@ -153,20 +153,121 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-// // Image displaying
-// document.getElementById("image").addEventListener("change", function(event) {
-//   const file = event.target.files[0];
-//   if (file) {
-//       const reader = new FileReader();
-//       reader.onload = function(e) {
-//           const preview = document.getElementById("imagePreview");
-//           const uploadBox = document.getElementById("uploadBox");
 
-//           preview.src = e.target.result;
-//           preview.style.display = "block"; // Show image
-//           uploadBox.style.display = "none"; // Hide upload box
-//       };
-//       reader.readAsDataURL(file);
-//   }
-// });
 console.log("Script.js is geladen!");
+// Image displaying
+document.addEventListener("DOMContentLoaded", function() {
+  console.log(document.getElementById("image"))
+  const image = document.getElementById("image")
+  if(image) {
+    image.addEventListener("change", function(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const preview = document.getElementById("imagePreview");
+          const uploadBox = document.getElementById("uploadBox");
+  
+          preview.src = e.target.result;
+          preview.style.display = "block"; // Show image
+          uploadBox.style.display = "none"; // Hide upload box
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+  
+});
+
+
+//FILTER
+//ingredienten
+const addIngredients = document.getElementById("addIngredient");
+const filtersForm = document.getElementById("filtersForm");
+
+
+function add(){
+    let newField = document.createElement('input');
+    newField.setAttribute('list',"x");
+    newField.setAttribute("placeholder", "ingredient")
+    newField.setAttribute('class','fieldIngredient'); //class om styling makelijker te maken :)
+    filtersForm.appendChild(newField);
+    let newButton = document.createElement('button');
+    newButton.setAttribute('type', 'button');
+    newButton.setAttribute('class','btnIngredient'); //class om styling makelijker te maken :)
+    newButton.innerHTML = "x"; 
+    filtersForm.appendChild(newButton);
+    newButton.addEventListener('click', () => {
+        filtersForm.removeChild(newButton);
+        filtersForm.removeChild(newField);
+    })
+}
+
+if(addIngredients) {
+  addIngredients.addEventListener('click', add);
+}
+
+if (filtersForm) {
+    console.log(filtersForm)
+    filtersForm.addEventListener("submit", async function(event) {
+        event.preventDefault();
+
+        const ingredients = document.getElementsByClassName("fieldIngredient");
+        const alcoholic = document.getElementById("alcoholic").value;
+        const glass = document.getElementById("inputGlasses").value;
+        const category = document.getElementById("category").value;
+        let ingredientList = [];
+
+        for(let i = 0; i < ingredients.length; i++) {
+            ingredientList.push(ingredients[i].value.toLowerCase());
+        }
+
+        console.log(ingredientList, alcoholic, glass, category);
+
+        try {
+            const response = await fetch("/filter-list", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    ingredients: ingredientList,
+                    alcoholic,
+                    glass,
+                    category
+                })
+            });
+
+            if (response.redirected) {
+                window.location.href = response.url;
+            } else {
+                const data = await response.json();
+                document.getElementById("message").innerText = data.message || "Something went wrong";
+            }
+        } catch (error) {
+            document.getElementById("message").innerText = `Something went wrong: ${error}`;
+        }
+    });
+}
+
+// instructie toggle
+const tabs = document.querySelectorAll('[data-tab-target]');
+const tabContents = document.querySelectorAll('[data-tab-content]');
+ 
+tabs.forEach(tab => {
+    tab.addEventListener('click', (e) => {
+        e.preventDefault();
+ 
+        tabContents.forEach(content => content.classList.remove('active'));
+ 
+    
+        tabs.forEach(t => t.classList.remove('active'));
+ 
+        
+        const target = document.querySelector(tab.dataset.tabTarget);
+ 
+        
+        if (target) {
+            target.classList.add('active');
+            tab.classList.add('active');   
+        }
+    });
+});
