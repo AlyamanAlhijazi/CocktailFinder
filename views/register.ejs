@@ -2,29 +2,32 @@
 <html lang="en">
     <%- include('partials/head.ejs') %>
 <body>
-    <h1>a registration form</h1>
+    <header>
+        <%- include('partials/header.ejs') %>
+    </header>
     <%- include('partials/messages') %>
     <div class="container">
-        <h2>Registreren</h2>
-        <form id="registrationForm">
-            <label for="username">Gebruikersnaam:</label>
-            <input type="text" id="username" name="username" required><br>
+        <br>
+        <h1>Sign up</h1>
 
-            <label for="birthdate">Geboortedatum:</label>
-            <input type="date" id="birthdate" name="birthdate" required><br>
+        <form id="registrationForm">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
 
             <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required><br>
+            <input type="email" id="email" name="email" required>
 
-            <label for="password">Wachtwoord:</label>
-            <input type="password" id="password" name="password" required><br>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
 
-            <label for="confirmPassword">Bevestig Wachtwoord:</label>
-            <input type="password" id="confirmPassword" name="confirmPassword" required><br>
+            <label for="confirmPassword">Repeat password:</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" required>
 
             <button type="submit">Registreren</button>
         </form>
         <p id="message"></p>
+        <p>Sign in instead? <a href="/login">Sign in</a></p>
+
     </div>
 
     <script src="/script.js"></script> 
