@@ -55,6 +55,7 @@ const userSchema = new mongoose.Schema({
   password: String,
   birthdate: Date,
   favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'userCocktail', default: [] }]
+
 });
 const User = mongoose.model("User", userSchema);
 

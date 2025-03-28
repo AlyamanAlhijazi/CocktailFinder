@@ -105,17 +105,31 @@ function addIngredient() {
   newRow.className = "ingredient-row";
   newRow.innerHTML = `
         <input type="text" name="ingredientName[]" placeholder="Ingredient name" required>
-        <input type="number" name="ingredientAmount[]" placeholder="Amount" required step="0.01">
-        <select name="ingredientUnit[]" required>
-            <option value="ml">ml</option>
-            <option value="cl">cl</option>
-            <option value="oz">oz</option>
-        </select>
-        <input type="checkbox" name="isAlcoholic[]"> Alcoholic
-        <input type="number" name="alcoholPercentage[]" placeholder="Alcohol %" min="0" max="100" step="0.1">
+        <div class="measurements">
+          <input type="number" name="ingredientAmount[]" placeholder="Amount" required step="0.01">
+          <select name="ingredientUnit[]" required>
+              <option value="ml">ml</option>
+              <option value="cl">cl</option>
+              <option value="oz">oz</option>
+          </select>
+        </div>
+        <div class="alcholicincl">
+          <input type="checkbox" name="isAlcoholic[]"> Alcoholic
+          <input type="number" name="alcoholPercentage[]" placeholder="%" min="0" max="100" step="0.1">
+          <button type="button" class="btnIngredient">X</button>
+        </div>
     `;
+  newRow.querySelector(".btnIngredient").addEventListener("click", removeIngredient);
+
   ingredientsDiv.appendChild(newRow);
 }
+function removeIngredient(event) {
+  const ingredientRow = event.target.closest(".ingredient-row"); 
+  if (ingredientRow) {
+    ingredientRow.remove();
+  }
+}
+
 function removeIngredient() {
   const ingredientsDiv = document.getElementById("ingredients");
   const ingredientRows = ingredientsDiv.getElementsByClassName("ingredient-row");
@@ -169,8 +183,8 @@ document.addEventListener("DOMContentLoaded", function() {
           const uploadBox = document.getElementById("uploadBox");
   
           preview.src = e.target.result;
-          preview.style.display = "block"; // Show image
-          uploadBox.style.display = "none"; // Hide upload box
+          preview.style.display = "block"; 
+          uploadBox.style.display = "none"; 
         };
         reader.readAsDataURL(file);
       }
@@ -187,20 +201,24 @@ const filtersForm = document.getElementById("filtersForm");
 
 
 function add(){
-    let newField = document.createElement('input');
-    newField.setAttribute('list',"x");
-    newField.setAttribute("placeholder", "ingredient")
-    newField.setAttribute('class','fieldIngredient'); //class om styling makelijker te maken :)
-    filtersForm.appendChild(newField);
-    let newButton = document.createElement('button');
-    newButton.setAttribute('type', 'button');
-    newButton.setAttribute('class','btnIngredient'); //class om styling makelijker te maken :)
-    newButton.innerHTML = "x"; 
-    filtersForm.appendChild(newButton);
-    newButton.addEventListener('click', () => {
-        filtersForm.removeChild(newButton);
-        filtersForm.removeChild(newField);
-    })
+  let newDiv = document.createElement('div');
+  newDiv.setAttribute('class', 'kruisjenaasttext');
+  filtersForm.appendChild(newDiv);
+  let newField = document.createElement('input');
+  newField.setAttribute('list',"x");
+  newField.setAttribute("placeholder", "ingredient")
+  newField.setAttribute('class','fieldIngredient'); //class om styling makelijker te maken :)
+  newDiv.appendChild(newField);
+  let newButton = document.createElement('button');
+  newButton.setAttribute('type', 'button');
+  newButton.setAttribute('class','btnIngredient'); //class om styling makelijker te maken :)
+  newButton.innerHTML = "x"; 
+  newDiv.appendChild(newButton);
+  newButton.addEventListener('click', () => {
+      newDiv.removeChild(newButton);
+      newDiv.removeChild(newField);
+      filtersForm.removeChild(newDiv);
+  })
 }
 
 if(addIngredients) {
