@@ -54,6 +54,7 @@ const userSchema = new mongoose.Schema({
   email: String,
   password: String,
   birthdate: Date,
+  favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'userCocktail', default: [] }]
 });
 const User = mongoose.model("User", userSchema);
 
@@ -157,6 +158,8 @@ const cocktailSchema = new mongoose.Schema({
     timestamps: true 
   });
   
+  const userCocktail = mongoose.model("userCocktail", cocktailSchema);
+  export default userCocktail;
 
 //CL OMZETTEN NAAR ML
 function convertToMl(amount, unit){
@@ -194,11 +197,7 @@ cocktailSchema.pre("save", function(next) {
   next();
 });
 
-const Cocktail = mongoose.model("Cocktail", cocktailSchema);
-export default Cocktail;
 
-
-const userCocktail = mongoose.model("userCocktail", cocktailSchema);
 
 // 🔹 REGISTRATIE (GET)
 app.get("/register", async (req, res) => {
@@ -353,6 +352,77 @@ app.post("/cocktail/:cocktailId/review", async (req, res) => {
   });
 
 
+/// 🔹 FAVORITES (POST)
+app.post("/cocktail/:cocktailId/favorite", async (req, res) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ error: "Je moet ingelogd zijn" });
+  }
+
+  const { cocktailId } = req.params;
+  const userId = req.session.userId;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "Gebruiker niet gevonden" });
+    }
+    // checken of de cocktailId wel een ObjectId is
+    if (!mongoose.Types.ObjectId.isValid(cocktailId)) {
+      return res.status(400).json({ error: "Invalid cocktail ID" });
+    }
+    // converten naar object id
+    const cocktailObjectId = new mongoose.Types.ObjectId(cocktailId);
+    // checken of de favoriet al favoriet is
+    const isFavorite = user.favorites.some(favorite => favorite.equals(cocktailObjectId));
+
+    console.log("🔥 Favoriete ID die wordt toegevoegd/verwijderd:", cocktailObjectId);
+    console.log("🔎 Huidige favorieten vóór update:", user.favorites);
+    if (isFavorite) {
+      // Als al favoriet, dan verwijderen
+      user.favorites.pull(cocktailObjectId);
+      console.log("🗑️ Cocktail verwijderd uit favorieten");
+    } else {
+      // Als niet favoriet, dan toevoegen
+      user.favorites.push(cocktailObjectId);
+      console.log("✅ Cocktail toegevoegd aan favorieten");
+    }
+
+    await user.save();
+    // 🚨 Check of de favorieten correct zijn opgeslagen in de database
+    const updatedUser = await User.findById(userId);
+    console.log("Favorieten na update:", updatedUser.favorites);
+
+    res.json({ status: isFavorite ? "removed" : "added" }); // Stuur status terug naar JS
+  } catch (error) {
+    console.error("Fout bij favorieten:", error);
+    res.status(500).json({ error: "Serverfout" });
+  }
+});
+
+
+// 🔹 PROFILE (GET)
+app.get("/profile", async (req, res) => {
+  if (!req.session.userId) {
+    return res.redirect("login");
+  }
+  try {
+    const user = await User.findById(req.session.userId).populate("favorites");
+    console.log("Opgehaalde favorieten na populate:", user.favorites); // Controleer of de user en favorieten correct wordt opgehaald
+    
+    
+    res.render("profile", {
+      user: user,
+      favoriteCocktails: user.favorites,
+    });
+    console.log("Favorite cocktails op profielpagina:", user.favorites);
+
+  } catch (error) {
+    console.error("Fout bij laden profiel:", error);
+    res.status(500).send("Er is een fout opgetreden bij het laden van het profiel.");
+  }
+});
+
+
 // Middleware om API-cocktails op te slaan in de database
 const saveApiCocktailToDB = async (req, res, next) => {
     const { cocktailName } = req.params;
@@ -370,7 +440,7 @@ const saveApiCocktailToDB = async (req, res, next) => {
   
         if (apiCocktail) {
           // Converteer de API-cocktail naar een database-cocktail
-          dbCocktail = new userCocktail({
+          const newCocktail = new userCocktail({
             name: apiCocktail.strDrink,
             // ingredients: convertApiIngredients(apiCocktail), // Maak een functie om de ingrediënten te converteren
             instructions: apiCocktail.strInstructions,
@@ -382,18 +452,21 @@ const saveApiCocktailToDB = async (req, res, next) => {
           });
   
           // Sla de cocktail op in de database
-          await dbCocktail.save();
+          dbCocktail = await newCocktail.save();
         }
       }
+      // Sla de cocktailId op in favorites
+      req.dbCocktailId = dbCocktail._id;
       next();
     } catch (error) {
       console.error("Fout bij opslaan API cocktail in database:", error);
       res.status(500).send("Er is een fout opgetreden bij het laden van de cocktail.");
     }
   };
-  
 
-// 🔹 BEVEILIGDE ROUTE (bijvoorbeeld: Favorieten, uploaden van cocktails)
+
+
+  // 🔹 BEVEILIGDE ROUTE (bijvoorbeeld: Favorieten, uploaden van cocktails)
 app.get("/cocktails/favorites", (req, res) => {
   if (!req.session.userId) {
     return res.status(401).json({ message: "Je moet ingelogd zijn om toegang te krijgen" });
@@ -446,9 +519,7 @@ app.get("/upload", async (req, res) => {
   res.render("upload.ejs", {});
 
 });
-app.get("/profile", async (req, res) => {
-  res.render("profile");
-});
+
 
 
 
@@ -566,14 +637,14 @@ app.get("/usercocktails", async (req, res) => {
 app.get('/cocktail/:cocktailName', saveApiCocktailToDB, async (req, res) => {
     try {
       const cocktailName = req.params.cocktailName;
-  
+
       // Zoek de cocktail in de database
       const dbCocktail = await userCocktail.findOne({
         name: { $regex: new RegExp("^" + cocktailName + "$", "i") }
       }).populate('reviews.user');
   
       if (dbCocktail) {
-        return res.render('instructies.ejs', { cocktail: dbCocktail, source: 'database' });
+        return res.render('instructies.ejs', { cocktail: dbCocktail, source: 'database'});
       }
   
       // Als niet gevonden, stuur een foutmelding (zou niet meer moeten gebeuren)

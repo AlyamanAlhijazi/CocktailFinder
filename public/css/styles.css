@@ -281,6 +281,19 @@ header ul li a svg{
     gap: 2em;
 }
 
+/* favorite button */
+.full-heart {
+    display: none;
+}
+
+.favorite-btn.favorited .empty-heart {
+    display: none;
+}
+
+.favorite-btn.favorited .full-heart {
+    display: inline;
+}
+
 /* profile view styles */
 #profile-styles{
     width: 100%;    

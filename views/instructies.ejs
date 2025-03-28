@@ -35,9 +35,12 @@
             </section> 
             
             <!-- Add to Favorites Button -->
-            <button class="favorite-btn">
-                ❤️ Add to Favorites
+            <button class="favorite-btn" data-cocktail-id="<%= cocktail._id %>">
+                <i class="far fa-heart empty-heart"></i>  <!-- Leeg hart icoon -->
+                <i class="fas fa-heart full-heart"></i>   <!-- Vol hart icoon -->
             </button>
+            
+            
 
             <!-- Star Rating Form -->
             <h3>Rate this Cocktail:</h3>
@@ -70,5 +73,6 @@
             </ul>
         </section>
     </main>
+    <script src="/script.js"></script> 
 </body>
 </html>

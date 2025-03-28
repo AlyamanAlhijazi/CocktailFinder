@@ -32,69 +32,21 @@
             </div>
 
             <ul>
-                <li>
-                    <a href="">
-                        <h4>Cocktail naam</h4>
-                        <img src="https://images.immediate.co.uk/production/volatile/sites/2/2021/07/GettyImages_933801552-6e4a61e.jpg" alt="">
-                    </a>
-                </li>
-                <li>
-                    <a href="">
-                        <h4>Cocktail naam</h4>
-                        <img src="https://images.immediate.co.uk/production/volatile/sites/2/2021/07/GettyImages_933801552-6e4a61e.jpg" alt="">
-                    </a>
-                </li>
-                <li>
-                    <a href="">
-                        <h4>Cocktail naam</h4>
-                        <img src="https://images.immediate.co.uk/production/volatile/sites/2/2021/07/GettyImages_933801552-6e4a61e.jpg" alt="">
-                    </a>
-                </li>
-                <li>
-                    <a href="">
-                        <h4>Cocktail naam</h4>
-                        <img src="https://images.immediate.co.uk/production/volatile/sites/2/2021/07/GettyImages_933801552-6e4a61e.jpg" alt="">
-                    </a>
-                </li>
-               
-              
-            </ul>
-
-            <ul>
-                <li>
-                    <a href="">
-                        <h4>Cocktail naam</h4>
-                        <img src="https://images.immediate.co.uk/production/volatile/sites/2/2021/07/GettyImages_933801552-6e4a61e.jpg" alt="">
-                    </a>
-                </li>
-
-                <li>
-                    <a href="">
-                        <h4>Cocktail naam</h4>
-                        <img src="https://images.immediate.co.uk/production/volatile/sites/2/2021/07/GettyImages_933801552-6e4a61e.jpg" alt="">
-                    </a>
-                </li>
-                <li>
-                    <a href="">
-                        <h4>Cocktail naam</h4>
-                        <img src="https://images.immediate.co.uk/production/volatile/sites/2/2021/07/GettyImages_933801552-6e4a61e.jpg" alt="">
-                    </a>
-                </li>
-                <li>
-                    <a href="">
-                        <h4>Cocktail naam</h4>
-                        <img src="https://images.immediate.co.uk/production/volatile/sites/2/2021/07/GettyImages_933801552-6e4a61e.jpg" alt="">
-                    </a>
-                </li>
-                <li>
-                    <a href="">
-                        <h4>Cocktail naam</h4>
-                        <img src="https://images.immediate.co.uk/production/volatile/sites/2/2021/07/GettyImages_933801552-6e4a61e.jpg" alt="">
-                    </a>
-                </li>
+                <% if (favoriteCocktails && favoriteCocktails.length > 0) { %>
+                    <% favoriteCocktails.forEach(cocktail => { %>
+                        <li>
+                            <a href="/cocktail/<%= cocktail.name %>">
+                                <h4><%= cocktail.name %></h4>
+                                <img src="/uploads/<%= cocktail.image %>" alt="<%= cocktail.name %>">
+                            </a>
+                        </li>
+                    <% }) %>
+                <% } else { %>
+                    <li>Geen favoriete cocktails gevonden.</li>
+                <% } %>
             </ul>
         </section>
     </main>
-    <script src="/server.js"></script>
+    <script src="/script.js"></script>
 </body>
 </html>
