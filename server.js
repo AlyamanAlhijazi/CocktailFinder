@@ -360,18 +360,6 @@ app.get("/cocktails/favorites", (req, res) => {
   res.json({ message: "Dit is de beveiligde favorieten route" });
 });
 
-// 🔹 ZOEK COCKTAILS (GET)
-// app.get("/cocktails/search", async (req, res) => {
-//   const { query } = req.query;
-//   try {
-//     const cocktails = await userCocktail.find({
-//       $or: [{ name: new RegExp(query, "i") }, { ingredients: new RegExp(query, "i") }],
-//     });
-//     res.json(cocktails);
-//   } catch (err) {
-//     res.status(500).json({ error: "Fout bij ophalen van cocktails." });
-//   }
-// });
 // Check of gebruiker is ingelogd
 function isAuthenticated(req, res, next) {
     if (!req.session.userId) {
@@ -381,7 +369,7 @@ function isAuthenticated(req, res, next) {
     next();
   }
   
-// 🔹 HOME PAGE & API FETCHING
+// 🔹 HOME PAGE & API FETCHING & ZOEK COCKTAILS (GET)
 
 app.get('/home', async (req, res) => {
     res.locals.currentpath = req.path;
@@ -399,23 +387,32 @@ app.get('/home', async (req, res) => {
         let glasses = await fetch_list('g');
         let ingredients = await fetch_list('i');
         let drinks = await filteren();
+        console.log('drinks', drinks[0]);
         
         if (query) {
           console.log('query true')
          
-          const searchResultsAPI = cocktails.filter(cocktail =>
-            cocktail.strDrink.toLowerCase().includes(query.toLowerCase()) 
+          const searchResultsByName = drinks.filter(drink =>
+            drink.strDrink.toLowerCase().includes(query.toLowerCase()) 
+            
           );
-          console.log('cocktails', cocktails)
+          const searchResultsByIngredient = drinks.filter(drink =>
+            Object.keys(drink)
+                .filter(key => key.startsWith('strIngredient') && drink[key]) // Alleen niet-lege ingrediënten
+                .some(ingredientKey => drink[ingredientKey].toLowerCase().includes(query.toLowerCase()))
+        );
 
-          console.log('searchResultsAPI', searchResultsAPI)
+          console.log('searchResultsByIngredient', searchResultsByIngredient);
+
+          res.render('home', {searchResultsByName, searchResultsByIngredient, query});
+ 
         }
         
         else{
           console.log('query false');
+          res.render('home', { cocktails, userCocktails: randomUserCocktails, topCocktails, categories, glasses, ingredients, drinks, query});
           // searchResults = cocktails;
         }
-        res.render('home', { cocktails, userCocktails: randomUserCocktails, topCocktails, categories, glasses, ingredients, drinks, query});
     } catch (error) {
         console.error("Fout bij ophalen van cocktails:", error);
         res.status(500).send("Er is een probleem met het laden van cocktails.");
