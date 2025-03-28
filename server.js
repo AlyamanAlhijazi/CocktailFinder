@@ -361,17 +361,17 @@ app.get("/cocktails/favorites", (req, res) => {
 });
 
 // 🔹 ZOEK COCKTAILS (GET)
-app.get("/cocktails/search", async (req, res) => {
-  const { query } = req.query;
-  try {
-    const cocktails = await userCocktail.find({
-      $or: [{ name: new RegExp(query, "i") }, { ingredients: new RegExp(query, "i") }],
-    });
-    res.json(cocktails);
-  } catch (err) {
-    res.status(500).json({ error: "Fout bij ophalen van cocktails." });
-  }
-});
+// app.get("/cocktails/search", async (req, res) => {
+//   const { query } = req.query;
+//   try {
+//     const cocktails = await userCocktail.find({
+//       $or: [{ name: new RegExp(query, "i") }, { ingredients: new RegExp(query, "i") }],
+//     });
+//     res.json(cocktails);
+//   } catch (err) {
+//     res.status(500).json({ error: "Fout bij ophalen van cocktails." });
+//   }
+// });
 // Check of gebruiker is ingelogd
 function isAuthenticated(req, res, next) {
     if (!req.session.userId) {
@@ -386,7 +386,9 @@ function isAuthenticated(req, res, next) {
 app.get('/home', async (req, res) => {
     res.locals.currentpath = req.path;
 
+    const query = req.query.q;
     try {
+        console.log('query');
         const data = await fetchData(API + 'popular.php');
         const cocktails = data.drinks || [];
         const topCocktails = await Cocktail.find().sort({ averageRating: -1 }).limit(5);
@@ -397,8 +399,23 @@ app.get('/home', async (req, res) => {
         let glasses = await fetch_list('g');
         let ingredients = await fetch_list('i');
         let drinks = await filteren();
+        
+        if (query) {
+          console.log('query true')
+         
+          const searchResultsAPI = cocktails.filter(cocktail =>
+            cocktail.strDrink.toLowerCase().includes(query.toLowerCase()) 
+          );
+          console.log('cocktails', cocktails)
 
-        res.render('home', { cocktails, userCocktails: randomUserCocktails, topCocktails, categories, glasses, ingredients, drinks });
+          console.log('searchResultsAPI', searchResultsAPI)
+        }
+        
+        else{
+          console.log('query false');
+          // searchResults = cocktails;
+        }
+        res.render('home', { cocktails, userCocktails: randomUserCocktails, topCocktails, categories, glasses, ingredients, drinks, query});
     } catch (error) {
         console.error("Fout bij ophalen van cocktails:", error);
         res.status(500).send("Er is een probleem met het laden van cocktails.");
