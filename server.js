@@ -160,6 +160,8 @@ const cocktailSchema = new mongoose.Schema({
   
   const userCocktail = mongoose.model("userCocktail", cocktailSchema);
   export default userCocktail;
+  const Cocktail = mongoose.model("Cocktail", cocktailSchema);
+// export default Cocktail;
 
 //CL OMZETTEN NAAR ML
 function convertToMl(amount, unit){
