@@ -25,8 +25,20 @@
                 <h3>Ingredients:</h3>
             </article>
             <article id="Instructions" data-tab-content>
-                <h3>Instructions</h3>
-                <p></p>
+                <ul>
+                <% if (favoriteCocktails && favoriteCocktails.length > 0) { %>
+                    <% favoriteCocktails.forEach(cocktail => { %>
+                        <li>
+                            <a href="/cocktail/<%= cocktail.name %>">
+                                <h4><%= cocktail.name %></h4>
+                                <img src="/uploads/<%= cocktail.image %>" alt="<%= cocktail.name %>">
+                            </a>
+                        </li>
+                    <% }) %>
+                <% } else { %>
+                    <li>Geen favoriete cocktails gevonden.</li>
+                <% } %>
+            </ul>
             </article>
         </section>
     </main>

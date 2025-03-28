@@ -141,6 +141,34 @@ function removeIngredient() {
   }
 }
 
+// FAVORITES 
+document.addEventListener('DOMContentLoaded', function() {
+  const favoriteBtn = document.querySelector('.favorite-btn');
+  if (favoriteBtn) { // Controleer of de knop bestaat
+    favoriteBtn.addEventListener('click', async function() {
+      const cocktailId = this.dataset.cocktailId;
+      try {
+        const response = await fetch(`/cocktail/${cocktailId}/favorite`, { method: 'POST' });
+        const data = await response.json();
+        if (data.status === 'added') {
+          this.classList.add('favorited');
+        } else {
+          this.classList.remove('favorited');
+        }
+      } catch (error) {
+        console.error('Fout bij favorieten:', error);
+      }
+    });
+  } else {
+    console.warn('Geen favoriet knop gevonden op deze pagina.');
+  }
+});
+
+
+
+
+
+console.log("Script.js is geladen!");
 // Image displaying
 document.addEventListener("DOMContentLoaded", function() {
   console.log(document.getElementById("image"))

@@ -10,8 +10,9 @@
             <h1><%= cocktail.name || cocktail.strDrink %></h1>
             <img src="<%= source === 'database' ? '/uploads/' + cocktail.image : cocktail.strDrinkThumb %>" 
                  alt="<%= cocktail.name || cocktail.strDrink %>">
-             <button class="favorite-btn">
-                ❤️ Add to Favorites
+            <button class="favorite-btn" data-cocktail-id="<%= cocktail._id %>">
+                <i class="far fa-heart empty-heart"></i>  <!-- Leeg hart icoon -->
+                <i class="fas fa-heart full-heart"></i>   <!-- Vol hart icoon -->
             </button>
             <section class="ingredienttoggle">
                 <div>
@@ -60,16 +61,21 @@
             <!-- Bestaande reviews weergeven -->
             <h3>Reviews</h3>
             <ul class="reviews-list">
-                <% cocktail.reviews.forEach(review => { %>
+
+                <% if(cocktail.reviews) { %>
+                <%    cocktail.reviews.forEach(review => { %>
                     <li>
                         <p>Rating: <%= review.rating %>/5</p>
                         <p><%= review.comment %></p>
                         <small>By: <%= review.user.username %> on <%= review.createdAt.toLocaleDateString() %></small>
                     </li>
                 <% }) %>
+                <% } else{ %>
+                    <p>nog geen reviews</p>
+                <% } %>
             </ul>
         </section>
     </main>
-    <script defer src="/script.js"></script>
+    <script src="/script.js"></script> 
 </body>
 </html>
