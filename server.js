@@ -273,7 +273,6 @@ app.post("/users/login", async (req, res) => {
   console.log("Sessie na login:", req.session);
 });
 
-
 // Check of de gebruiker ingelogd is
 app.get("/check-session", (req, res) => {
 
@@ -314,7 +313,7 @@ app.post("/logout", (req, res) => {
 });
 
 // 🔹 REVIEW (POST)
-app.post("/cocktail/:cocktailId/review", async (req, res) => {
+app.post ("/cocktail/:cocktailId/review", isAuthenticated ,async (req, res) => {
     const { cocktailId } = req.params;
     const { rating, comment } = req.body;
     const userId = req.session.userId; // Haal de userId uit de sessie
@@ -496,8 +495,8 @@ function isAuthenticated(req, res, next) {
       return res.redirect("/login");
     }
     next();
-  }
-  
+}
+
 // 🔹 HOME PAGE & API FETCHING
 app.get('/home', async (req, res) => {
     res.locals.currentpath = req.path;
