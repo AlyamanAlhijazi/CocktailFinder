@@ -130,16 +130,6 @@ function removeIngredient(event) {
   }
 }
 
-function removeIngredient() {
-  const ingredientsDiv = document.getElementById("ingredients");
-  const ingredientRows = ingredientsDiv.getElementsByClassName("ingredient-row");
-
-  if (ingredientRows.length > 1) {
-    ingredientsDiv.removeChild(ingredientRows[ingredientRows.length - 1]);
-  } else {
-    alert("You must have at least one ingredient.");
-  }
-}
 
 // FAVORITES 
 document.addEventListener('DOMContentLoaded', function() {
@@ -193,78 +183,96 @@ document.addEventListener("DOMContentLoaded", function() {
   
 });
 
-
 //FILTER
-//ingredienten
-const addIngredients = document.getElementById("addIngredient");
-const filtersForm = document.getElementById("filtersForm");
+// button filter
+document.addEventListener("DOMContentLoaded", function() {
+  // Filter toggle functionality
+  var openFilter = document.querySelector(".filterOpen");
+  if (openFilter) {
+      openFilter.onclick = toggleFilter;
+  }
 
+  function toggleFilter() {
+      var theFilter = document.querySelector("#filtersForm");
+      if (theFilter) {
+          theFilter.classList.toggle("toonFilter");
+      }
+  }
 
-function add(){
-  let newDiv = document.createElement('div');
-  newDiv.setAttribute('class', 'kruisjenaasttext');
-  filtersForm.appendChild(newDiv);
-  let newField = document.createElement('input');
-  newField.setAttribute('list',"x");
-  newField.setAttribute("placeholder", "ingredient")
-  newField.setAttribute('class','fieldIngredient'); //class om styling makelijker te maken :)
-  newDiv.appendChild(newField);
-  let newButton = document.createElement('button');
-  newButton.setAttribute('type', 'button');
-  newButton.setAttribute('class','btnIngredient'); //class om styling makelijker te maken :)
-  newButton.innerHTML = "x"; 
-  newDiv.appendChild(newButton);
-  newButton.addEventListener('click', () => {
-      newDiv.removeChild(newButton);
-      newDiv.removeChild(newField);
-      filtersForm.removeChild(newDiv);
-  })
-}
+  // Ingredient adding functionality
+  const addIngredients = document.getElementById("addIngredient");
+  const filtersForm = document.getElementById("filtersForm");
 
-if(addIngredients) {
-  addIngredients.addEventListener('click', add);
-}
+  function add() {
+      let newDiv = document.createElement('div');
+      newDiv.setAttribute('class', 'kruisjenaasttext');
+      filtersForm.appendChild(newDiv);
 
-if (filtersForm) {
-    console.log(filtersForm)
-    filtersForm.addEventListener("submit", async function(event) {
-        event.preventDefault();
+      let newField = document.createElement('input');
+      newField.setAttribute('list', "x");
+      newField.setAttribute("placeholder", "ingredient");
+      newField.setAttribute('class', 'fieldIngredient');
+      newDiv.appendChild(newField);
 
-        const ingredients = document.getElementsByClassName("fieldIngredient");
-        const alcoholic = document.getElementById("alcoholic").value;
-        const glass = document.getElementById("inputGlasses").value;
-        const category = document.getElementById("category").value;
-        let ingredientList = [];
+      let newButton = document.createElement('button');
+      newButton.setAttribute('type', 'button');
+      newButton.setAttribute('class', 'btnIngredient');
+      newButton.innerHTML = "x";
+      newDiv.appendChild(newButton);
 
-        for(let i = 0; i < ingredients.length; i++) {
-            ingredientList.push(ingredients[i].value.toLowerCase());
-        }
+      newButton.addEventListener('click', () => {
+          newDiv.removeChild(newButton);
+          newDiv.removeChild(newField);
+          filtersForm.removeChild(newDiv);
+      });
+  }
 
-        console.log(ingredientList, alcoholic, glass, category);
+  if (addIngredients) {
+      addIngredients.addEventListener('click', add);
+  }
 
-        try {
-            const response = await fetch("/filter-list", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    ingredients: ingredientList,
-                    alcoholic,
-                    glass,
-                    category
-                })
-            });
+  // Form submission for the filters
+  if (filtersForm) {
+      console.log(filtersForm);
+      filtersForm.addEventListener("submit", async function(event) {
+          event.preventDefault();
 
-            if (response.redirected) {
-                window.location.href = response.url;
-            } else {
-                const data = await response.json();
-                document.getElementById("message").innerText = data.message || "Something went wrong";
-            }
-        } catch (error) {
-            document.getElementById("message").innerText = `Something went wrong: ${error}`;
-        }
-    });
-}
+          const ingredients = document.getElementsByClassName("fieldIngredient");
+          const alcoholic = document.getElementById("alcoholic").value;
+          const glass = document.getElementById("inputGlasses").value;
+          const category = document.getElementById("category").value;
+          let ingredientList = [];
+
+          for (let i = 0; i < ingredients.length; i++) {
+              ingredientList.push(ingredients[i].value.toLowerCase());
+          }
+
+          console.log(ingredientList, alcoholic, glass, category);
+
+          try {
+              const response = await fetch("/filter-list", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                      ingredients: ingredientList,
+                      alcoholic,
+                      glass,
+                      category
+                  })
+              });
+
+              if (response.redirected) {
+                  window.location.href = response.url;
+              } else {
+                  const data = await response.json();
+                  document.getElementById("message").innerText = data.message || "Something went wrong";
+              }
+          } catch (error) {
+              document.getElementById("message").innerText = `Something went wrong: ${error}`;
+          }
+      });
+  }
+});
 
 // instructie toggle
 const tabs = document.querySelectorAll('[data-tab-target]');
