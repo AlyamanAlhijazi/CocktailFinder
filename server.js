@@ -34,6 +34,7 @@ app.use(session({
 );
 // flash messages instellen
 app.use(flash());
+
 // middleware om de ingelogde gebruiker op te halen
 app.use(async (req, res, next) => {
     if (req.session.userId) {
@@ -53,7 +54,6 @@ const userSchema = new mongoose.Schema({
   username: String,
   email: String,
   password: String,
-  birthdate: Date,
   favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'userCocktail', default: [] }]
 
 });
@@ -209,8 +209,8 @@ app.get("/register", async (req, res) => {
 
 // 🔹 REGISTRATIE (POST)
 app.post("/users/register", async (req, res) => {
-  const { username, email, password, birthdate } = req.body;
-  if (!username || !email || !password || !birthdate) {
+  const { username, email, password } = req.body;
+  if (!username || !email || !password) {
     req.flash("error", "All fields are required!");
     return res.redirect("/register");
   }
@@ -221,10 +221,9 @@ app.post("/users/register", async (req, res) => {
       return res.redirect("/register");
     }
 
-    const formattedBirthdate = new Date(birthdate);
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = new User({ username, email, password: hashedPassword, birthdate: formattedBirthdate });
+    const user = new User({ username, email, password: hashedPassword });
     await user.save();
 
     // Sessies instellen na registratie (direct inloggen)
@@ -286,9 +285,7 @@ app.get("/check-session", (req, res) => {
 });
 
 // 🔹 LOGOUT (GET)
-app.get("/logout", async (req, res) => {
-  res.render("logout");
-});
+
 
 // 🔹 LOGOUT (POST)
 app.post("/logout", (req, res) => {
@@ -403,7 +400,6 @@ app.post("/cocktail/:cocktailId/favorite", async (req, res) => {
 
 
 // 🔹 PROFILE (GET)
-
 app.get("/profile", async (req, res) => {
   if (!req.session.userId) {
     return res.redirect("/login");
@@ -613,33 +609,6 @@ app.get("/usercocktails", async (req, res) => {
   }
 });
 
-
-// app.get('/cocktail/:cocktailName', async (req, res) => {
-//     try {
-//         const cocktailName = req.params.cocktailName; 
-
-//         const dbCocktail = await Cocktail.findOne({ 
-//             name: { $regex: new RegExp("^" + cocktailName + "$", "i") } 
-//         }).populate("reviews.user");
-
-//         if (dbCocktail) {
-//             return res.render('instructies.ejs', { cocktail: dbCocktail, source: 'database', reviews: dbCocktail.reviews });
-//         }
-
-//         const data = await fetchData(API + 'search.php?s=' + cocktailName); 
-//         const apiCocktail = data.drinks ? data.drinks[0] : null;
-
-//         if (!apiCocktail) {
-//             return res.status(404).send('Cocktail not found');
-//         }
-
-//         res.render('instructies.ejs', { cocktail: apiCocktail, source: 'api', reviews: [] });
-
-//     } catch (error) {
-//         console.error("❌ Fout bij ophalen cocktail:", error);
-//         res.status(500).send("Er is een probleem met het laden van de cocktail.");
-//     }
-// });
 
 app.get('/cocktail/:cocktailName', saveApiCocktailToDB, async (req, res) => {
     try {
