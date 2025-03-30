@@ -290,21 +290,6 @@ header .active{
     margin-bottom: 1rem;
 }
 
-<<<<<<< HEAD
-/* favorite button */
-.full-heart {
-    display: none;
-}
-
-.favorite-btn.favorited .empty-heart {
-    display: none;
-}
-
-.favorite-btn.favorited .full-heart {
-    display: inline;
-}
-
-=======
 .ingredienttoggle button {
     background: none;
     border: none;
@@ -362,7 +347,6 @@ article h3 {
     display: flex;
 }
 
->>>>>>> df84047861939819eb6219a14f7b9eb978eb7604
 /* profile view styles */
 #profile-styles{
     width: 100%;    
@@ -726,12 +710,25 @@ input[type="file"] {
     color: #FDD017;
 }
 
-.favorite-btn {
+/* .favorite-btn {
     background-color: #f0f0f0;
     border: none;
     padding: 10px 20px;
     border-radius: 5px;
     cursor: pointer;
+} */
+
+/* favorite button */
+.full-heart {
+    display: none;
+}
+
+.favorite-btn.favorited .empty-heart {
+    display: none;
+}
+
+.favorite-btn.favorited .full-heart {
+    display: inline;
 }
 
 .top-cocktails {

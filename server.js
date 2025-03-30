@@ -358,7 +358,8 @@ app.post("/cocktail/:cocktailId/review", async (req, res) => {
 /// 🔹 FAVORITES (POST)
 app.post("/cocktail/:cocktailId/favorite", async (req, res) => {
   if (!req.session.userId) {
-    return res.status(401).json({ error: "Je moet ingelogd zijn" });
+    req.flash("error", "Sign in to add this cocktail to favorites");
+    return res.redirect("/login");
   }
 
   const { cocktailId } = req.params;
@@ -367,7 +368,7 @@ app.post("/cocktail/:cocktailId/favorite", async (req, res) => {
   try {
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ error: "Gebruiker niet gevonden" });
+      return res.status(404).json({ error: "User not found" });
     }
     // checken of de cocktailId wel een ObjectId is
     if (!mongoose.Types.ObjectId.isValid(cocktailId)) {
@@ -383,11 +384,11 @@ app.post("/cocktail/:cocktailId/favorite", async (req, res) => {
     if (isFavorite) {
       // Als al favoriet, dan verwijderen
       user.favorites.pull(cocktailObjectId);
-      console.log("🗑️ Cocktail verwijderd uit favorieten");
+      req.flash("success", "Cocktail added to favourites!");
     } else {
       // Als niet favoriet, dan toevoegen
       user.favorites.push(cocktailObjectId);
-      console.log("✅ Cocktail toegevoegd aan favorieten");
+      req.flash("success", "Cocktail removed from favorites!");
     }
 
     await user.save();
@@ -472,7 +473,7 @@ const saveApiCocktailToDB = async (req, res, next) => {
   // 🔹 BEVEILIGDE ROUTE (bijvoorbeeld: Favorieten, uploaden van cocktails)
 app.get("/cocktails/favorites", (req, res) => {
   if (!req.session.userId) {
-    return res.status(401).json({ message: "Je moet ingelogd zijn om toegang te krijgen" });
+    req.flash("error", "You must be logged in to access this page");
   }
   res.json({ message: "Dit is de beveiligde favorieten route" });
 });
@@ -489,6 +490,7 @@ app.get("/cocktails/search", async (req, res) => {
     res.status(500).json({ error: "Fout bij ophalen van cocktails." });
   }
 });
+
 // Check of gebruiker is ingelogd
 function isAuthenticated(req, res, next) {
     if (!req.session.userId) {
@@ -611,32 +613,7 @@ app.get("/usercocktails", async (req, res) => {
 });
 
 
-// app.get('/cocktail/:cocktailName', async (req, res) => {
-//     try {
-//         const cocktailName = req.params.cocktailName; 
 
-//         const dbCocktail = await Cocktail.findOne({ 
-//             name: { $regex: new RegExp("^" + cocktailName + "$", "i") } 
-//         }).populate("reviews.user");
-
-//         if (dbCocktail) {
-//             return res.render('instructies.ejs', { cocktail: dbCocktail, source: 'database', reviews: dbCocktail.reviews });
-//         }
-
-//         const data = await fetchData(API + 'search.php?s=' + cocktailName); 
-//         const apiCocktail = data.drinks ? data.drinks[0] : null;
-
-//         if (!apiCocktail) {
-//             return res.status(404).send('Cocktail not found');
-//         }
-
-//         res.render('instructies.ejs', { cocktail: apiCocktail, source: 'api', reviews: [] });
-
-//     } catch (error) {
-//         console.error("❌ Fout bij ophalen cocktail:", error);
-//         res.status(500).send("Er is een probleem met het laden van de cocktail.");
-//     }
-// });
 
 app.get('/cocktail/:cocktailName', saveApiCocktailToDB, async (req, res) => {
     try {
@@ -686,8 +663,6 @@ app.get("/random", async (req, res) => {
         res.status(500).send("Er is iets misgegaan");
     }
 });
-
-
 
 
 

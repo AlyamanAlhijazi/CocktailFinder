@@ -168,7 +168,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-console.log("Script.js is geladen!");
 // Image displaying
 document.addEventListener("DOMContentLoaded", function() {
   console.log(document.getElementById("image"))
@@ -289,3 +288,6 @@ tabs.forEach(tab => {
         }
     });
 });
+
+
+console.log("Script.js is geladen!");
