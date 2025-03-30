@@ -22,23 +22,36 @@
                 <button data-tab-target="#Instructions">Favorites</button>
             </div>
             <article id="Ingredients" data-tab-content class="active">
-                <h3>Ingredients:</h3>
+                <% if (userCocktails.length > 0) { %>
+                    <ul class="cocktail-list">
+                        <% userCocktails.forEach(cocktail => { %>
+                            <li>
+                                <a href="/cocktail/<%= cocktail._id %>" class="cocktail-link">
+                                    <h2><%= cocktail.name %></h2>
+                                    <img src="/uploads/<%= cocktail.image %>" alt="<%= cocktail.name %>">
+                                </a>
+                            </li>
+                        <% }) %>
+                    </ul>
+                <% } else { %>
+                    <p>You haven't created any cocktails yet.</p>
+                <% } %>
             </article>
             <article id="Instructions" data-tab-content>
-                <ul>
                 <% if (favoriteCocktails && favoriteCocktails.length > 0) { %>
-                    <% favoriteCocktails.forEach(cocktail => { %>
-                        <li>
-                            <a href="/cocktail/<%= cocktail.name %>">
-                                <h4><%= cocktail.name %></h4>
-                                <img src="/uploads/<%= cocktail.image %>" alt="<%= cocktail.name %>">
-                            </a>
-                        </li>
-                    <% }) %>
+                    <ul class="cocktail-list">
+                        <% favoriteCocktails.forEach(cocktail => { %>
+                            <li>
+                                <a href="/cocktail/<%= cocktail._id %>" class="cocktail-link">
+                                    <h2><%= cocktail.name %></h2>
+                                    <img src="/uploads/<%= cocktail.image %>" alt="<%= cocktail.name %>">
+                                </a>
+                            </li>
+                        <% }) %>
+                    </ul>
                 <% } else { %>
-                    <li>Geen favoriete cocktails gevonden.</li>
+                    <p>You have no favorite cocktails yet.</p>
                 <% } %>
-            </ul>
             </article>
         </section>
     </main>

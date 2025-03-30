@@ -25,6 +25,7 @@ body {
     align-items: center;
     min-height: 100vh; 
     width: 100vw;
+    overflow-x: hidden;
 }
 
 h1 {
@@ -196,7 +197,7 @@ header .active{
 }
 
 .cocktail-link:hover {
-    transform: scale(1.05);
+    z-index: -1;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
 }
 
@@ -204,6 +205,7 @@ header .active{
     font-size: 1.3em;
     margin: 0.5em 0;
     font-weight: bold;
+    padding-left: 0;
 }
 
 .cocktail-link img {
@@ -288,6 +290,19 @@ header .active{
     justify-content: center;
     gap: 2rem;
     margin-bottom: 1rem;
+}
+
+/* favorite button */
+.full-heart {
+    display: none;
+}
+
+.favorite-btn.favorited .empty-heart {
+    display: none;
+}
+
+.favorite-btn.favorited .full-heart {
+    display: inline;
 }
 
 .ingredienttoggle button {
@@ -634,11 +649,9 @@ input[type="checkbox"] {
 }
 
 .category-glass-container {
-    display: flex;
-    justify-content: center;
     gap: 1em;
-    flex-wrap: wrap;
-    width: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 input[type="file"] {
@@ -788,6 +801,21 @@ input[type="file"] {
     border-radius: 5px;
     margin-top: auto; 
 }
+.filterenSorteren {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+}
+.filterenSorteren.toonFilter {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+    z-index: 3;
+}
 #filtersForm {
     max-width: 30rem;
     margin: 0 auto;
@@ -799,6 +827,35 @@ input[type="file"] {
     flex-direction: column;
     gap: 1rem;
 }
+#filtersForm {
+	position: absolute; 
+    width: 20rem; 
+    background: var(--white);
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+    box-shadow: 0 0.25rem 0.625rem rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+#filtersForm.toonFilter {
+	opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+    border-bottom: 50em;
+}
+.filterOpen {
+    position: absolute;
+    top: -4rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    z-index: 1000;
+}
+
 #addIngredient {
     color: var(--color-text);
     padding: 0.625rem;
@@ -830,9 +887,40 @@ input[type="file"] {
     cursor: pointer;
     padding: 0;
 }
+
 .container p{
     text-align: center;
 }
+.alert {
+    position: fixed; 
+    top: 20px;
+    left: 50%; 
+    transform: translateX(-50%); 
+    padding: 10px 20px;
+    border-radius: 5px;
+    z-index: 9999; 
+    width: auto;
+    max-width: 80%; 
+    box-sizing: border-box;
+    text-align: center;
+    font-weight: bold;
+    opacity: 1;
+}
+  
+  /* Success message styling */
+  .alert-success {
+    background-color: #28a745; /* Green */
+    color: white;
+    border: 1px solid #218838;
+}
+  
+  /* Error message styling */
+  .alert-danger {
+    background-color: #dc3545; /* Red */
+    color: white;
+    border: 1px solid #c82333;
+}
+  
  
 
 /* Media queries */
@@ -873,6 +961,9 @@ input[type="file"] {
     button {
         width: 100%;
     }
+    .filterOpen{
+        width: auto;
+    }
     
 }
 
@@ -882,9 +973,6 @@ input[type="file"] {
     }
     .cocktail-details img{
         max-height: 65vw;
-    }
-    h2{
-        padding-left: 1.6em;
     }
     .cocktail-scroll-container {
         padding-left: 0em;

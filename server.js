@@ -239,7 +239,7 @@ app.post("/users/register", async (req, res) => {
 
 // 🔹 LOGIN (GET)
 app.get("/login", async (req, res) => {
-  res.render("login");
+  res.render("login", { messages: req.flash() });
 });
 
 
@@ -272,7 +272,6 @@ app.post("/users/login", async (req, res) => {
   res.redirect("/profile");
   console.log("Sessie na login:", req.session);
 });
-
 
 // Check of de gebruiker ingelogd is
 app.get("/check-session", (req, res) => {
@@ -314,7 +313,7 @@ app.post("/logout", (req, res) => {
 });
 
 // 🔹 REVIEW (POST)
-app.post("/cocktail/:cocktailId/review", async (req, res) => {
+app.post ("/cocktail/:cocktailId/review", isAuthenticated ,async (req, res) => {
     const { cocktailId } = req.params;
     const { rating, comment } = req.body;
     const userId = req.session.userId; // Haal de userId uit de sessie
@@ -405,26 +404,30 @@ app.post("/cocktail/:cocktailId/favorite", async (req, res) => {
 
 
 // 🔹 PROFILE (GET)
+
 app.get("/profile", async (req, res) => {
   if (!req.session.userId) {
-    return res.redirect("login");
+    return res.redirect("/login");
   }
   try {
     const user = await User.findById(req.session.userId).populate("favorites");
-    console.log("Opgehaalde favorieten na populate:", user.favorites); // Controleer of de user en favorieten correct wordt opgehaald
-    
-    
+    const userCocktails = await Cocktail.find({ createdBy: req.session.userId });
+
+    console.log("Opgehaalde favorieten:", user.favorites);
+    console.log("Opgehaalde eigen cocktails:", userCocktails);
+
     res.render("profile", {
       user: user,
       favoriteCocktails: user.favorites,
+      userCocktails: userCocktails, // Pass the created cocktails to the template
     });
-    console.log("Favorite cocktails op profielpagina:", user.favorites);
 
   } catch (error) {
     console.error("Fout bij laden profiel:", error);
     res.status(500).send("Er is een fout opgetreden bij het laden van het profiel.");
   }
 });
+
 
 
 // Middleware om API-cocktails op te slaan in de database
@@ -498,8 +501,8 @@ function isAuthenticated(req, res, next) {
       return res.redirect("/login");
     }
     next();
-  }
-  
+}
+
 // 🔹 HOME PAGE & API FETCHING
 app.get('/home', async (req, res) => {
     res.locals.currentpath = req.path;
