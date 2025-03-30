@@ -34,6 +34,7 @@ app.use(session({
 );
 // flash messages instellen
 app.use(flash());
+
 // middleware om de ingelogde gebruiker op te halen
 app.use(async (req, res, next) => {
     if (req.session.userId) {
@@ -53,7 +54,6 @@ const userSchema = new mongoose.Schema({
   username: String,
   email: String,
   password: String,
-  birthdate: Date,
   favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'userCocktail', default: [] }]
 
 });
@@ -209,8 +209,8 @@ app.get("/register", async (req, res) => {
 
 // 🔹 REGISTRATIE (POST)
 app.post("/users/register", async (req, res) => {
-  const { username, email, password, birthdate } = req.body;
-  if (!username || !email || !password || !birthdate) {
+  const { username, email, password } = req.body;
+  if (!username || !email || !password) {
     req.flash("error", "All fields are required!");
     return res.redirect("/register");
   }
@@ -221,10 +221,9 @@ app.post("/users/register", async (req, res) => {
       return res.redirect("/register");
     }
 
-    const formattedBirthdate = new Date(birthdate);
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = new User({ username, email, password: hashedPassword, birthdate: formattedBirthdate });
+    const user = new User({ username, email, password: hashedPassword });
     await user.save();
 
     // Sessies instellen na registratie (direct inloggen)
@@ -286,9 +285,7 @@ app.get("/check-session", (req, res) => {
 });
 
 // 🔹 LOGOUT (GET)
-app.get("/logout", async (req, res) => {
-  res.render("logout");
-});
+
 
 // 🔹 LOGOUT (POST)
 app.post("/logout", (req, res) => {
@@ -404,7 +401,6 @@ app.post("/cocktail/:cocktailId/favorite", async (req, res) => {
 
 
 // 🔹 PROFILE (GET)
-
 app.get("/profile", async (req, res) => {
   if (!req.session.userId) {
     return res.redirect("/login");
@@ -616,8 +612,11 @@ app.get("/usercocktails", async (req, res) => {
 });
 
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 86f6e8ffe7bb2c6f10e0aa774522d63449ef3a2f
 app.get('/cocktail/:cocktailName', saveApiCocktailToDB, async (req, res) => {
     try {
       const cocktailName = req.params.cocktailName;

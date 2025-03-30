@@ -8,7 +8,6 @@ document.addEventListener("DOMContentLoaded", function() {
       event.preventDefault();
 
       const username = document.getElementById("username").value;
-      const birthdate = document.getElementById("birthdate").value;
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
       const confirmPassword = document.getElementById("confirmPassword").value;
@@ -18,7 +17,7 @@ document.addEventListener("DOMContentLoaded", function() {
         return;
       }
 
-      const userData = { username, birthdate, email, password };
+      const userData = { username, email, password };
 
       try {
         const response = await fetch("/users/register", {
@@ -276,19 +275,26 @@ document.addEventListener("DOMContentLoaded", function() {
 // instructie toggle
 const tabs = document.querySelectorAll('[data-tab-target]');
 const tabContents = document.querySelectorAll('[data-tab-content]');
- 
+
+// Set the first tab (Ingredients) as active on page load
+document.addEventListener('DOMContentLoaded', () => {
+    const defaultTab = document.querySelector('[data-tab-target="#Ingredients"]');
+    const defaultContent = document.querySelector('#Ingredients');
+    
+    if (defaultTab && defaultContent) {
+        defaultTab.classList.add('active');
+        defaultContent.classList.add('active');
+    }
+});
+
 tabs.forEach(tab => {
     tab.addEventListener('click', (e) => {
         e.preventDefault();
- 
+
         tabContents.forEach(content => content.classList.remove('active'));
- 
-    
         tabs.forEach(t => t.classList.remove('active'));
- 
-        
+
         const target = document.querySelector(tab.dataset.tabTarget);
- 
         
         if (target) {
             target.classList.add('active');
@@ -297,5 +303,8 @@ tabs.forEach(tab => {
     });
 });
 
+<<<<<<< HEAD
 
 console.log("Script.js is geladen!");
+=======
+>>>>>>> 86f6e8ffe7bb2c6f10e0aa774522d63449ef3a2f
