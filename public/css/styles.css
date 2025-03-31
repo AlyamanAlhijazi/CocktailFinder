@@ -107,7 +107,81 @@ header .active{
 #home.active path{
     stroke: var(--color-text);
 }
+/* zoekbalk home */
+.search-balk{
+    /* width: 100%;
+    flex-direction: row;
+    justify-content: center;
+    gap: .5em; */
+    /* background-color: #ED8A01; */
+    padding: 0 .5em;
+    width: 100%;
+    height: 4em;
+    /* margin-bottom: 1em; */
+    margin: 0 auto 1em auto;
 
+
+}
+.search-balk input{
+    width: 100%;
+    height: 100%;
+    background-image: url(/images/search-icon.svg);
+    background-repeat: no-repeat;
+    background-position:  right 1em center;
+    background-size: 1.5em;
+    
+}
+
+.search-balk button{ 
+    width: 3.5em;
+    height: 2.5em;
+    display: grid;
+    place-items: center;
+    padding: 0;
+}
+.search-balk button svg{
+    width: 1.7em;
+    height: 1.7em;
+}
+.search-balk label{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    position: relative;
+    gap: .5em;
+    /* background-color: #78CCEE; */
+    
+}
+.search-balk label a{
+    background-color:  #ff99ac;
+    /* background-color: linear-gradient(135deg, #FD9FA1, #ff6a88, #ff99ac); */
+    width: 2.5em;
+    height: 2.5em;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    position: absolute;
+    right: .5em;
+    top: calc(50% - 2.5em / 2);
+}
+.search-balk label a svg{
+    width: 2em;
+    height: 2em;
+    color: var(--white);
+}
+main > .cocktail-list{
+    width: 100vw;
+}
+main > .cocktail-list li{
+    flex: none;
+}
+/* @media (max-width: 768px) {
+    .search-balk{
+        justify-content: center;
+    }
+
+} */
 /* stijling cocktails op home */
 
 .random-user-cocktails {

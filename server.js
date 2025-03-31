@@ -560,22 +560,26 @@ function isAuthenticated(req, res, next) {
       return res.redirect("/login");
     }
     next();
-}
+  }
+  
+// 🔹 HOME PAGE & API FETCHING & ZOEK COCKTAILS (GET)
 
-// 🔹 HOME PAGE & API FETCHING
 app.get('/home', async (req, res) => {
     res.locals.currentpath = req.path;
     const userId = req.session.userId;
 
     let recommendedCocktails = [];
 
+    const query = req.query.q;
     try {
         // Haal populaire cocktails van externe API
+        console.log('query');
         const data = await fetchData(API + 'popular.php');
         const cocktails = data.drinks || [];
 
         // Haal de top 5 cocktails op basis van rating uit de database
         const topCocktails = await Cocktail.find().sort({ averageRating: -1 }).limit(5);
+
 
         // Haal alle userCocktails op
         const allUserCocktails = await userCocktail.find();
@@ -586,6 +590,32 @@ app.get('/home', async (req, res) => {
         let glasses = await fetch_list('g');
         let ingredients = await fetch_list('i');
         let drinks = await filteren();
+        console.log('drinks', drinks[0]);
+        
+        if (query) {
+          console.log('query true')
+         
+          const searchResultsByName = drinks.filter(drink =>
+            drink.strDrink.toLowerCase().includes(query.toLowerCase()) 
+            
+          );
+          const searchResultsByIngredient = drinks.filter(drink =>
+            Object.keys(drink)
+                .filter(key => key.startsWith('strIngredient') && drink[key]) // Alleen niet-lege ingrediënten
+                .some(ingredientKey => drink[ingredientKey].toLowerCase().includes(query.toLowerCase()))
+        );
+
+          console.log('searchResultsByIngredient', searchResultsByIngredient);
+
+          res.render('home', {searchResultsByName, searchResultsByIngredient, query});
+ 
+        }
+        
+        else{
+          console.log('query false');
+          res.render('home', { cocktails, userCocktails: randomUserCocktails, topCocktails, categories, glasses, ingredients, drinks, query});
+          // searchResults = cocktails;
+        }
 
           // Als de gebruiker is ingelogd, haal aanbevelingen op op basis van favorieten
           if (userId) {
