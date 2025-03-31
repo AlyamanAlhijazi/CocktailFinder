@@ -744,39 +744,16 @@ app.get("/usercocktails", async (req, res) => {
 
 
 
-app.get('/cocktail/:cocktailName', saveApiCocktailToDB, async (req, res) => {
-    try {
-        const cocktailName = req.params.cocktailName;
- 
-        const dbCocktail = await Cocktail.findOne({
-            name: { $regex: new RegExp("^" + cocktailName + "$", "i") }
-        }).populate("reviews.user");
- 
-        if (dbCocktail) {
-            return res.render('instructies.ejs', { cocktail: dbCocktail, source: 'database', reviews: dbCocktail.reviews });
-        }
- 
-        const data = await fetchData(API + 'search.php?s=' + cocktailName);
-        const apiCocktail = data.drinks ? data.drinks[0] : null;
- 
-        if (!apiCocktail) {
-            return res.status(404).send('Cocktail not found');
-        }
- 
-        res.render('instructies.ejs', { cocktail: apiCocktail, source: 'api', reviews: [] });
- 
-    } catch (error) {
-        console.error("❌ Fout bij ophalen cocktail:", error);
-        res.status(500).send("Er is een probleem met het laden van de cocktail.");
+app.get('/cocktail/:cocktailName', async (req, res) => {
+  try {
       const cocktailName = req.params.cocktailName;
 
-      // Zoek de cocktail in de database
-      const dbCocktail = await userCocktail.findOne({
-        name: { $regex: new RegExp("^" + cocktailName + "$", "i") }
-      }).populate('reviews.user');
-  
+      const dbCocktail = await Cocktail.findOne({
+          name: { $regex: new RegExp("^" + cocktailName + "$", "i") }
+      }).populate("reviews.user");
+
       if (dbCocktail) {
-        return res.render('instructies.ejs', { cocktail: dbCocktail, source: 'database'});
+          return res.render('instructies.ejs', { cocktail: dbCocktail, source: 'database', reviews: dbCocktail.reviews });
       }
 
       const data = await fetchData(API + 'search.php?s=' + cocktailName);
@@ -791,8 +768,9 @@ app.get('/cocktail/:cocktailName', saveApiCocktailToDB, async (req, res) => {
   } catch (error) {
       console.error("❌ Fout bij ophalen cocktail:", error);
       res.status(500).send("Er is een probleem met het laden van de cocktail.");
-    }
+  }
 });
+
 // Random cocktail
 app.get("/random", async (req, res) => {
     try {
