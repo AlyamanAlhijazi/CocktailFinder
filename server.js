@@ -612,11 +612,6 @@ app.get("/usercocktails", async (req, res) => {
 });
 
 
-<<<<<<< HEAD
-
-
-=======
->>>>>>> 86f6e8ffe7bb2c6f10e0aa774522d63449ef3a2f
 app.get('/cocktail/:cocktailName', saveApiCocktailToDB, async (req, res) => {
     try {
       const cocktailName = req.params.cocktailName;
