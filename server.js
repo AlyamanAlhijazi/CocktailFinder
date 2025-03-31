@@ -486,50 +486,49 @@ function isAuthenticated(req, res, next) {
     next();
   }
   
-// 🔹 HOME PAGE & API FETCHING & ZOEK COCKTAILS (GET)
+//  ZOEK COCKTAILS (post)  
+app.post('/search', async (req, res) => {
+  const query = req.body.q;
+  try {
+    console.log("Search Query:", query);
+    const drinks = await filteren();
+    const searchResultsByName = drinks.filter(drink =>
+      drink.strDrink.toLowerCase().includes(query.toLowerCase())   
+    );
+    const searchResultsByIngredient = drinks.filter(drink =>
+      Object.keys(drink)
+          .filter(key => key.startsWith('strIngredient') && drink[key]) // Alleen niet-lege ingrediënten
+          .some(ingredientKey => drink[ingredientKey].toLowerCase().includes(query.toLowerCase()))
+  );
+    
+
+    res.render("home", { searchResultsByName, searchResultsByIngredient, query
+
+    });
+
+  } catch (error) {
+    console.error("Fout bij ophalen van cocktails:", error);
+    res.status(500).send("Er is een probleem met het laden van cocktails.");
+  }
+ 
+});
+// 🔹 HOME PAGE & API FETCHING 
 
 app.get('/home', async (req, res) => {
     res.locals.currentpath = req.path;
 
-    const query = req.query.q;
     try {
-        console.log('query');
         const data = await fetchData(API + 'popular.php');
         const cocktails = data.drinks || [];
         const topCocktails = await Cocktail.find().sort({ averageRating: -1 }).limit(5);
         const allUserCocktails = await userCocktail.find();
-
         const randomUserCocktails = allUserCocktails.sort(() => 0.5 - Math.random()).slice(0, 10);
         let categories = await fetch_list('c');
         let glasses = await fetch_list('g');
         let ingredients = await fetch_list('i');
         let drinks = await filteren();
-        console.log('drinks', drinks[0]);
+          res.render('home', { cocktails, userCocktails: randomUserCocktails, topCocktails, categories, glasses, ingredients, drinks, query: ""});
         
-        if (query) {
-          console.log('query true')
-         
-          const searchResultsByName = drinks.filter(drink =>
-            drink.strDrink.toLowerCase().includes(query.toLowerCase()) 
-            
-          );
-          const searchResultsByIngredient = drinks.filter(drink =>
-            Object.keys(drink)
-                .filter(key => key.startsWith('strIngredient') && drink[key]) // Alleen niet-lege ingrediënten
-                .some(ingredientKey => drink[ingredientKey].toLowerCase().includes(query.toLowerCase()))
-        );
-
-          console.log('searchResultsByIngredient', searchResultsByIngredient);
-
-          res.render('home', {searchResultsByName, searchResultsByIngredient, query});
- 
-        }
-        
-        else{
-          console.log('query false');
-          res.render('home', { cocktails, userCocktails: randomUserCocktails, topCocktails, categories, glasses, ingredients, drinks, query});
-          // searchResults = cocktails;
-        }
     } catch (error) {
         console.error("Fout bij ophalen van cocktails:", error);
         res.status(500).send("Er is een probleem met het laden van cocktails.");
