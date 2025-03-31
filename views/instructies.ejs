@@ -41,7 +41,7 @@
             </section>
             <!-- Star Rating Form -->
             <h3>Rate this Cocktail:</h3>
-            <form action="/cocktail/<%= cocktail._id %>/review" method="POST">
+            <form id="reviewForm">
                 <div class="rating">
                     <input type="radio" id="star5" name="rating" value="5" /><label for="star5">☆</label>
                     <input type="radio" id="star4" name="rating" value="4" /><label for="star4">☆</label>
@@ -49,8 +49,13 @@
                     <input type="radio" id="star2" name="rating" value="2" /><label for="star2">☆</label>
                     <input type="radio" id="star1" name="rating" value="1" /><label for="star1">☆</label>
                 </div>
-                <textarea name="comment" placeholder="Write your review here"></textarea>
-                <button type="submit">Submit Review</button>
+                <textarea name="comment" placeholder="Write your review here" id="comment"></textarea>
+                <% if (source === 'database') { %> 
+                    <button type="submit" id="dbSubmit">Submit Review</button>
+                <% } else { %>
+                    <button type="submit" id="apiSubmit">Submit Review</button>
+                <% } %>
+                
             </form>
 
             <!-- Gemiddelde beoordeling weergeven -->

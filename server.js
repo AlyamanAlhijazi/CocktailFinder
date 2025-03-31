@@ -312,41 +312,63 @@ app.post("/logout", (req, res) => {
 });
 
 // 🔹 REVIEW (POST)
-app.post("/cocktail/:cocktailId/review", async (req, res) => {
-    const { cocktailId } = req.params;
-    const { rating, comment } = req.body;
-    const userId = req.session.userId; // Haal de userId uit de sessie
-  
-    try {
-      // Zoek de cocktail
+app.post("/review", async (req, res) => {
+  const cocktailId = req.body.id
+  const userId = req.session.userId; // Haal de userId uit de sessie
+
+  const rating = req.body.rating;
+  const source = req.body.source;
+  const comment = req.body.comment;
+  console.log(source, rating)
+  console.log(comment,  cocktailId )
+
+  const newReview = {
+    user: userId,
+    rating: parseInt(rating),
+    comment: comment,
+  };
+
+  try{
+    if(source == 'database') {
+      //Zoek de cocktail
       const cocktail = await userCocktail.findById(cocktailId);
   
       if (!cocktail) {
         return res.status(404).send("Cocktail niet gevonden");
       }
+
+
+
+    }
+  }
+   
+    
+    // try {
+    //   // Zoek de cocktail
+    //   const cocktail = await userCocktail.findById(cocktailId);
   
-      // Maak een nieuwe review
-      const newReview = {
-        user: userId,
-        rating: parseInt(rating),
-        comment: comment,
-      };
+    //   if (!cocktail) {
+    //     return res.status(404).send("Cocktail niet gevonden");
+    //   }
   
-      // Voeg de review toe aan de cocktail
-      cocktail.reviews.push(newReview);
-  
-      // Update de gemiddelde rating
-      let totalRating = 0;
-      cocktail.reviews.forEach((review) => {
-        totalRating += review.rating;
-      });
-      cocktail.averageRating = totalRating / cocktail.reviews.length;
-  
-      // Sla de cocktail op
-      await cocktail.save();
+    //   // Maak een nieuwe review
       
-      res.redirect(`/cocktail/${cocktail.name}`); // Redirect naar de cocktailpagina
-    } catch (error) {
+  
+    //   // Voeg de review toe aan de cocktail
+    //   cocktail.reviews.push(newReview);
+  
+    //   // Update de gemiddelde rating
+    //   let totalRating = 0;
+    //   cocktail.reviews.forEach((review) => {
+    //     totalRating += review.rating;
+    //   });
+    //   cocktail.averageRating = totalRating / cocktail.reviews.length;
+  
+    //   // Sla de cocktail op
+    //   await cocktail.save();
+      
+    //   res.redirect(`/cocktail/${cocktail.name}`); // Redirect naar de cocktailpagina
+    catch (error) {
       console.error("Fout bij het opslaan van de review:", error);
       res.status(500).send("Er is een fout opgetreden bij het opslaan van de review.");
     }
