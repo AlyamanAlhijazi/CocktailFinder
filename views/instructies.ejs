@@ -42,23 +42,26 @@
                 </article>
             </section>
             <!-- Star Rating Form -->
-            <h3>Rate this Cocktail:</h3>
-            <form action="/cocktail/<%= cocktail._id %>/review" method="POST">
-                <div class="rating">
-                    <input type="radio" id="star5" name="rating" value="5" /><label for="star5">☆</label>
-                    <input type="radio" id="star4" name="rating" value="4" /><label for="star4">☆</label>
-                    <input type="radio" id="star3" name="rating" value="3" /><label for="star3">☆</label>
-                    <input type="radio" id="star2" name="rating" value="2" /><label for="star2">☆</label>
-                    <input type="radio" id="star1" name="rating" value="1" /><label for="star1">☆</label>
-                </div>
-                <textarea name="comment" placeholder="Write your review here"></textarea>
-                <button type="submit">Submit Review</button>
-            </form>
+             <section class="leaveReview">
+                <h3>Rate this Cocktail:</h3>
+                <form action="/cocktail/<%= cocktail._id %>/review" method="POST">
+                    <div class="rating">
+                        <input type="radio" id="star5" name="rating" value="5" /><label for="star5">☆</label>
+                        <input type="radio" id="star4" name="rating" value="4" /><label for="star4">☆</label>
+                        <input type="radio" id="star3" name="rating" value="3" /><label for="star3">☆</label>
+                        <input type="radio" id="star2" name="rating" value="2" /><label for="star2">☆</label>
+                        <input type="radio" id="star1" name="rating" value="1" /><label for="star1">☆</label>
+                    </div>
+                    <textarea name="comment" placeholder="Write your review here"></textarea>
+                    <button type="submit">Submit Review</button>
+                </form>
+            </section>
 
             <!-- Gemiddelde beoordeling weergeven -->
-            <h3>Average rating</h3>
-            <p><strong><%= cocktail.averageRating ? cocktail.averageRating.toFixed(1) : "Nog geen beoordelingen" %>/5</strong></p>
-
+            <section class="averageRating">
+                <h3>Average rating</h3>
+                <p><strong><%= cocktail.averageRating ? cocktail.averageRating.toFixed(1) : "Nog geen beoordelingen" %>/5</strong></p>
+            </section>
             <!-- Bestaande reviews weergeven -->
             <h3>Reviews</h3>
             <ul class="reviews-list">

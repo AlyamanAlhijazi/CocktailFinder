@@ -303,8 +303,5 @@ tabs.forEach(tab => {
     });
 });
 
-<<<<<<< HEAD
 
 console.log("Script.js is geladen!");
-=======
->>>>>>> 86f6e8ffe7bb2c6f10e0aa774522d63449ef3a2f

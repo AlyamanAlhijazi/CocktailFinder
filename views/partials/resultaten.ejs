@@ -1,12 +1,16 @@
 <ul class="cocktail-list">
-    <% drinks.forEach(drink=> { %>
-        <li>
-            <a href="/cocktail/<%= drink.strDrink %>" class="cocktail-link">
-                <h2>
-                    <%= drink.strDrink %>
-                </h2>
-                <img loading="lazy" src="<%= drink.strDrinkThumb %>" alt="<%= drink.strDrink %>">
-            </a>
-        </li>
-    <%}) %>
+    <% if (drinks.length > 0) { %>
+        <% drinks.forEach(drink=> { %>
+            <li>
+                <a href="/cocktail/<%= drink.strDrink %>" class="cocktail-link">
+                    <h2>
+                        <%= drink.strDrink %>
+                    </h2>
+                    <img loading="lazy" src="<%= drink.strDrinkThumb %>" alt="<%= drink.strDrink %>">
+                </a>
+            </li>
+        <%}) %>
+    <% } else { %>
+        <p class="noResults">No results based on your filters</p>
+    <% } %>
 </ul>

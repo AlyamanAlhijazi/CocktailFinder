@@ -17,38 +17,51 @@
           </label>            
         </form>
         <% if (query) { %>
-            <h2>Search results by name</h2>
-            <ul class="cocktail-list">
-                <% searchResultsByName.forEach(searchResultByName => { %>
+            <% if (searchResultsByName.length === 0 && searchResultsByIngredient.length === 0) { %>
+                <h2>No matching results found by name and ingredients</h2> 
+                <% } else { %>
+                <% if (searchResultsByName.length === 0) { %>
+                    <h2>No matching results found by name</h2> 
+                <% } else { %> 
+                
+                <h2>Search results by name</h2>
+                <ul class="cocktail-list">
+                    <% searchResultsByName.forEach(searchResultByName => { %>
+    
+                        <li>
+                            <a class="cocktail-link" href="/cocktail/<%= searchResultByName.strDrink %>" class="cocktail-link">
+    
+                                <h3><%= searchResultByName.strDrink%></h3>
+                            <img src="<%= searchResultByName.strDrinkThumb %>" alt="<%= searchResultByName.strDrink %>">
+                            </a>
+    
+                        </li>
+                    <% }) %>
+                </ul>
+                <% } %>
+    
+                <% if (searchResultsByIngredient.length === 0) { %>
+                    <h2>No matching results found by ingredients</h2> 
+                <% } else { %> 
+                <h2>Search results by ingredients</h2>
+                <ul class="cocktail-list">
+                    <% searchResultsByIngredient.forEach(searchResultByIngredient => { %>
+    
+                        <li>
+                            <a class="cocktail-link" href="/cocktail/<%= searchResultByIngredient.strDrink %>" class="cocktail-link">
+    
+                                <h3><%= searchResultByIngredient.strDrink%></h3>
+                            <img src="<%= searchResultByIngredient.strDrinkThumb %>" alt="<%= searchResultByIngredient.strDrink %>">
+                            </a>
+    
+                        </li>
+                    <% }) %>
+                </ul>
+                <% } %>
 
-                    <li>
-                        <a class="cocktail-link" href="/cocktail/<%= searchResultByName.strDrink %>" class="cocktail-link">
+            <% } %>   
 
-                            <h3><%= searchResultByName.strDrink%></h3>
-                        <img src="<%= searchResultByName.strDrinkThumb %>" alt="<%= searchResultByName.strDrink %>">
-                        </a>
-
-                    </li>
-                <% }) %>
-            </ul>
-            <h2>Search results bij ingredient</h2>
-            <ul class="cocktail-list">
-                <% searchResultsByIngredient.forEach(searchResultByIngredient => { %>
-
-                    <li>
-                        <a class="cocktail-link" href="/cocktail/<%= searchResultByIngredient.strDrink %>" class="cocktail-link">
-
-                            <h3><%= searchResultByIngredient.strDrink%></h3>
-                        <img src="<%= searchResultByIngredient.strDrinkThumb %>" alt="<%= searchResultByIngredient.strDrink %>">
-                        </a>
-
-                    </li>
-                <% }) %>
-            </ul>
-
-            <% } else { %> 
-
-
+            <% } else { %>     
         <section class="top-cocktails">
             <h2>Top Rated Cocktails</h2>
             <ul>
@@ -66,6 +79,25 @@
             <h3>Dont know what to make?</h3>
             <button onclick="window.location.href='/random'">Surprise Me! </button>
         </section>
+        <section class="recommendations">
+            <h2>Recommended for You</h2>
+            <% if (recommendedCocktails.length > 0) { %>
+                <div class="cocktail-scroll-container">
+                    <ul class="cocktail-scroll-list">
+                        <% recommendedCocktails.forEach(cocktail => { %>
+                            <li class="cocktail-card">
+                                <a href="/cocktail/<%= cocktail.name %>" class="cocktail-link">
+                                    <img src="/uploads/<%= cocktail.image %>" alt="<%= cocktail.name %>">
+                                    <h3><%= cocktail.name %></h3>
+                                </a>
+                            </li>
+                        <% }) %>
+                    </ul>
+                </div>
+            <% } else { %>
+                <p class="noRecommendations">No recommendations available. Add some favorites to get started!</p>
+            <% } %>
+        </section>      
         <section class="random-user-cocktails">
             <div class="view-all">
                 <h2>User Cocktails</h2>
@@ -84,7 +116,7 @@
                 </ul>
             </div>
         </section>
-        <section>
+        <section class="allCocktails">
             <h2>All Cocktails</h2>
             <%- include('partials/filters.ejs') %>
             <%- include('partials/resultaten.ejs') %>
