@@ -37,9 +37,9 @@ h1 {
 }
 h2 {
     color: var(--color-text);
-    padding-left: 2.5em;
     font-size: 24px;
 }
+
 .logo {
     display: block;
     margin: 2rem auto; 
@@ -239,21 +239,22 @@ main > .cocktail-list li{
     font-size: 18px;
 }
 
-
+.allCocktails h2{
+    padding-left: 2.5em;
+}
 .cocktail-list {
+    grid-column: span 2; 
     list-style: none;
     padding: 0;
     margin: 0;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 1.5em;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(2, 1fr); 
+    justify-content: space-between; 
 }
-
-.cocktail-list li {
-    flex: 1 1 calc(25% - 1.5em); 
-    max-width: 20em;
-    text-align: center;
+.allCocktails{
+    padding: 0;
+    margin: 0;
 }
 
 .cocktail-link {
@@ -295,7 +296,8 @@ main > .cocktail-list li{
 }
 
 .view-all h2 {
-    margin: 0; 
+    margin: 0;
+    padding-left: 2.5em; 
 }
 .view-all a {
     text-decoration: none; 
@@ -598,9 +600,8 @@ display: none;
     #profile-styles section:nth-of-type(2) div{
         justify-content: center;
         gap: 5em;
-
-        
     }
+
 
 }
 .profile-list ul{
@@ -616,6 +617,18 @@ display: none;
 @media (min-width: 768px) {
     .profile-list ul{
         grid-template-columns: repeat(4, 1fr);
+    }
+    .cocktail-list{
+        grid-template-columns: repeat(4, 1fr);
+        margin: 2em;
+    }
+    .noResults{
+        grid-column: span 4; 
+        text-align: center;
+        margin: 0;
+        font-size: larger;
+        padding-top: 5em;
+        padding-bottom: 15em;
     }
 }
 
@@ -752,6 +765,7 @@ input[type="file"] {
 
 /* suprise me */
 .surprise-me {
+	display: block;
     text-align: center;
     background: var(--block-style);
     padding: 2rem;
@@ -999,18 +1013,112 @@ input[type="file"] {
   
   /* Success message styling */
   .alert-success {
-    background-color: #28a745; /* Green */
+    background-color: #28a745;
     color: white;
     border: 1px solid #218838;
 }
   
   /* Error message styling */
   .alert-danger {
-    background-color: #dc3545; /* Red */
+    background-color: #dc3545; 
     color: white;
     border: 1px solid #c82333;
 }
-  
+.reviews-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.reviews-list li {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease-in-out;
+}
+
+.reviews-list li:hover {
+    transform: scale(1.02);
+}
+
+.reviews-list p {
+    margin: 0.5rem 0;
+    font-size: 1rem;
+}
+
+.reviews-list small {
+    display: block;
+    color: #6c757d;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+.reviews-list li p:first-of-type {
+    font-weight: bold;
+    color: #ffb400; 
+}
+
+.no-reviews {
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    padding: 1rem;
+}
+
+.averageRating {
+    text-align: center;
+    background: var(--block-style);
+    padding: 1em;
+    padding-bottom: 0.3em;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    max-width: 300px;
+    margin: 1.5rem auto;
+    transition: transform 0.3s ease-in-out;
+}
+.averageRating h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.averageRating p {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-top: 0.5rem;
+    color:var(--color-text);
+    padding: 0;
+}
+.leaveReview {
+    position: relative;
+    width: 100%;
+}
+
+.leaveReview h3 {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+}
+
+.leaveReview form {
+    position: relative;
+    left: -1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.noResults{
+    grid-column: span 4; 
+    text-align: center; 
+    margin: 0 auto;
+    font-size: larger;
+    padding-top: 5em;
+    padding-bottom: 15em;
+}
+
  
 
 /* Media queries */
@@ -1020,7 +1128,6 @@ input[type="file"] {
         max-width: none;
         padding: 1.5em;
     }
-
     .ingredient-row,
     .category-glass-container {
         flex-direction: column;
@@ -1053,6 +1160,10 @@ input[type="file"] {
     }
     .filterOpen{
         width: auto;
+    }
+    .surprise-me{
+        margin-left: 1rem;
+        margin-right: 1rem;
     }
     
 }
