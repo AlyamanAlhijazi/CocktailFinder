@@ -568,19 +568,20 @@ app.get('/home', async (req, res) => {
     const userId = req.session.userId;
 
     let recommendedCocktails = [];
-
+    let searchResultsByName = [];
+    let searchResultsByIngredient = [];
     const query = req.query.q;
+
     try {
         // Haal populaire cocktails van externe API
-        console.log('query');
+        console.log('Fetching popular cocktails...');
         const data = await fetchData(API + 'popular.php');
         const cocktails = data.drinks || [];
 
         // Haal de top 5 cocktails op basis van rating uit de database
         const topCocktails = await Cocktail.find().sort({ averageRating: -1 }).limit(5);
 
-
-        // Haal alle userCocktails op
+        // Haal alle userCocktails op en kies er willekeurig 10
         const allUserCocktails = await userCocktail.find();
         const randomUserCocktails = allUserCocktails.sort(() => 0.5 - Math.random()).slice(0, 10);
 
@@ -589,68 +590,76 @@ app.get('/home', async (req, res) => {
         let glasses = await fetch_list('g');
         let ingredients = await fetch_list('i');
         let drinks = await filteren();
-        console.log('drinks', drinks[0]);
-        
+        console.log('Drinks example:', drinks[0]);
+
+        // **Zoekfunctie**
         if (query) {
-          console.log('query true')
-         
-          const searchResultsByName = drinks.filter(drink =>
-            drink.strDrink.toLowerCase().includes(query.toLowerCase()) 
-            
-          );
-          const searchResultsByIngredient = drinks.filter(drink =>
-            Object.keys(drink)
-                .filter(key => key.startsWith('strIngredient') && drink[key]) // Alleen niet-lege ingrediënten
-                .some(ingredientKey => drink[ingredientKey].toLowerCase().includes(query.toLowerCase()))
-        );
+            console.log('Search query detected:', query);
 
-          console.log('searchResultsByIngredient', searchResultsByIngredient);
+            searchResultsByName = drinks.filter(drink =>
+                drink.strDrink.toLowerCase().includes(query.toLowerCase())
+            );
 
-          res.render('home', {searchResultsByName, searchResultsByIngredient, query});
- 
-        }
-        
-        else{
-          console.log('query false');
-          res.render('home', { cocktails, userCocktails: randomUserCocktails, topCocktails, categories, glasses, ingredients, drinks, query});
-          // searchResults = cocktails;
+            searchResultsByIngredient = drinks.filter(drink =>
+                Object.keys(drink)
+                    .filter(key => key.startsWith('strIngredient') && drink[key])
+                    .some(ingredientKey => drink[ingredientKey].toLowerCase().includes(query.toLowerCase()))
+            );
+
+            console.log('Search results (by ingredient):', searchResultsByIngredient);
         }
 
-          // Als de gebruiker is ingelogd, haal aanbevelingen op op basis van favorieten
-          if (userId) {
+        // **Aanbevolen cocktails op basis van favorieten**
+        if (userId) {
             const user = await User.findById(userId).populate("favorites");
 
-            console.log("👤 Gebruiker ID:", userId);
-            console.log("⭐ Favoriete cocktails:", user.favorites);
+            if (user && user.favorites.length > 0) {
+                console.log("👤 User ID:", userId);
+                console.log("⭐ Favorite cocktails:", user.favorites.map(fav => fav.name));
 
-            const favoriteIngredients = [
-              ...new Set(user.favorites.flatMap(cocktail => cocktail.ingredients.map(ing => ing.name)))
-            ];
-            
-            console.log("🍹 Favoriete ingrediënten:", favoriteIngredients)
+                const favoriteIngredients = [
+                    ...new Set(user.favorites.flatMap(cocktail => cocktail.ingredients.map(ing => ing.name)))
+                ];
 
-            recommendedCocktails = await Cocktail.aggregate([
-              { $match: { 
-                  "ingredients.name": { $in: favoriteIngredients },
-                  _id: { $nin: user.favorites.map(fav => fav._id) } // Exclude current favorites
-              } },
-              { $addFields: { 
-                  matchCount: { $size: { $setIntersection: ["$ingredients.name", favoriteIngredients] } }
-              } },
-              { $sort: { matchCount: -1 } },
-              { $limit: 10 }
-          ]);
+                console.log("🍹 Favorite ingredients:", favoriteIngredients);
 
-          console.log("🔍 Aanbevolen cocktails:", recommendedCocktails);
+                recommendedCocktails = await Cocktail.aggregate([
+                    { $match: { 
+                        "ingredients.name": { $in: favoriteIngredients },
+                        _id: { $nin: user.favorites.map(fav => fav._id) }
+                    }},
+                    { $addFields: { 
+                        matchCount: { $size: { $setIntersection: ["$ingredients.name", favoriteIngredients] } }
+                    }},
+                    { $sort: { matchCount: -1 } },
+                    { $limit: 10 }
+                ]);
 
-          }
+                console.log("🔍 Recommended cocktails:", recommendedCocktails);
+            }
+        }
 
-        res.render('home', { cocktails, userCocktails: randomUserCocktails, topCocktails, categories, glasses, ingredients, drinks, recommendedCocktails });
+        // **Render slechts ÉÉN keer!**
+        res.render('home', {
+            cocktails,
+            userCocktails: randomUserCocktails,
+            topCocktails,
+            categories,
+            glasses,
+            ingredients,
+            drinks,
+            recommendedCocktails,
+            searchResultsByName,
+            searchResultsByIngredient,
+            query
+        });
+
     } catch (error) {
-        console.error("error while retrieving cocktails", error);
+        console.error("❌ Error while retrieving cocktails:", error);
         res.status(500).send("There was a problem loading the cocktails");
     }
 });
+
 
 app.get("/profile", isAuthenticated, async (req, res) => {
     res.render("profile", { user: req.session.username });

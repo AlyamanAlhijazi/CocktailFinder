@@ -1118,6 +1118,15 @@ input[type="file"] {
     padding-top: 5em;
     padding-bottom: 15em;
 }
+.noRecommendations{
+    grid-column: span 4; 
+    text-align: center; 
+    margin: 0 auto;
+    font-size: larger;
+}
+.recommendations h2{
+    padding-left: 2.5em;
+}
 
  
 

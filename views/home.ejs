@@ -46,28 +46,7 @@
                 <% }) %>
             </ul>
 
-            <% } else { %> 
-
-
-        <section class="recommendations">
-            <h2>Recommended for You</h2>
-            <% if (recommendedCocktails.length > 0) { %>
-                <div class="cocktail-scroll-container">
-                    <ul class="cocktail-scroll-list">
-                        <% recommendedCocktails.forEach(cocktail => { %>
-                            <li class="cocktail-card">
-                                <a href="/cocktail/<%= cocktail.name %>" class="cocktail-link">
-                                    <img src="/uploads/<%= cocktail.image %>" alt="<%= cocktail.name %>">
-                                    <h3><%= cocktail.name %></h3>
-                                </a>
-                            </li>
-                        <% }) %>
-                    </ul>
-                </div>
-            <% } else { %>
-                <p>No recommendations available. Add some favorites to get started!</p>
-            <% } %>
-          </section>          
+            <% } else { %>     
         <section class="top-cocktails">
             <h2>Top Rated Cocktails</h2>
             <ul>
@@ -85,6 +64,25 @@
             <h3>Dont know what to make?</h3>
             <button onclick="window.location.href='/random'">Surprise Me! </button>
         </section>
+        <section class="recommendations">
+            <h2>Recommended for You</h2>
+            <% if (recommendedCocktails.length > 0) { %>
+                <div class="cocktail-scroll-container">
+                    <ul class="cocktail-scroll-list">
+                        <% recommendedCocktails.forEach(cocktail => { %>
+                            <li class="cocktail-card">
+                                <a href="/cocktail/<%= cocktail.name %>" class="cocktail-link">
+                                    <img src="/uploads/<%= cocktail.image %>" alt="<%= cocktail.name %>">
+                                    <h3><%= cocktail.name %></h3>
+                                </a>
+                            </li>
+                        <% }) %>
+                    </ul>
+                </div>
+            <% } else { %>
+                <p class="noRecommendations">No recommendations available. Add some favorites to get started!</p>
+            <% } %>
+        </section>      
         <section class="random-user-cocktails">
             <div class="view-all">
                 <h2>User Cocktails</h2>
