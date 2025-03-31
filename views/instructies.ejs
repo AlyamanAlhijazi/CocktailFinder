@@ -10,9 +10,11 @@
             <h1><%= cocktail.name || cocktail.strDrink %></h1>
             <img src="<%= source === 'database' ? '/uploads/' + cocktail.image : cocktail.strDrinkThumb %>" 
                  alt="<%= cocktail.name || cocktail.strDrink %>">
-             <button class="favorite-btn">
-                ❤️ Add to Favorites
+            <button class="favorite-btn" data-cocktail-id="<%= cocktail._id %>">
+                <i class="far fa-heart empty-heart"></i>  <!-- Leeg hart icoon -->
+                <i class="fas fa-heart full-heart"></i>   <!-- Vol hart icoon -->
             </button>
+            <%- include("partials/messages") %> 
             <section class="ingredienttoggle">
                 <div>
                     <button data-tab-target="#Ingredients">Ingredients</button>
@@ -75,6 +77,6 @@
             </ul>
         </section>
     </main>
-    <script defer src="/script.js"></script>
+    <script src="/script.js"></script> 
 </body>
 </html>

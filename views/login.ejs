@@ -6,10 +6,9 @@
         <%- include('partials/header.ejs') %>
     </header>
     <main>
-        <h1>A sign up form</h1>
+        <h1>Sign in</h1>
         <%- include('partials/messages') %>
         <div class="container">
-            <h2>Sign in</h2>
             <!-- Het formulier voor het inloggen -->
             <form id="loginForm" method="POST" action="/users/login">
                 <div>
@@ -17,11 +16,11 @@
                     <input type="email" id="email" name="email" required placeholder="Email">
                 </div>
                 <div>
-                    <label for="password">Wachtwoord:</label>
+                    <label for="password">Password:</label>
                     <input type="password" id="password" name="password" required placeholder="Password">
                 </div>
                 <div>
-                    <button type="submit">Inloggen</button>
+                    <button type="submit">Log in</button>
                 </div>
             </form>
 
@@ -29,7 +28,7 @@
             <p id="message"></p>
 
             <!-- Link naar registratiepagina -->
-            <p>Still have no account?<a href="/register">Registreer hier</a></p>
+            <p>Haven't made an account yet? <a href="/register">sign up here</a></p>
         </div>
     </main> 
     <script src="/script.js"></script>

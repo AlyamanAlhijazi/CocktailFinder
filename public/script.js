@@ -8,7 +8,6 @@ document.addEventListener("DOMContentLoaded", function() {
       event.preventDefault();
 
       const username = document.getElementById("username").value;
-      const birthdate = document.getElementById("birthdate").value;
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
       const confirmPassword = document.getElementById("confirmPassword").value;
@@ -18,7 +17,7 @@ document.addEventListener("DOMContentLoaded", function() {
         return;
       }
 
-      const userData = { username, birthdate, email, password };
+      const userData = { username, email, password };
 
       try {
         const response = await fetch("/users/register", {
@@ -105,27 +104,58 @@ function addIngredient() {
   newRow.className = "ingredient-row";
   newRow.innerHTML = `
         <input type="text" name="ingredientName[]" placeholder="Ingredient name" required>
-        <input type="number" name="ingredientAmount[]" placeholder="Amount" required step="0.01">
-        <select name="ingredientUnit[]" required>
-            <option value="ml">ml</option>
-            <option value="cl">cl</option>
-            <option value="oz">oz</option>
-        </select>
-        <input type="checkbox" name="isAlcoholic[]"> Alcoholic
-        <input type="number" name="alcoholPercentage[]" placeholder="Alcohol %" min="0" max="100" step="0.1">
+        <div class="measurements">
+          <input type="number" name="ingredientAmount[]" placeholder="Amount" required step="0.01">
+          <select name="ingredientUnit[]" required>
+              <option value="ml">ml</option>
+              <option value="cl">cl</option>
+              <option value="oz">oz</option>
+          </select>
+        </div>
+        <div class="alcholicincl">
+          <input type="checkbox" name="isAlcoholic[]"> Alcoholic
+          <input type="number" name="alcoholPercentage[]" placeholder="%" min="0" max="100" step="0.1">
+          <button type="button" class="btnIngredient">X</button>
+        </div>
     `;
+  newRow.querySelector(".btnIngredient").addEventListener("click", removeIngredient);
+
   ingredientsDiv.appendChild(newRow);
 }
-function removeIngredient() {
-  const ingredientsDiv = document.getElementById("ingredients");
-  const ingredientRows = ingredientsDiv.getElementsByClassName("ingredient-row");
-
-  if (ingredientRows.length > 1) {
-    ingredientsDiv.removeChild(ingredientRows[ingredientRows.length - 1]);
-  } else {
-    alert("You must have at least one ingredient.");
+function removeIngredient(event) {
+  const ingredientRow = event.target.closest(".ingredient-row"); 
+  if (ingredientRow) {
+    ingredientRow.remove();
   }
 }
+
+
+// FAVORITES 
+document.addEventListener('DOMContentLoaded', function() {
+  const favoriteBtn = document.querySelector('.favorite-btn');
+  if (favoriteBtn) { // Controleer of de knop bestaat
+    favoriteBtn.addEventListener('click', async function() {
+      const cocktailId = this.dataset.cocktailId;
+      try {
+        const response = await fetch(`/cocktail/${cocktailId}/favorite`, { method: 'POST' });
+        const data = await response.json();
+        if (data.status === 'added') {
+          this.classList.add('favorited');
+        } else {
+          this.classList.remove('favorited');
+        }
+      } catch (error) {
+        console.error('Fout bij favorieten:', error);
+      }
+    });
+  } else {
+    console.warn('Geen favoriet knop gevonden op deze pagina.');
+  }
+});
+
+
+
+
 
 // Image displaying
 document.addEventListener("DOMContentLoaded", function() {
@@ -141,8 +171,8 @@ document.addEventListener("DOMContentLoaded", function() {
           const uploadBox = document.getElementById("uploadBox");
   
           preview.src = e.target.result;
-          preview.style.display = "block"; // Show image
-          uploadBox.style.display = "none"; // Hide upload box
+          preview.style.display = "block"; 
+          uploadBox.style.display = "none"; 
         };
         reader.readAsDataURL(file);
       }
@@ -151,91 +181,120 @@ document.addEventListener("DOMContentLoaded", function() {
   
 });
 
-
 //FILTER
-//ingredienten
-const addIngredients = document.getElementById("addIngredient");
-const filtersForm = document.getElementById("filtersForm");
+// button filter
+document.addEventListener("DOMContentLoaded", function() {
+  // Filter toggle functionality
+  var openFilter = document.querySelector(".filterOpen");
+  if (openFilter) {
+      openFilter.onclick = toggleFilter;
+  }
 
+  function toggleFilter() {
+      var theFilter = document.querySelector("#filtersForm");
+      if (theFilter) {
+          theFilter.classList.toggle("toonFilter");
+      }
+  }
 
-function add(){
-    let newField = document.createElement('input');
-    newField.setAttribute('list',"x");
-    newField.setAttribute("placeholder", "ingredient")
-    newField.setAttribute('class','fieldIngredient'); //class om styling makelijker te maken :)
-    filtersForm.appendChild(newField);
-    let newButton = document.createElement('button');
-    newButton.setAttribute('type', 'button');
-    newButton.setAttribute('class','btnIngredient'); //class om styling makelijker te maken :)
-    newButton.innerHTML = "x"; 
-    filtersForm.appendChild(newButton);
-    newButton.addEventListener('click', () => {
-        filtersForm.removeChild(newButton);
-        filtersForm.removeChild(newField);
-    })
-}
+  // Ingredient adding functionality
+  const addIngredients = document.getElementById("addIngredient");
+  const filtersForm = document.getElementById("filtersForm");
 
-if(addIngredients) {
-  addIngredients.addEventListener('click', add);
-}
+  function add() {
+      let newDiv = document.createElement('div');
+      newDiv.setAttribute('class', 'kruisjenaasttext');
+      filtersForm.appendChild(newDiv);
 
-if (filtersForm) {
-    console.log(filtersForm)
-    filtersForm.addEventListener("submit", async function(event) {
-        event.preventDefault();
+      let newField = document.createElement('input');
+      newField.setAttribute('list', "x");
+      newField.setAttribute("placeholder", "ingredient");
+      newField.setAttribute('class', 'fieldIngredient');
+      newDiv.appendChild(newField);
 
-        const ingredients = document.getElementsByClassName("fieldIngredient");
-        const alcoholic = document.getElementById("alcoholic").value;
-        const glass = document.getElementById("inputGlasses").value;
-        const category = document.getElementById("category").value;
-        let ingredientList = [];
+      let newButton = document.createElement('button');
+      newButton.setAttribute('type', 'button');
+      newButton.setAttribute('class', 'btnIngredient');
+      newButton.innerHTML = "x";
+      newDiv.appendChild(newButton);
 
-        for(let i = 0; i < ingredients.length; i++) {
-            ingredientList.push(ingredients[i].value.toLowerCase());
-        }
+      newButton.addEventListener('click', () => {
+          newDiv.removeChild(newButton);
+          newDiv.removeChild(newField);
+          filtersForm.removeChild(newDiv);
+      });
+  }
 
-        console.log(ingredientList, alcoholic, glass, category);
+  if (addIngredients) {
+      addIngredients.addEventListener('click', add);
+  }
 
-        try {
-            const response = await fetch("/filter-list", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    ingredients: ingredientList,
-                    alcoholic,
-                    glass,
-                    category
-                })
-            });
+  // Form submission for the filters
+  if (filtersForm) {
+      console.log(filtersForm);
+      filtersForm.addEventListener("submit", async function(event) {
+          event.preventDefault();
 
-            if (response.redirected) {
-                window.location.href = response.url;
-            } else {
-                const data = await response.json();
-                document.getElementById("message").innerText = data.message || "Something went wrong";
-            }
-        } catch (error) {
-            document.getElementById("message").innerText = `Something went wrong: ${error}`;
-        }
-    });
-}
+          const ingredients = document.getElementsByClassName("fieldIngredient");
+          const alcoholic = document.getElementById("alcoholic").value;
+          const glass = document.getElementById("inputGlasses").value;
+          const category = document.getElementById("category").value;
+          let ingredientList = [];
+
+          for (let i = 0; i < ingredients.length; i++) {
+              ingredientList.push(ingredients[i].value.toLowerCase());
+          }
+
+          console.log(ingredientList, alcoholic, glass, category);
+
+          try {
+              const response = await fetch("/filter-list", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                      ingredients: ingredientList,
+                      alcoholic,
+                      glass,
+                      category
+                  })
+              });
+
+              if (response.redirected) {
+                  window.location.href = response.url;
+              } else {
+                  const data = await response.json();
+                  document.getElementById("message").innerText = data.message || "Something went wrong";
+              }
+          } catch (error) {
+              document.getElementById("message").innerText = `Something went wrong: ${error}`;
+          }
+      });
+  }
+});
 
 // instructie toggle
 const tabs = document.querySelectorAll('[data-tab-target]');
 const tabContents = document.querySelectorAll('[data-tab-content]');
- 
+
+// Set the first tab (Ingredients) as active on page load
+document.addEventListener('DOMContentLoaded', () => {
+    const defaultTab = document.querySelector('[data-tab-target="#Ingredients"]');
+    const defaultContent = document.querySelector('#Ingredients');
+    
+    if (defaultTab && defaultContent) {
+        defaultTab.classList.add('active');
+        defaultContent.classList.add('active');
+    }
+});
+
 tabs.forEach(tab => {
     tab.addEventListener('click', (e) => {
         e.preventDefault();
- 
+
         tabContents.forEach(content => content.classList.remove('active'));
- 
-    
         tabs.forEach(t => t.classList.remove('active'));
- 
-        
+
         const target = document.querySelector(tab.dataset.tabTarget);
- 
         
         if (target) {
             target.classList.add('active');
@@ -243,3 +302,9 @@ tabs.forEach(tab => {
         }
     });
 });
+
+<<<<<<< HEAD
+
+console.log("Script.js is geladen!");
+=======
+>>>>>>> 86f6e8ffe7bb2c6f10e0aa774522d63449ef3a2f

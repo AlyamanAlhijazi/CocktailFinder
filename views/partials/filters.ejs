@@ -1,30 +1,37 @@
-<form id="filtersForm">
-    <select name="alcoholic" id="alcoholic">
-        <option value="0">Optional alcohol</option>
-        <option value="1">alcoholic</option>
-        <option value="2">non alcoholic</option>
-    </select>
-    <input placeholder="glass type" list="glasses" id="inputGlasses">
-    <datalist id="glasses">
-        <% for(let i = 0; i < glasses.length; i++) { %>
-            <option value="<%= glasses[i].strGlass %>"><%= glasses[i].strGlass %></option>
-        <% } %>
-    </datalist>
-    <select name="category" id="category">
-        <option value="">alles</option>
-        <% for(let i = 0; i < categories.length; i++) { %>
-            <option value="<%= categories[i].strCategory %>"><%= categories[i].strCategory %></option>
-        <% } %>
-    </select>
-    <datalist id="x">
-        <% for(let i = 0; i < ingredients.length; i++) { %>
-            <option value="<%= ingredients[i].strIngredient1 %>"><%= ingredients[i].strIngredient1 %></option>
-        <% } %>
-    </datalist>
-    <button id="addIngredient" type="button">add ingredient</button>
-    <!-- <input type="checkbox" value="all" id="includeAll"> 
-    <label for="includeAll">Include all selected ingredients in results</label> -->
-    <input type="submit">
-    <!-- NOTE VOOR DE GENE DIE DIT GAAT STYLEN :) -->
-    <!-- de butons en ingredienten inputs die worden toegevoegd met de knop hebben de class btnIngredient & fieldIngredient -->
-</form>
+<section class="filterenSorteren"> 
+    <button class="filterOpen"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="25" height="25" viewBox="0 0 256 256" xml:space="preserve">
+        <g style="stroke: none; stroke-width: 0; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: white; fill-rule: nonzero; opacity: 1;" transform="translate(1.4065934065934016 1.4065934065934016) scale(2.81 2.81)">
+            <path d="M 52.537 80.466 V 45.192 L 84.53 2.999 C 85.464 1.768 84.586 0 83.041 0 H 6.959 C 5.414 0 4.536 1.768 5.47 2.999 l 31.994 42.192 v 43.441 c 0 1.064 1.163 1.719 2.073 1.167 l 11.758 -7.127 C 52.065 82.205 52.537 81.368 52.537 80.466 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(0,0,0); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/>
+        </g>
+        </svg></button> <!-- Icon by <a href='https://iconpacks.net/?utm_source=link-attribution&utm_content=6556'>Iconpacks</a> -->
+    <form id="filtersForm">
+        <select name="alcoholic" id="alcoholic">
+            <option value="0">Optional alcohol</option>
+            <option value="1">alcoholic</option>
+            <option value="2">non alcoholic</option>
+        </select>
+        <select name="category" id="category">
+            <option value="">Category</option>
+            <% for(let i = 0; i < categories.length; i++) { %>
+                <option value="<%= categories[i].strCategory %>"><%= categories[i].strCategory %></option>
+            <% } %>
+        </select>
+        <input placeholder="glass type" list="glasses" id="inputGlasses">
+        <datalist id="glasses">
+            <% for(let i = 0; i < glasses.length; i++) { %>
+                <option value="<%= glasses[i].strGlass %>"><%= glasses[i].strGlass %></option>
+            <% } %>
+        </datalist>
+        <datalist id="x">
+            <% for(let i = 0; i < ingredients.length; i++) { %>
+                <option value="<%= ingredients[i].strIngredient1 %>"><%= ingredients[i].strIngredient1 %></option>
+            <% } %>
+        </datalist>
+        <button id="addIngredient" type="button">add ingredient</button>
+        <!-- <input type="checkbox" value="all" id="includeAll"> 
+        <label for="includeAll">Include all selected ingredients in results</label> -->
+        <input type="submit">
+        <!-- NOTE VOOR DE GENE DIE DIT GAAT STYLEN :) -->
+        <!-- de butons en ingredienten inputs die worden toegevoegd met de knop hebben de class btnIngredient & fieldIngredient -->
+    </form>
+</section>

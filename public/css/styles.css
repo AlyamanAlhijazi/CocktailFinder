@@ -25,6 +25,7 @@ body {
     align-items: center;
     min-height: 100vh; 
     width: 100vw;
+    overflow-x: hidden;
 }
 
 h1 {
@@ -270,7 +271,7 @@ main > .cocktail-list li{
 }
 
 .cocktail-link:hover {
-    transform: scale(1.05);
+    z-index: -1;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
 }
 
@@ -278,6 +279,7 @@ main > .cocktail-list li{
     font-size: 1.3em;
     margin: 0.5em 0;
     font-weight: bold;
+    padding-left: 0;
 }
 
 .cocktail-link img {
@@ -315,7 +317,6 @@ main > .cocktail-list li{
     padding-left: 0;
 }
 
-/* Image of the cocktail */
 .cocktail-details img {
     display: block;
     margin: 2em auto;
@@ -325,7 +326,6 @@ main > .cocktail-list li{
     box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* Instructions section */
 .cocktail-details h3 {
     font-size: 1.5em;
     color: var(--color-text);
@@ -334,13 +334,11 @@ main > .cocktail-list li{
 }
 
 
-/* The paragraph containing the instructions */
 .cocktail-details p {
     font-size: 18px;
     color: var(--color-text);
 }
 
-/* Ingredients list */
 .cocktail-details ul {
     list-style: none;
     padding: 0;
@@ -350,7 +348,10 @@ main > .cocktail-list li{
 .cocktail-details li {
     font-size: 1.1em;
 }
-/* Buttons */
+.cocktail-details form{
+    margin-left: -2em;
+}
+
 .ingredienttoggle {
     text-align: center;
     width: 100%;
@@ -363,6 +364,19 @@ main > .cocktail-list li{
     justify-content: center;
     gap: 2rem;
     margin-bottom: 1rem;
+}
+
+/* favorite button */
+.full-heart {
+    display: none;
+}
+
+.favorite-btn.favorited .empty-heart {
+    display: none;
+}
+
+.favorite-btn.favorited .full-heart {
+    display: inline;
 }
 
 .ingredienttoggle button {
@@ -412,8 +426,15 @@ article h3 {
     font-size: 1.5rem;
     margin-bottom: 0.5rem;
 }
-
-
+.measurements{
+    display: flex;
+}
+.measurements input, select, textarea{
+    width: 40em;
+}
+.alcholicincl{
+    display: flex;
+}
 
 /* profile view styles */
 #profile-styles{
@@ -476,7 +497,7 @@ article h3 {
     object-fit: cover;
     object-position: center;
 }
-#profile-styles section:nth-of-type(2) div{ 
+#profile-styles { 
     display: flex;
     justify-content: space-around;
     align-items: center;
@@ -484,7 +505,7 @@ article h3 {
 
     
 }
-#profile-styles section:nth-of-type(2) div label{
+#profile-styles label{
     width: 9em;
     height: 2.5em;
     border-radius: 0.5em;
@@ -492,7 +513,7 @@ article h3 {
     box-shadow: 0 0.3em 0.5em rgba(0, 0, 0, 0.5);
 
 }
-#profile-styles section:nth-of-type(2) div label:has(input:checked){
+#profile-styles:has(input:checked){
     background-color: var(--white);
     box-shadow:inset 0 0em 0.5em rgba(0, 0, 0, 0.5) ;
 
@@ -500,18 +521,18 @@ article h3 {
 }
 
 
-#profile-styles section:nth-of-type(2) div label h3{
+#profile-styles label h3{
     padding: 0.5em 0;
     margin: 0;
     text-align: center;
     color: var(--color-text);
     
 }
-#profile-styles section:nth-of-type(2) div label input{
+#profile-styles label input{
 display: none;
 
 }
-#profile-styles section:nth-of-type(2) ul{
+#profile-styles ul{
     width: 100%;
     list-style: none;
     margin: 0;
@@ -525,7 +546,7 @@ display: none;
     /* position: relative; */
     /* padding: ; */  
 }
-#profile-styles section:nth-of-type(2) ul li{
+#profile-styles ul li{
     width: 13em;
     height: fit-content;
     padding: .5em;
@@ -541,18 +562,18 @@ display: none;
     /* margin: 0 1em; */
     /* margin-top: 1em; */
 }
-#profile-styles section:nth-of-type(2) ul li a{
+#profile-styles ul li a{
     text-decoration: none;
 
 }
-#profile-styles section:nth-of-type(2) ul li h4{
+#profile-styles ul li h4{
     color: #011627;
     font-size: 1em;
     margin: 0 0 .5em 0;
     text-align: center;
     /* margin-bottom: .4em; */
 }
-#profile-styles section:nth-of-type(2) ul li img{
+#profile-styles ul li img{
     width: 8em;
     height: 6em;
     object-fit: cover; 
@@ -561,15 +582,15 @@ display: none;
     /* order: 1; */
 
 }
-#profile-styles section:nth-of-type(2):has(#cocktails-list:checked) ul:first-of-type{
+#profile-styles:has(#cocktails-list:checked) ul:first-of-type{
     display: flex;
 
 }
-#profile-styles section:nth-of-type(2):has(#favorit-list:checked) ul:nth-of-type(2){
+#profile-styles:has(#favorit-list:checked) ul:nth-of-type(2){
     display: flex;
 
 }
-#profile-styles section:nth-of-type(2) ul li{
+#profile-styles ul li{
     width: 8em;
 }
 
@@ -582,6 +603,22 @@ display: none;
     }
 
 }
+.profile-list ul{
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(2, 1fr); 
+    justify-content: space-between; 
+}
+
+@media (min-width: 768px) {
+    .profile-list ul{
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
 /* Forms */
 form {
     display: flex;
@@ -651,9 +688,8 @@ label {
     display: none;
 }
 
-/* Input fields */
 input, select, textarea {
-    width: 70%;
+    width: 100%;
     padding: 0.8em;
     font-size: 1em;
     border: 0.1em solid #ccc;
@@ -661,7 +697,6 @@ input, select, textarea {
     outline: none;
 }
 
-/* Textarea */
 textarea {
     height: 10em;
     resize: none;
@@ -698,31 +733,15 @@ button:hover {
     flex-wrap: wrap;
 }
 
-.ingredient-row input[type="text"],
-.ingredient-row input[type="number"],
-.ingredient-row select {
-    width: 20%;
-    min-width: 8em;
-}
-
 input[type="checkbox"] {
     width: 1.5em;
     height: 1.5em;
 }
 
 .category-glass-container {
-    display: flex;
-    justify-content: center;
     gap: 1em;
-    flex-wrap: wrap;
-    width: 100%;
-}
-
-.category-glass-container label,
-.category-glass-container select,
-.category-glass-container input {
-    width: 45%;
-    min-width: 12em;
+    display: flex;
+    flex-direction: column;
 }
 
 input[type="file"] {
@@ -794,12 +813,25 @@ input[type="file"] {
     color: #FDD017;
 }
 
-.favorite-btn {
+/* .favorite-btn {
     background-color: #f0f0f0;
     border: none;
     padding: 10px 20px;
     border-radius: 5px;
     cursor: pointer;
+} */
+
+/* favorite button */
+.full-heart {
+    display: none;
+}
+
+.favorite-btn.favorited .empty-heart {
+    display: none;
+}
+
+.favorite-btn.favorited .full-heart {
+    display: inline;
 }
 
 .top-cocktails {
@@ -859,8 +891,127 @@ input[type="file"] {
     border-radius: 5px;
     margin-top: auto; 
 }
+.filterenSorteren {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+}
+.filterenSorteren.toonFilter {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+    z-index: 3;
+}
+#filtersForm {
+    max-width: 30rem;
+    margin: 0 auto;
+    margin-bottom: 2em;
+    padding: 1.25rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.25rem 0.625rem rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+#filtersForm {
+	position: absolute; 
+    width: 20rem; 
+    background: var(--white);
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+    box-shadow: 0 0.25rem 0.625rem rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+#filtersForm.toonFilter {
+	opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+    border-bottom: 50em;
+}
+.filterOpen {
+    position: absolute;
+    top: -4rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    z-index: 1000;
+}
 
+#addIngredient {
+    color: var(--color-text);
+    padding: 0.625rem;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 1rem;
+    background: var(--white);
+}
 
+.kruisjenaasttext{
+    display: flex;
+    gap: 1em;
+}
+.kruisjenaasttext .fieldIngredient{
+    width: 121%;
+}
+
+#filtersForm input[type="submit"] {
+    background: var(--nav-color);
+    color: white;
+}
+
+.btnIngredient {
+    background: none;
+    border: none;
+    color: #c60606; 
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+}
+
+.container p{
+    text-align: center;
+}
+.alert {
+    position: fixed; 
+    top: 20px;
+    left: 50%; 
+    transform: translateX(-50%); 
+    padding: 10px 20px;
+    border-radius: 5px;
+    z-index: 9999; 
+    width: auto;
+    max-width: 80%; 
+    box-sizing: border-box;
+    text-align: center;
+    font-weight: bold;
+    opacity: 1;
+}
+  
+  /* Success message styling */
+  .alert-success {
+    background-color: #28a745; /* Green */
+    color: white;
+    border: 1px solid #218838;
+}
+  
+  /* Error message styling */
+  .alert-danger {
+    background-color: #dc3545; /* Red */
+    color: white;
+    border: 1px solid #c82333;
+}
+  
+ 
 
 /* Media queries */
 @media (max-width: 768px) {
@@ -868,10 +1019,6 @@ input[type="file"] {
         width: 90vw;
         max-width: none;
         padding: 1.5em;
-    }
-
-    input, select, textarea, button {
-        width: 100%;
     }
 
     .ingredient-row,
@@ -904,6 +1051,9 @@ input[type="file"] {
     button {
         width: 100%;
     }
+    .filterOpen{
+        width: auto;
+    }
     
 }
 
@@ -913,9 +1063,6 @@ input[type="file"] {
     }
     .cocktail-details img{
         max-height: 65vw;
-    }
-    h2{
-        padding-left: 1.6em;
     }
     .cocktail-scroll-container {
         padding-left: 0em;
@@ -935,4 +1082,28 @@ input[type="file"] {
     .top-cocktails li {
         width: calc(33.33% - 1rem);
     }
+}
+.measurements{
+    gap: 1em;
+}
+.measurements input, select, textarea{
+    width: 40em;
+}
+.alcholicincl {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.alcholicincl input[type="number"] {
+    width: 5rem;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 1rem;
+}
+
+.alcholicincl label {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-text);
 }

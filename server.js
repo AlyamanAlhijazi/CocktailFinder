@@ -34,6 +34,7 @@ app.use(session({
 );
 // flash messages instellen
 app.use(flash());
+
 // middleware om de ingelogde gebruiker op te halen
 app.use(async (req, res, next) => {
     if (req.session.userId) {
@@ -53,7 +54,8 @@ const userSchema = new mongoose.Schema({
   username: String,
   email: String,
   password: String,
-  birthdate: Date,
+  favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'userCocktail', default: [] }]
+
 });
 const User = mongoose.model("User", userSchema);
 
@@ -157,6 +159,10 @@ const cocktailSchema = new mongoose.Schema({
     timestamps: true 
   });
   
+  const userCocktail = mongoose.model("userCocktail", cocktailSchema);
+  export default userCocktail;
+  const Cocktail = mongoose.model("Cocktail", cocktailSchema);
+// export default Cocktail;
 
 //CL OMZETTEN NAAR ML
 function convertToMl(amount, unit){
@@ -194,11 +200,7 @@ cocktailSchema.pre("save", function(next) {
   next();
 });
 
-const Cocktail = mongoose.model("Cocktail", cocktailSchema);
-export default Cocktail;
 
-
-const userCocktail = mongoose.model("userCocktail", cocktailSchema);
 
 // 🔹 REGISTRATIE (GET)
 app.get("/register", async (req, res) => {
@@ -207,8 +209,8 @@ app.get("/register", async (req, res) => {
 
 // 🔹 REGISTRATIE (POST)
 app.post("/users/register", async (req, res) => {
-  const { username, email, password, birthdate } = req.body;
-  if (!username || !email || !password || !birthdate) {
+  const { username, email, password } = req.body;
+  if (!username || !email || !password) {
     req.flash("error", "All fields are required!");
     return res.redirect("/register");
   }
@@ -219,10 +221,9 @@ app.post("/users/register", async (req, res) => {
       return res.redirect("/register");
     }
 
-    const formattedBirthdate = new Date(birthdate);
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = new User({ username, email, password: hashedPassword, birthdate: formattedBirthdate });
+    const user = new User({ username, email, password: hashedPassword });
     await user.save();
 
     // Sessies instellen na registratie (direct inloggen)
@@ -237,7 +238,7 @@ app.post("/users/register", async (req, res) => {
 
 // 🔹 LOGIN (GET)
 app.get("/login", async (req, res) => {
-  res.render("login");
+  res.render("login", { messages: req.flash() });
 });
 
 
@@ -271,7 +272,6 @@ app.post("/users/login", async (req, res) => {
   console.log("Sessie na login:", req.session);
 });
 
-
 // Check of de gebruiker ingelogd is
 app.get("/check-session", (req, res) => {
 
@@ -285,9 +285,7 @@ app.get("/check-session", (req, res) => {
 });
 
 // 🔹 LOGOUT (GET)
-app.get("/logout", async (req, res) => {
-  res.render("logout");
-});
+
 
 // 🔹 LOGOUT (POST)
 app.post("/logout", (req, res) => {
@@ -312,7 +310,7 @@ app.post("/logout", (req, res) => {
 });
 
 // 🔹 REVIEW (POST)
-app.post("/cocktail/:cocktailId/review", async (req, res) => {
+app.post ("/cocktail/:cocktailId/review", isAuthenticated ,async (req, res) => {
     const { cocktailId } = req.params;
     const { rating, comment } = req.body;
     const userId = req.session.userId; // Haal de userId uit de sessie
@@ -351,11 +349,130 @@ app.post("/cocktail/:cocktailId/review", async (req, res) => {
       res.status(500).send("Er is een fout opgetreden bij het opslaan van de review.");
     }
   });
+
+
+/// 🔹 FAVORITES (POST)
+app.post("/cocktail/:cocktailId/favorite", async (req, res) => {
+  if (!req.session.userId) {
+    req.flash("error", "Sign in to add this cocktail to favorites");
+    return res.redirect("/login");
+  }
+
+  const { cocktailId } = req.params;
+  const userId = req.session.userId;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    // checken of de cocktailId wel een ObjectId is
+    if (!mongoose.Types.ObjectId.isValid(cocktailId)) {
+      return res.status(400).json({ error: "Invalid cocktail ID" });
+    }
+    // converten naar object id
+    const cocktailObjectId = new mongoose.Types.ObjectId(cocktailId);
+    // checken of de favoriet al favoriet is
+    const isFavorite = user.favorites.some(favorite => favorite.equals(cocktailObjectId));
+
+    console.log("🔥 Favoriete ID die wordt toegevoegd/verwijderd:", cocktailObjectId);
+    console.log("🔎 Huidige favorieten vóór update:", user.favorites);
+    if (isFavorite) {
+      // Als al favoriet, dan verwijderen
+      user.favorites.pull(cocktailObjectId);
+      req.flash("success", "Cocktail added to favourites!");
+    } else {
+      // Als niet favoriet, dan toevoegen
+      user.favorites.push(cocktailObjectId);
+      req.flash("success", "Cocktail removed from favorites!");
+    }
+
+    await user.save();
+    // 🚨 Check of de favorieten correct zijn opgeslagen in de database
+    const updatedUser = await User.findById(userId);
+    console.log("Favorieten na update:", updatedUser.favorites);
+
+    res.json({ status: isFavorite ? "removed" : "added" }); // Stuur status terug naar JS
+  } catch (error) {
+    console.error("Fout bij favorieten:", error);
+    res.status(500).json({ error: "Serverfout" });
+  }
+});
+
+
+// 🔹 PROFILE (GET)
+app.get("/profile", async (req, res) => {
+  if (!req.session.userId) {
+    return res.redirect("/login");
+  }
+  try {
+    const user = await User.findById(req.session.userId).populate("favorites");
+    const userCocktails = await Cocktail.find({ createdBy: req.session.userId });
+
+    console.log("Opgehaalde favorieten:", user.favorites);
+    console.log("Opgehaalde eigen cocktails:", userCocktails);
+
+    res.render("profile", {
+      user: user,
+      favoriteCocktails: user.favorites,
+      userCocktails: userCocktails, // Pass the created cocktails to the template
+    });
+
+  } catch (error) {
+    console.error("Fout bij laden profiel:", error);
+    res.status(500).send("Er is een fout opgetreden bij het laden van het profiel.");
+  }
+});
+
+
+
+// Middleware om API-cocktails op te slaan in de database
+const saveApiCocktailToDB = async (req, res, next) => {
+    const { cocktailName } = req.params;
   
-// 🔹 BEVEILIGDE ROUTE (bijvoorbeeld: Favorieten, uploaden van cocktails)
+    try {
+      // Zoek eerst of de cocktail al in de database staat
+      let dbCocktail = await userCocktail.findOne({
+        name: { $regex: new RegExp("^" + cocktailName + "$", "i") }
+      });
+  
+      if (!dbCocktail) {
+        // Als de cocktail niet in de database staat, haal deze op uit de API
+        const data = await fetchData(API + 'search.php?s=' + cocktailName);
+        const apiCocktail = data.drinks ? data.drinks[0] : null;
+  
+        if (apiCocktail) {
+          // Converteer de API-cocktail naar een database-cocktail
+          const newCocktail = new userCocktail({
+            name: apiCocktail.strDrink,
+            // ingredients: convertApiIngredients(apiCocktail), // Maak een functie om de ingrediënten te converteren
+            instructions: apiCocktail.strInstructions,
+            category: apiCocktail.strCategory,
+            glassType: apiCocktail.strGlass,
+            image: apiCocktail.strDrinkThumb,
+            createdBy: req.session.userId, // Gebruik de huidige gebruiker
+            reviews: [], // Maak een lege review array
+          });
+  
+          // Sla de cocktail op in de database
+          dbCocktail = await newCocktail.save();
+        }
+      }
+      // Sla de cocktailId op in favorites
+      req.dbCocktailId = dbCocktail._id;
+      next();
+    } catch (error) {
+      console.error("Fout bij opslaan API cocktail in database:", error);
+      res.status(500).send("Er is een fout opgetreden bij het laden van de cocktail.");
+    }
+  };
+
+
+
+  // 🔹 BEVEILIGDE ROUTE (bijvoorbeeld: Favorieten, uploaden van cocktails)
 app.get("/cocktails/favorites", (req, res) => {
   if (!req.session.userId) {
-    return res.status(401).json({ message: "Je moet ingelogd zijn om toegang te krijgen" });
+    req.flash("error", "You must be logged in to access this page");
   }
   res.json({ message: "Dit is de beveiligde favorieten route" });
 });
@@ -509,33 +626,33 @@ app.get("/usercocktails", async (req, res) => {
 });
 
 
-app.get('/cocktail/:cocktailName', async (req, res) => {
+<<<<<<< HEAD
+
+
+=======
+>>>>>>> 86f6e8ffe7bb2c6f10e0aa774522d63449ef3a2f
+app.get('/cocktail/:cocktailName', saveApiCocktailToDB, async (req, res) => {
     try {
-        const cocktailName = req.params.cocktailName; 
+      const cocktailName = req.params.cocktailName;
 
-        const dbCocktail = await Cocktail.findOne({ 
-            name: { $regex: new RegExp("^" + cocktailName + "$", "i") } 
-        }).populate("reviews.user");
-
-        if (dbCocktail) {
-            return res.render('instructies.ejs', { cocktail: dbCocktail, source: 'database', reviews: dbCocktail.reviews });
-        }
-
-        const data = await fetchData(API + 'search.php?s=' + cocktailName); 
-        const apiCocktail = data.drinks ? data.drinks[0] : null;
-
-        if (!apiCocktail) {
-            return res.status(404).send('Cocktail not found');
-        }
-
-        res.render('instructies.ejs', { cocktail: apiCocktail, source: 'api', reviews: [] });
-
+      // Zoek de cocktail in de database
+      const dbCocktail = await userCocktail.findOne({
+        name: { $regex: new RegExp("^" + cocktailName + "$", "i") }
+      }).populate('reviews.user');
+  
+      if (dbCocktail) {
+        return res.render('instructies.ejs', { cocktail: dbCocktail, source: 'database'});
+      }
+  
+      // Als niet gevonden, stuur een foutmelding (zou niet meer moeten gebeuren)
+      return res.status(404).send('Cocktail not found');
+  
     } catch (error) {
-        console.error("❌ Fout bij ophalen cocktail:", error);
-        res.status(500).send("Er is een probleem met het laden van de cocktail.");
+      console.error("❌ Fout bij ophalen cocktail:", error);
+      res.status(500).send("Er is een probleem met het laden van de cocktail.");
     }
-});
-
+  });
+  
 // Random cocktail
 app.get("/random", async (req, res) => {
     try {
@@ -562,8 +679,6 @@ app.get("/random", async (req, res) => {
         res.status(500).send("Er is iets misgegaan");
     }
 });
-
-
 
 
 
