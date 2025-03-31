@@ -560,7 +560,34 @@ function isAuthenticated(req, res, next) {
       return res.redirect("/login");
     }
     next();
-}
+  }
+  
+//  ZOEK COCKTAILS (post)  
+app.post('/search', async (req, res) => {
+  const query = req.body.q;
+  try {
+    console.log("Search Query:", query);
+    const drinks = await filteren();
+    const searchResultsByName = drinks.filter(drink =>
+      drink.strDrink.toLowerCase().includes(query.toLowerCase())   
+    );
+    const searchResultsByIngredient = drinks.filter(drink =>
+      Object.keys(drink)
+          .filter(key => key.startsWith('strIngredient') && drink[key]) // Alleen niet-lege ingrediënten
+          .some(ingredientKey => drink[ingredientKey].toLowerCase().includes(query.toLowerCase()))
+  );
+    
+
+    res.render("home", { searchResultsByName, searchResultsByIngredient, query
+
+    });
+
+  } catch (error) {
+    console.error("Fout bij ophalen van cocktails:", error);
+    res.status(500).send("Er is een probleem met het laden van cocktails.");
+  }
+ 
+});
 
 // 🔹 HOME PAGE & API FETCHING
 app.get('/home', async (req, res) => {
@@ -568,11 +595,6 @@ app.get('/home', async (req, res) => {
     const userId = req.session.userId;
 
     let recommendedCocktails = [];
-    let searchResultsByName = [];
-    let searchResultsByIngredient = [];
-    const query = req.query.q;
-    
-
 
     try {
         // Haal populaire cocktails van externe API
@@ -594,22 +616,6 @@ app.get('/home', async (req, res) => {
         let drinks = await filteren();
         console.log('Drinks example:', drinks[0]);
 
-        // **Zoekfunctie**
-        if (query) {
-            console.log('Search query detected:', query);
-
-            searchResultsByName = drinks.filter(drink =>
-                drink.strDrink.toLowerCase().includes(query.toLowerCase())
-            );
-
-            searchResultsByIngredient = drinks.filter(drink =>
-                Object.keys(drink)
-                    .filter(key => key.startsWith('strIngredient') && drink[key])
-                    .some(ingredientKey => drink[ingredientKey].toLowerCase().includes(query.toLowerCase()))
-            );
-
-            console.log('Search results (by ingredient):', searchResultsByIngredient);
-        }
 
         // **Aanbevolen cocktails op basis van favorieten**
         if (userId) {
@@ -651,9 +657,7 @@ app.get('/home', async (req, res) => {
             ingredients,
             drinks,
             recommendedCocktails,
-            searchResultsByName,
-            searchResultsByIngredient,
-            query
+            query: ""
         });
 
     } catch (error) {
