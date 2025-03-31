@@ -6,8 +6,49 @@
         <%- include('partials/header.ejs') %>
     </header>
     <main>
+
         <img class="logo" src="/images/logo.png" alt="">    
         <h1>The place to find cocktails!</h1> 
+        <form class="search-balk" action="/home" method="get">
+          <label><input type="text" name="q" placeholder="search for cocktail..." value="<%= query %>" required>
+            <% if (query)  { %>
+            <a href="/home"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6.758 17.243L12.001 12m5.243-5.243L12 12m0 0L6.758 6.757M12.001 12l5.243 5.243"/></svg></a>
+           <% } %>
+          </label>            
+        </form>
+        <% if (query) { %>
+            <h2>Search results by name</h2>
+            <ul class="cocktail-list">
+                <% searchResultsByName.forEach(searchResultByName => { %>
+
+                    <li>
+                        <a class="cocktail-link" href="/cocktail/<%= searchResultByName.strDrink %>" class="cocktail-link">
+
+                            <h3><%= searchResultByName.strDrink%></h3>
+                        <img src="<%= searchResultByName.strDrinkThumb %>" alt="<%= searchResultByName.strDrink %>">
+                        </a>
+
+                    </li>
+                <% }) %>
+            </ul>
+            <h2>Search results bij ingredient</h2>
+            <ul class="cocktail-list">
+                <% searchResultsByIngredient.forEach(searchResultByIngredient => { %>
+
+                    <li>
+                        <a class="cocktail-link" href="/cocktail/<%= searchResultByIngredient.strDrink %>" class="cocktail-link">
+
+                            <h3><%= searchResultByIngredient.strDrink%></h3>
+                        <img src="<%= searchResultByIngredient.strDrinkThumb %>" alt="<%= searchResultByIngredient.strDrink %>">
+                        </a>
+
+                    </li>
+                <% }) %>
+            </ul>
+
+            <% } else { %> 
+
+
         <section class="top-cocktails">
             <h2>Top Rated Cocktails</h2>
             <ul>
@@ -47,7 +88,9 @@
             <h2>All Cocktails</h2>
             <%- include('partials/filters.ejs') %>
             <%- include('partials/resultaten.ejs') %>
-        </section>              
+        </section>    
+        <% } %>
+          
     </main>
     <script src="/script.js"></script> 
 </body>
