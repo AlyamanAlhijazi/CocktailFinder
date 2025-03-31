@@ -571,6 +571,8 @@ app.get('/home', async (req, res) => {
     let searchResultsByName = [];
     let searchResultsByIngredient = [];
     const query = req.query.q;
+    
+
 
     try {
         // Haal populaire cocktails van externe API
