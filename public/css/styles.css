@@ -38,6 +38,8 @@ h1 {
 h2 {
     color: var(--color-text);
     font-size: 24px;
+
+
 }
 
 .logo {
@@ -240,7 +242,7 @@ main > .cocktail-list li{
 }
 
 .allCocktails h2{
-    padding-left: 2.5em;
+    padding-left: 4%;
 }
 .cocktail-list {
     grid-column: span 2; 
@@ -260,7 +262,11 @@ main > .cocktail-list li{
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-right: 6.5em;
+}
+.titel-contener .sort-filter-contener{
+    padding-right: 4%;
+    display: flex;
+    gap: .5em;
 }
 #sortering{
     width: 6.5em;
@@ -268,6 +274,8 @@ main > .cocktail-list li{
 }
 #sortering option{
     font-size: .7em;
+    width: fit-content;
+
 }
 .cocktail-link {
     display: block;
@@ -282,19 +290,16 @@ main > .cocktail-list li{
     padding: 1em;
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
-
 .cocktail-link:hover {
     z-index: -1;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
 }
-
 .cocktail-link h2 {
     font-size: 1.3em;
     margin: 0.5em 0;
     font-weight: bold;
     padding-left: 0;
 }
-
 .cocktail-link img {
     width: 100%;
     height: 10em; 
@@ -306,23 +311,20 @@ main > .cocktail-list li{
     justify-content: space-between; 
     align-items: center; 
 }
-
 .view-all h2 {
     margin: 0;
-    padding-left: 2.5em; 
+    padding-left: 4%; 
 }
 .view-all a {
     text-decoration: none; 
     margin: 0;
     padding-right: 5em;
 }
-
 .cocktail-details {
     width: 80%;
     margin: 2em auto;
     padding: 1.5em;
 }
-
 /* Heading for the cocktail name */
 .cocktail-details h1 {
     font-size: 2.5em;
@@ -330,7 +332,6 @@ main > .cocktail-list li{
     color: var(--color-text);
     padding-left: 0;
 }
-
 .cocktail-details img {
     display: block;
     margin: 2em auto;
@@ -339,47 +340,39 @@ main > .cocktail-list li{
     border-radius: 8px;
     box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
 }
-
 .cocktail-details h3 {
     font-size: 1.5em;
     color: var(--color-text);
     margin-top: 1.3em;
     margin-bottom: 0.1em;
 }
-
-
 .cocktail-details p {
     font-size: 18px;
     color: var(--color-text);
 }
-
 .cocktail-details ul {
     list-style: none;
     padding: 0;
     margin-top: 1em;
 }
-
 .cocktail-details li {
     font-size: 1.1em;
 }
 .cocktail-details form{
     margin-left: -2em;
 }
-
 .ingredienttoggle {
     text-align: center;
     width: 100%;
     max-width: 600px;
     margin: 0 auto;
 }
-
 .ingredienttoggle div {
     display: flex;
     justify-content: center;
     gap: 2rem;
     margin-bottom: 1rem;
 }
-
 /* favorite button */
 .full-heart {
     display: none;
@@ -660,7 +653,7 @@ form {
 label {
     font-size: 1.2em;
     font-weight: bold;
-    display: block;
+    display: ock;
 }
 .image-upload {
     display: flex;
@@ -962,14 +955,13 @@ input[type="file"] {
     border-bottom: 50em;
 }
 .filterOpen {
-    position: absolute;
-    top: -4rem;
-    right: 1rem;
-    background: none;
-    border: none;
-    border-radius: 0.5rem;
+    width: 2.5em;
+    height: 2.5em;
+    background: transparent;
+    display: grid;
+    place-items: center;
     cursor: pointer;
-    z-index: 1000;
+    padding: 0;
 }
 
 #addIngredient {
@@ -1137,7 +1129,7 @@ input[type="file"] {
     font-size: larger;
 }
 .recommendations h2{
-    padding-left: 2.5em;
+    padding-left: 4%;
 }
 
  
@@ -1179,9 +1171,7 @@ input[type="file"] {
     button {
         width: 100%;
     }
-    .filterOpen{
-        width: auto;
-    }
+
     .surprise-me{
         margin-left: 1rem;
         margin-right: 1rem;
