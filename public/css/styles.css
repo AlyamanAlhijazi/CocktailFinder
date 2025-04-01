@@ -240,7 +240,7 @@ main > .cocktail-list li{
 }
 
 .allCocktails h2{
-    padding-left: 2.5em;
+    padding-left: 0.5em;
 }
 .cocktail-list {
     grid-column: span 2; 
@@ -297,7 +297,7 @@ main > .cocktail-list li{
 
 .view-all h2 {
     margin: 0;
-    padding-left: 2.5em; 
+    padding-left: 0.5em; 
 }
 .view-all a {
     text-decoration: none; 
@@ -369,17 +369,40 @@ main > .cocktail-list li{
 }
 
 /* favorite button */
-.full-heart {
-    display: none;
+.favorite-btn {
+    background-color: #f0f0f0;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
 }
-
-.favorite-btn.favorited .empty-heart {
+ 
+/* favorite button */
+.favorite-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 24px;
+    position: relative;
+  }
+  
+  .favorite-btn .full-heart {
+    color: red; /* Vol hart kleur */
     display: none;
-}
-
-.favorite-btn.favorited .full-heart {
+  }
+  
+  .favorite-btn .empty-heart {
+    color: gray; /* Leeg hart kleur */
+  }
+  
+  .favorite-btn.favorited .full-heart {
     display: inline;
-}
+  }
+  
+  .favorite-btn.favorited .empty-heart {
+    display: none;
+  }
+
 
 .ingredienttoggle button {
     background: none;
@@ -1125,7 +1148,7 @@ input[type="file"] {
     font-size: larger;
 }
 .recommendations h2{
-    padding-left: 2.5em;
+    padding-left: 0.5em;
 }
 
  
