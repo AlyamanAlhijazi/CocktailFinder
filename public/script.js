@@ -272,6 +272,36 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 });
 
+// sorteing
+document.addEventListener("DOMContentLoaded", () => {
+  const sortSelect = document.getElementById("sort");
+  const cocktailList = document.querySelector(".cocktail-list"); // Selecteer de ul
+  let drinksList = Array.from(document.querySelectorAll(".cocktail-list li")); // Selecteer de li's als Array
+
+  if (sortSelect && cocktailList) {
+    sortSelect.addEventListener("change", () => {
+      let selectedOption = sortSelect.value;
+
+      if (selectedOption === "sorta-z") {
+        drinksList.sort((a, b) => {
+          let nameA = a.querySelector("h2").innerText.toLowerCase();
+          let nameB = b.querySelector("h2").innerText.toLowerCase();
+          return nameA.localeCompare(nameB);
+        });
+      } else if (selectedOption === "sortz-a") {
+        drinksList.sort((a, b) => {
+          let nameA = a.querySelector("h2").innerText.toLowerCase();
+          let nameB = b.querySelector("h2").innerText.toLowerCase();
+          return nameB.localeCompare(nameA);
+        });
+      }
+      // make sure the list is empty before appending sorted items
+      cocktailList.innerHTML = "";
+      drinksList.forEach((drink) => cocktailList.appendChild(drink));
+    });
+  }
+});
+
 // instructie toggle
 const tabs = document.querySelectorAll('[data-tab-target]');
 const tabContents = document.querySelectorAll('[data-tab-content]');

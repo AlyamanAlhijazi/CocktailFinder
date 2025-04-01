@@ -256,7 +256,19 @@ main > .cocktail-list li{
     padding: 0;
     margin: 0;
 }
-
+.allCocktails .titel-contener{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-right: 6.5em;
+}
+#sortering{
+    width: 6.5em;
+    padding: 0;
+}
+#sortering option{
+    font-size: .7em;
+}
 .cocktail-link {
     display: block;
     width: 100%;
@@ -1227,3 +1239,4 @@ input[type="file"] {
     font-weight: 500;
     color: var(--color-text);
 }
+

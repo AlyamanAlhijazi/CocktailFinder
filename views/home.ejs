@@ -117,9 +117,11 @@
             </div>
         </section>
         <section class="allCocktails">
-            <h2>All Cocktails</h2>
+            <div class="titel-contener">
+                <h2>All Cocktails</h2>
+                <%- include('partials/sortering.ejs') %>
+            </div>
             <%- include('partials/filters.ejs') %>
-            <%- include('partials/sortering.ejs') %>
             <%- include('partials/resultaten.ejs') %>
         </section>    
         <% } %>
