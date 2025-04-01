@@ -353,7 +353,7 @@ app.post("/cocktail/:cocktailId/review", isAuthenticated, async (req, res) => {
 
 
 /// 🔹 FAVORITES (POST)
-app.post("/cocktail/:cocktailId/favorite", async (req, res) => {
+app.post("/cocktail/:cocktailId/favorite", isAuthenticated, async (req, res) => {
   if (!req.session.userId) {
     req.flash("error", "Sign in to add this cocktail to favorites");
     return res.redirect("/login");
@@ -785,32 +785,50 @@ app.get("/usercocktails", async (req, res) => {
 
 
 app.get('/cocktail/:cocktailName', async (req, res) => {
-  try {
-    const cocktailName = req.params.cocktailName;
-
-    const dbCocktail = await Cocktail.findOne({
-      name: { $regex: new RegExp("^" + cocktailName + "$", "i") }
-    }).populate("reviews.user");
-
-    if (dbCocktail) {
-      return res.render('instructies.ejs', { cocktail: dbCocktail, source: 'database', reviews: dbCocktail.reviews });
+    try {
+      const cocktailName = req.params.cocktailName;
+      const userId = req.session.userId;
+      let isFavorited = false;
+  
+      const dbCocktail = await Cocktail.findOne({
+        name: { $regex: new RegExp("^" + cocktailName + "$", "i") }
+      }).populate("reviews.user");
+  
+      if (userId && dbCocktail) {
+        const user = await User.findById(userId);
+        if (user && user.favorites.some(fav => fav.equals(dbCocktail._id))) {
+          isFavorited = true;
+        }
+      }
+  
+      if (dbCocktail) {
+        return res.render('instructies.ejs', { 
+          cocktail: dbCocktail, 
+          source: 'database', 
+          reviews: dbCocktail.reviews, 
+          isFavorited 
+        });
+      }
+  
+      const data = await fetchData(API + 'search.php?s=' + cocktailName);
+      const apiCocktail = data.drinks ? data.drinks[0] : null;
+  
+      if (!apiCocktail) {
+        return res.status(404).send('Cocktail not found');
+      }
+  
+      res.render('instructies.ejs', { 
+        cocktail: apiCocktail, 
+        source: 'api', 
+        reviews: [], 
+        isFavorited: false // API cocktails are not in the database, so can't be favorited
+      });
+  
+    } catch (error) {
+      console.error("❌ Fout bij ophalen cocktail:", error);
+      res.status(500).send("Er is een probleem met het laden van de cocktail.");
     }
-
-    const data = await fetchData(API + 'search.php?s=' + cocktailName);
-    const apiCocktail = data.drinks ? data.drinks[0] : null;
-
-    if (!apiCocktail) {
-      return res.status(404).send('Cocktail not found');
-    }
-
-    res.render('instructies.ejs', { cocktail: apiCocktail, source: 'api', reviews: [] });
-
-  } catch (error) {
-    console.error("❌ Fout bij ophalen cocktail:", error);
-    res.status(500).send("Er is een probleem met het laden van de cocktail.");
-  }
-});
-
+  });
 // Random cocktail
 app.get("/random", async (req, res) => {
   try {
