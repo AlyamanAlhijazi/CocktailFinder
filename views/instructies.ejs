@@ -18,8 +18,11 @@
             <% } %>
             
             <div>
-                 
-                <form action="/cocktail/<%= cocktail.name %>/favorite" method="post">
+                <% if (source === 'database') { %> 
+                    <form action="/cocktail/<%= cocktail.name %>/favorite" method="POST">
+                <% } else { %>
+                    <form action="/cocktail/<%= cocktail.idDrink %>/APIfavorite" method="POST">
+                <% } %>
                     <button class="favorite-btn <%= isFavorited ? 'favorited' : '' %>" type="submit">
                         <% if (user && user.favorites.some(fav => fav.equals(cocktail._id))) { %>
                                 <i class="fas fa-heart full-heart"></i> <!-- Gevuld hart -->

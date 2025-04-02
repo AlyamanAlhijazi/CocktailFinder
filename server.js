@@ -60,7 +60,6 @@ const userSchema = new mongoose.Schema({
   email: String,
   password: String,
   favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'userCocktail', default: [] }]
-
 });
 const User = mongoose.model("User", userSchema);
 
@@ -447,10 +446,30 @@ app.post("/cocktail/:cocktailName/favorite", async (req, res) => {
     req.flash("error", "Sign in to add cocktails to your favorites");
     return res.redirect("/login");
   }
-
   const { cocktailName } = req.params;
   const userId = req.session.userId;
 
+  await favorite(req, res, userId, { cocktailName })
+});
+
+app.post("/cocktail/:cocktailId/APIfavorite", async (req, res) => {
+  if (!req.session.userId) {
+    req.flash("error", "Sign in to add cocktails to your favorites");
+    return res.redirect("/login");
+  }
+  const { cocktailId } = req.params;
+  const userId = req.session.userId;
+
+  const data = await fetchData(API + 'lookup.php?i=' + cocktailId);
+  const cocktail = data.drinks ? data.drinks[0] : null;
+  console.log(cocktail)
+  const { cocktailName } = cocktail.strDrink;
+  await saveApiCocktailToDB(req, res, cocktailId);
+  await favorite(req, res, userId, { cocktailName })
+});
+
+
+async function favorite(req, res, userId, { cocktailName }) {  
   try {
     const user = await User.findById(userId);
     if (!user) {
@@ -458,7 +477,12 @@ app.post("/cocktail/:cocktailName/favorite", async (req, res) => {
       return res.redirect(`/cocktail/${cocktailName}`);
     }
 
-    const cocktail = await Cocktail.findOne({ name: { $regex: new RegExp("^" + cocktailName + "$", "i") } });
+    let cocktail = await Cocktail.findOne({ name: { $regex: new RegExp("^" + cocktailName + "$", "i") } });
+
+    if(!cocktail) {
+      cocktail = await APIcocktail.findOne({ name: { $regex: new RegExp("^" + cocktailName + "$", "i") } });
+    }
+    
     if (!cocktail) {
       req.flash("error", "Cocktail was not found!");
       return res.redirect(`/cocktail/${cocktailName}`);
@@ -480,7 +504,7 @@ app.post("/cocktail/:cocktailName/favorite", async (req, res) => {
     req.flash("error", "Something went wrong, try again later");
     return res.redirect(`/cocktail/${cocktailName}`);
   }
-});
+}
 
 
 
