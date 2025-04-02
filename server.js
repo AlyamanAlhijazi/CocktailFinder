@@ -374,10 +374,14 @@ app.post("/logout", (req, res) => {
 
 async function review({ cocktailId }, {rating, comment}, userId, res) {
   try {
+    let cocktail = '';
     // Zoek de cocktail
-    let cocktail = await APIcocktail.findById(cocktailId);
+    if (cocktailId.length < 10) {
+      cocktail = await APIcocktail.findById(cocktailId);
+    }
+   
     // console.log(cocktail);
-    if(!cocktail) {
+    if(cocktailId.length > 10) {
       cocktail = await userCocktail.findById(cocktailId);
     }
 
