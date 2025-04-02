@@ -10,10 +10,19 @@
             <h1><%= cocktail.name || cocktail.strDrink %></h1>
             <img src="<%= source === 'database' ? '/uploads/' + cocktail.image : cocktail.strDrinkThumb %>" 
                  alt="<%= cocktail.name || cocktail.strDrink %>">
-            <button class="favorite-btn" data-cocktail-id="<%= cocktail._id %>">
-                <i class="far fa-heart empty-heart"></i>  <!-- Leeg hart icoon -->
-                <i class="fas fa-heart full-heart"></i>   <!-- Vol hart icoon -->
-            </button>
+            
+            <form action="/cocktail/<%= cocktail.name %>/favorite" method="post">
+                <button class="favorite-btn" type="submit">
+                    <% if (user && user.favorites.some(fav => fav.equals(cocktail._id))) { %>
+                        <i class="fas fa-heart full-heart"></i> <!-- Gevuld hart -->
+                    <% } else { %>
+                        <i class="far fa-heart empty-heart"></i> <!-- Leeg hart -->
+                    <% } %>
+                </button>
+            </form>
+            
+                      
+            
             <%- include("partials/messages") %> 
             <section class="ingredienttoggle">
                 <div>

@@ -5,9 +5,9 @@
     <header>
         <%- include('partials/header.ejs') %>
     </header>
+    <%- include('partials/messages') %>
     <main>
         <h1>Sign in</h1>
-        <%- include('partials/messages') %>
         <div class="container">
             <!-- Het formulier voor het inloggen -->
             <form id="loginForm" method="POST" action="/users/login">
