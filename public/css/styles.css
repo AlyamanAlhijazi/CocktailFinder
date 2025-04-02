@@ -837,7 +837,7 @@ input[type="file"] {
 /* rating */
 .rating {
     display: inline-block;
-    direction: rtl; 
+    direction: rtl; /* Reverse the order so the first star is the lowest */
 }
 
 .rating input {
@@ -845,15 +845,23 @@ input[type="file"] {
 }
 
 .rating label {
-    float: left;
+    float: left; /* Change float to left so it works in correct order */
     padding: 10px;
     font-size: 30px;
     color: #444;
     transition: all 0.2s;
-    cursor: pointer; 
+    direction: rtl; /* Reverse the order so the first star is the lowest */
+    cursor: pointer; /* Makes it clear that stars are clickable */
 }
 
+/* Highlight selected stars correctly */
 .rating input:checked ~ label {
+    color: #FDD017;
+}
+
+/* Hover effect to preview rating */
+.rating label:hover,
+.rating label:hover ~ label {
     color: #FDD017;
 }
 
