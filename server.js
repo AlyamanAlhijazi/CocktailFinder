@@ -468,15 +468,18 @@ app.get("/recommendations", async (req, res) => {
 
 // 🔹 PROFILE (GET)
 app.get("/profile", async (req, res) => {
+  
+  
   if (!req.session.userId) {
     return res.redirect("/login");
   }
   try {
+    res.locals.currentpath = req.path;
     const user = await User.findById(req.session.userId).populate("favorites");
     const userCocktails = await Cocktail.find({ createdBy: req.session.userId });
 
-    console.log("Opgehaalde favorieten:", user.favorites);
-    console.log("Opgehaalde eigen cocktails:", userCocktails);
+    // console.log("Opgehaalde favorieten:", user.favorites);
+    // console.log("Opgehaalde eigen cocktails:", userCocktails);
 
     res.render("profile", {
       user: user,
@@ -490,6 +493,10 @@ app.get("/profile", async (req, res) => {
   }
 });
 
+// app.get("/profile", isAuthenticated, async (req, res) => {
+//   res.locals.currentpath = req.path;
+//   res.render("profile", { user: req.session.username });
+// });
 
 
 // Middleware om API-cocktails op te slaan in de database
@@ -619,7 +626,7 @@ app.get('/home', async (req, res) => {
     let glasses = await fetch_list('g');
     let ingredients = await fetch_list('i');
     let drinks = await filteren();
-    console.log('Drinks example:', drinks[0]);
+    // console.log('Drinks example:', drinks[0]);
 
 
     // **Aanbevolen cocktails op basis van favorieten**
@@ -627,14 +634,14 @@ app.get('/home', async (req, res) => {
       const user = await User.findById(userId).populate("favorites");
 
       if (user && user.favorites.length > 0) {
-        console.log("👤 User ID:", userId);
-        console.log("⭐ Favorite cocktails:", user.favorites.map(fav => fav.name));
+        // console.log("👤 User ID:", userId);
+        // console.log("⭐ Favorite cocktails:", user.favorites.map(fav => fav.name));
 
         const favoriteIngredients = [
           ...new Set(user.favorites.flatMap(cocktail => cocktail.ingredients.map(ing => ing.name)))
         ];
 
-        console.log("🍹 Favorite ingredients:", favoriteIngredients);
+        // console.log("🍹 Favorite ingredients:", favoriteIngredients);
 
         recommendedCocktails = await Cocktail.aggregate([
           {
@@ -652,18 +659,18 @@ app.get('/home', async (req, res) => {
           { $limit: 10 }
         ]);
 
-        console.log("🔍 Recommended cocktails:", recommendedCocktails);
+        // console.log("🔍 Recommended cocktails:", recommendedCocktails);
       }
     }
     // **Sorteer op naam (A-Z of Z-A)**
     
     
-    console.log("sortOption0", sortOption)
+    // console.log("sortOption0", sortOption)
     if (sortOption === 'sorta-z') {
-      console.log("sortOption", sortOption)
+      // console.log("sortOption", sortOption)
       drinks.sort((a, b) => a.strDrink.localeCompare(b.strDrink));
     } else if (sortOption === 'sortz-a') {
-      console.log("sortOption", sortOption)
+      // console.log("sortOption", sortOption)
 
       drinks.sort((a, b) => b.strDrink.localeCompare(a.strDrink));
     
@@ -692,9 +699,6 @@ app.get('/home', async (req, res) => {
 });
 
 
-app.get("/profile", isAuthenticated, async (req, res) => {
-  res.render("profile", { user: req.session.username });
-});
 
 app.get("/upload", isAuthenticated, async (req, res) => {
   res.locals.currentpath = req.path;
