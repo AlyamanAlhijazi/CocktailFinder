@@ -550,12 +550,16 @@ app.get("/recommendations", async (req, res) => {
 
 // 🔹 PROFILE (GET)
 app.get("/profile", async (req, res) => {
+  
+  
   if (!req.session.userId) {
     return res.redirect("/login");
   }
   try {
+    res.locals.currentpath = req.path;
     const user = await User.findById(req.session.userId).populate("favorites");
     const userCocktails = await Cocktail.find({ createdBy: req.session.userId });
+
 
     res.render("profile", {
       user: user,
@@ -568,6 +572,10 @@ app.get("/profile", async (req, res) => {
   }
 });
 
+// app.get("/profile", isAuthenticated, async (req, res) => {
+//   res.locals.currentpath = req.path;
+//   res.render("profile", { user: req.session.username });
+// });
 
 
 // Middleware om API-cocktails op te slaan in de database
@@ -714,6 +722,7 @@ app.get('/home', async (req, res) => {
     if (userId) {
       const user = await User.findById(userId).populate("favorites");
 
+
             if (user && user.favorites.length > 0) {
 
                 const favoriteIngredients = [
@@ -733,6 +742,7 @@ app.get('/home', async (req, res) => {
                 ]);
             }
         }
+
 
     // **Sorteren op naam (A-Z of Z-A)**
     console.log("sortOption0", sortOption);
@@ -910,66 +920,6 @@ app.get('/cocktail/:cocktailName', async (req, res) => {
     res.status(500).send("Er is een probleem met het laden van de cocktail.");
   }
 });
-// app.get('/cocktail/:cocktailName', async (req, res) => {
-//   try {
-//     const { cocktailName } = req.params;
-//     const userId = req.session.userId;
-
-//     let dbCocktail = await Cocktail.findOne({
-//       name: { $regex: new RegExp("^" + cocktailName + "$", "i") }
-//     }).populate("reviews.user");
-
-//     let img = 'db'; // Standaard op database
-
-//     if (!dbCocktail) {
-//       img = 'api';
-//       dbCocktail = await APIcocktail.findOne({
-//         name: { $regex: new RegExp("^" + cocktailName + "$", "i") }
-//       });
-//     }
-
-//     let isFavorited = false;
-//     if (userId && dbCocktail) {
-//       const user = await User.findById(userId).populate("favorites");
-//       if (user && user.favorites.some(fav => fav.equals(dbCocktail._id))) {
-//         isFavorited = true;
-//       }
-//     }
-
-//     if (dbCocktail) {
-//       return res.render('instructies.ejs', {
-//         cocktail: dbCocktail,
-//         source: img === 'db' ? 'database' : 'api',
-//         reviews: dbCocktail.reviews ? dbCocktail.reviews : [],
-//         user: userId ? await User.findById(userId) : null,
-//         isFavorited: isFavorited,
-//         img: img // Hier doorgeven van de img variabele
-//       });
-//     }
-
-//     // Als de cocktail niet in de database of API is, probeer het via de externe API
-//     const data = await fetchData(API + 'search.php?s=' + cocktailName);
-//     const apiCocktail = data.drinks ? data.drinks[0] : null;
-
-//     if (!apiCocktail) {
-//       return res.status(404).send('Cocktail not found');
-//     }
-
-//     // Zorg ervoor dat img ook hier wordt doorgegeven
-//     res.render('instructies.ejs', {
-//       cocktail: apiCocktail,
-//       source: 'api',
-//       reviews: [],
-//       isFavorited: false,
-//       img: 'api' // Hier doorgeven van de img variabele
-//     });
-
-//   } catch (error) {
-//     console.error("❌ Fout bij ophalen cocktail:", error);
-//     res.status(500).send("Er is een probleem met het laden van de cocktail.");
-//   }
-// });
-
 
 
 // Random cocktail
