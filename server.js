@@ -1,5 +1,5 @@
 // Packages importeren
-import express from "express";
+import express, { response } from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import bcrypt from "bcrypt";
@@ -79,58 +79,123 @@ const reviewSchema = new mongoose.Schema({
 
 // 📌 COCKTAIL MODEL
 const cocktailSchema = new mongoose.Schema({
-  name: {
-    type: String,
+    name: { 
+      type: String, 
+      required: true,
+      trim: true,
+      maxlength: 100,
+    },
+    ingredients: [{ 
+      name: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+      amount: {
+        type: Number, 
+        required: true,
+        trim: true,
+      },
+      unit: {
+        type: String,
+        required: true,
+        enum: ["ml", "cl", "oz"],
+      },
+      isAlcoholic: {
+        type: Boolean,
+        default: false,
+      },
+      alcoholPercentage: {
+        type: Number,
+        min: 0,
+        max: 100,
+      },
+    }],
+    alcoholPercentage: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 100,
+    },
+    strength: {
+      type: String,
+      enum: ["Light", "Medium", "Strong"],
+      default: "Medium",
+    },
+    instructions: { 
+      type: String, 
+      required: true, 
+      trim: true, 
+    },
+    category: { 
+      type: String,
+      required: true,
+      enum: ["Alcoholic", "Non-alcoholic", "Optional alcohol"],
+    },
+    glassType: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    image: {
+      type: String,
+      required: true,
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    reviews: [reviewSchema],
+    averageRating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+    },
+  }, { 
+    collection: "usercocktails", 
+    timestamps: true 
+  });
+
+  // 📌 COCKTAIL MODEL
+const APIcocktailSchema = new mongoose.Schema({
+  
+  _id: Number,
+  
+  name: { 
+    type: String, 
     required: true,
     trim: true,
     maxlength: 100,
   },
-  ingredients: [{
+  ingredients: [{ 
     name: {
       type: String,
       required: true,
       trim: true,
     },
     amount: {
-      type: Number,
+      type: String, 
       required: true,
       trim: true,
-    },
-    unit: {
-      type: String,
-      required: true,
-      enum: ["ml", "cl", "oz"],
-    },
-    isAlcoholic: {
-      type: Boolean,
-      default: false,
-    },
-    alcoholPercentage: {
-      type: Number,
-      min: 0,
-      max: 100,
-    },
+    }
+    
   }],
-  alcoholPercentage: {
-    type: Number,
-    default: 0,
-    min: 0,
-    max: 100,
+  instructions: { 
+    type: String, 
+    required: true, 
+    trim: true, 
   },
-  strength: {
-    type: String,
-    enum: ["Light", "Medium", "Strong"],
-    default: "Medium",
+  category: { 
+    type: String, 
+    required: true, 
+    trim: true, 
   },
-  instructions: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  category: {
+  alcohol: { 
     type: String,
     required: true,
-    enum: ["Alcoholic", "Non-alcoholic", "Optional alcohol"],
+    enum: ["Alcoholic", "Non alcoholic", "Optional alcohol"],
   },
   glassType: {
     type: String,
@@ -141,11 +206,6 @@ const cocktailSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
   reviews: [reviewSchema],
   averageRating: {
     type: Number,
@@ -153,14 +213,16 @@ const cocktailSchema = new mongoose.Schema({
     min: 0,
     max: 5,
   },
-}, {
-  collection: "usercocktails",
-  timestamps: true
+}, { 
+  collection: "apiCocktails", 
+  timestamps: true 
 });
+  
+  const userCocktail = mongoose.model("userCocktail", cocktailSchema);
+  export default userCocktail;
+  const Cocktail = mongoose.model("Cocktail", cocktailSchema);
+  const apiCocktail = mongoose.model("apiCocktail", APIcocktailSchema);
 
-const userCocktail = mongoose.model("userCocktail", cocktailSchema);
-export default userCocktail;
-const Cocktail = mongoose.model("Cocktail", cocktailSchema);
 // export default Cocktail;
 
 //CL OMZETTEN NAAR ML
@@ -310,15 +372,13 @@ app.post("/logout", (req, res) => {
   }
 });
 
-// 🔹 REVIEW (POST)
-app.post("/cocktail/:cocktailId/review", isAuthenticated, async (req, res) => {
-  const { cocktailId } = req.params;
-  const { rating, comment } = req.body;
-  const userId = req.session.userId; // Haal de userId uit de sessie
-
+async function review({ cocktailId }, {rating, comment}, userId, res) {
   try {
     // Zoek de cocktail
-    const cocktail = await userCocktail.findById(cocktailId);
+    let cocktail = await apiCocktail.findById(cocktailId);
+    if(!cocktail) {
+      cocktail = await userCocktail.findById(cocktailId);
+    }
 
     if (!cocktail) {
       return res.status(404).send("Cocktail niet gevonden");
@@ -343,12 +403,30 @@ app.post("/cocktail/:cocktailId/review", isAuthenticated, async (req, res) => {
 
     // Sla de cocktail op
     await cocktail.save();
-
-    res.redirect(`/cocktail/${cocktail.name}`); // Redirect naar de cocktailpagina
+    res.redirect(`/cocktail/${cocktail.name}`); // Redirect naar de cocktailpagina) 
   } catch (error) {
     console.error("Fout bij het opslaan van de review:", error);
-    res.status(500).send("Er is een fout opgetreden bij het opslaan van de review.");
+    res.status(500).send("Er is een fout opgetreden bij het opslaan van de review.")
   }
+}
+
+
+// 🔹 REVIEW (POST)
+
+app.post ("/cocktail/:cocktailId/review", isAuthenticated ,async (req, res) => {
+  const { cocktailId } = req.params;
+  const { rating, comment } = req.body;
+  const userId = req.session.userId; // Haal de userId uit de sessie\
+  await review({ cocktailId }, {rating, comment}, userId, res);
+  
+});
+
+app.post ("/cocktail/:cocktailId/APIreview", isAuthenticated ,async (req, res) => {
+  const { cocktailId } = req.params;
+  const { rating, comment } = req.body;
+  const userId = req.session.userId;
+  await saveApiCocktailToDB(req, res, cocktailId);
+  await review({ cocktailId }, {rating, comment}, userId, res);
 });
 
 
@@ -493,44 +571,57 @@ app.get("/profile", async (req, res) => {
 
 
 // Middleware om API-cocktails op te slaan in de database
-const saveApiCocktailToDB = async (req, res, next) => {
-  const { cocktailName } = req.params;
 
-  try {
-    // Zoek eerst of de cocktail al in de database staat
-    let dbCocktail = await userCocktail.findOne({
-      name: { $regex: new RegExp("^" + cocktailName + "$", "i") }
-    });
+async function saveApiCocktailToDB(req, res, cocktailId) {
+    try {
+      // Zoek eerst of de cocktail al in de database staat
+      let dbCocktail = await apiCocktail.findOne({
+        _id: cocktailId
+      });
+      
+      if (!dbCocktail) {
+        // Als de cocktail niet in de database staat, haal deze op uit de API
+        const data = await fetchData(API + 'lookup.php?i=' + cocktailId);
+        const Cocktail = data.drinks ? data.drinks[0] : null;
+        let ingredients = [];
 
-    if (!dbCocktail) {
-      // Als de cocktail niet in de database staat, haal deze op uit de API
-      const data = await fetchData(API + 'search.php?s=' + cocktailName);
-      const apiCocktail = data.drinks ? data.drinks[0] : null;
+        for (let i = 1; i <= 15; i++) { 
+          if(Cocktail['strIngredient' + i]) {
+            const ingredient = Cocktail['strIngredient' + i];
+            const amount =  Cocktail['strMeasure' + i];
+            const object = {
+              name: ingredient,
+              amount: amount
+            }
+            ingredients.push(object)
+          }
+        }
 
-      if (apiCocktail) {
-        // Converteer de API-cocktail naar een database-cocktail
-        const newCocktail = new userCocktail({
-          name: apiCocktail.strDrink,
-          // ingredients: convertApiIngredients(apiCocktail), // Maak een functie om de ingrediënten te converteren
-          instructions: apiCocktail.strInstructions,
-          category: apiCocktail.strCategory,
-          glassType: apiCocktail.strGlass,
-          image: apiCocktail.strDrinkThumb,
-          createdBy: req.session.userId, // Gebruik de huidige gebruiker
-          reviews: [], // Maak een lege review array
-        });
-
-        // Sla de cocktail op in de database
-        dbCocktail = await newCocktail.save();
+        if (Cocktail) {
+          // Converteer de API-cocktail naar een database-cocktail
+          const newCocktail = new apiCocktail({
+            _id: cocktailId,
+            name: Cocktail.strDrink,
+            ingredients: ingredients,
+            instructions: Cocktail.strInstructions,
+            category: Cocktail.strCategory,
+            alcohol: Cocktail.strAlcoholic,
+            glassType: Cocktail.strGlass,
+            image: Cocktail.strDrinkThumb,
+            reviews: [], // Maak een lege review array
+          });
+  
+          // // Sla de cocktail op in de database
+          newCocktail.save();
+        }
       }
+      
+      
+
+    } catch (error) {
+      console.error("Fout bij opslaan API cocktail in database:", error);
+      res.status(500).send("Er is een fout opgetreden bij het laden van de cocktail.");
     }
-    // Sla de cocktailId op in favorites
-    req.dbCocktailId = dbCocktail._id;
-    next();
-  } catch (error) {
-    console.error("Fout bij opslaan API cocktail in database:", error);
-    res.status(500).send("Er is een fout opgetreden bij het laden van de cocktail.");
-  }
 };
 
 
@@ -654,6 +745,7 @@ app.get('/home', async (req, res) => {
 
         console.log("🔍 Recommended cocktails:", recommendedCocktails);
       }
+
     }
     // **Sorteer op naam (A-Z of Z-A)**
     
@@ -783,7 +875,6 @@ app.get("/usercocktails", async (req, res) => {
 
 
 
-
 app.get('/cocktail/:cocktailName', async (req, res) => {
     try {
       const cocktailName = req.params.cocktailName;
@@ -829,6 +920,7 @@ app.get('/cocktail/:cocktailName', async (req, res) => {
       res.status(500).send("Er is een probleem met het laden van de cocktail.");
     }
   });
+
 // Random cocktail
 app.get("/random", async (req, res) => {
   try {

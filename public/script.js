@@ -231,7 +231,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
   // Form submission for the filters
   if (filtersForm) {
-      console.log(filtersForm);
       filtersForm.addEventListener("submit", async function(event) {
           event.preventDefault();
 
