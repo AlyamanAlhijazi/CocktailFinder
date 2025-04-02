@@ -649,14 +649,6 @@ app.get("/cocktails/search", async (req, res) => {
   }
 });
 
-// Check of gebruiker is ingelogd
-function isAuthenticated(req, res, next) {
-  if (!req.session.userId) {
-    req.flash("error", "You must be logged in to access this page");
-    return res.redirect("/login");
-  }
-  next();
-}
 
 //  ZOEK COCKTAILS (post)  
 app.post('/search', async (req, res) => {
@@ -863,41 +855,41 @@ app.get("/usercocktails", async (req, res) => {
 
 app.get('/cocktail/:cocktailName', async (req, res) => {
   try {
-    const { cocktailName } = req.params;
+    const cocktailName = req.params.cocktailName;
     const userId = req.session.userId;
+    let isFavorited = false;
+    let img = 'db'
 
     let dbCocktail = await Cocktail.findOne({
       name: { $regex: new RegExp("^" + cocktailName + "$", "i") }
     }).populate("reviews.user");
 
-    let img = 'db'; // Standaard op database
-
-    if (!dbCocktail) {
-      img = 'api';
+    if(!dbCocktail) {
+      img = 'api'
       dbCocktail = await APIcocktail.findOne({
         name: { $regex: new RegExp("^" + cocktailName + "$", "i") }
-      });
+    }).populate("reviews.user");
     }
 
-    let isFavorite = false;
-    if (userId && dbCocktail) {
-      const user = await User.findById(userId).populate("favorites");
-      if (user && user.favorites.some(fav => fav.equals(dbCocktail._id))) {
-        isFavorite = true;
+    let user = null; // 🔹 Voeg dit toe
+    if (userId) {
+      user = await User.findById(userId).populate('favorites'); // 🔹 Ophalen en meegeven
+      if (user && dbCocktail && user.favorites.some(fav => fav.equals(dbCocktail._id))) {
+        isFavorited = true;
       }
     }
 
     if (dbCocktail) {
-      return res.render('instructies.ejs', {
-        cocktail: dbCocktail,
-        source: img === 'db' ? 'database' : 'api',
-        reviews: dbCocktail.reviews ? dbCocktail.reviews : [],
-        user: userId ? await User.findById(userId) : null,
-        isFavorite: isFavorite
+      return res.render('instructies.ejs', { 
+        cocktail: dbCocktail, 
+        source: 'database', 
+        reviews: dbCocktail.reviews, 
+        isFavorited, 
+        img,
+        user
       });
     }
 
-    // Als de cocktail niet in de database of API is, probeer het via de externe API
     const data = await fetchData(API + 'search.php?s=' + cocktailName);
     const apiCocktail = data.drinks ? data.drinks[0] : null;
 
@@ -905,11 +897,12 @@ app.get('/cocktail/:cocktailName', async (req, res) => {
       return res.status(404).send('Cocktail not found');
     }
 
-    res.render('instructies.ejs', {
-      cocktail: apiCocktail,
-      source: 'api',
-      reviews: [],
-      isFavorite: false // API cocktails zijn niet in de database, dus kunnen niet favoriet zijn
+    res.render('instructies.ejs', { 
+      cocktail: apiCocktail, 
+      source: 'api', 
+      reviews: [], 
+      isFavorited: false, // API cocktails are not in the database, so can't be favorited
+      user: null
     });
 
   } catch (error) {
@@ -917,6 +910,66 @@ app.get('/cocktail/:cocktailName', async (req, res) => {
     res.status(500).send("Er is een probleem met het laden van de cocktail.");
   }
 });
+// app.get('/cocktail/:cocktailName', async (req, res) => {
+//   try {
+//     const { cocktailName } = req.params;
+//     const userId = req.session.userId;
+
+//     let dbCocktail = await Cocktail.findOne({
+//       name: { $regex: new RegExp("^" + cocktailName + "$", "i") }
+//     }).populate("reviews.user");
+
+//     let img = 'db'; // Standaard op database
+
+//     if (!dbCocktail) {
+//       img = 'api';
+//       dbCocktail = await APIcocktail.findOne({
+//         name: { $regex: new RegExp("^" + cocktailName + "$", "i") }
+//       });
+//     }
+
+//     let isFavorited = false;
+//     if (userId && dbCocktail) {
+//       const user = await User.findById(userId).populate("favorites");
+//       if (user && user.favorites.some(fav => fav.equals(dbCocktail._id))) {
+//         isFavorited = true;
+//       }
+//     }
+
+//     if (dbCocktail) {
+//       return res.render('instructies.ejs', {
+//         cocktail: dbCocktail,
+//         source: img === 'db' ? 'database' : 'api',
+//         reviews: dbCocktail.reviews ? dbCocktail.reviews : [],
+//         user: userId ? await User.findById(userId) : null,
+//         isFavorited: isFavorited,
+//         img: img // Hier doorgeven van de img variabele
+//       });
+//     }
+
+//     // Als de cocktail niet in de database of API is, probeer het via de externe API
+//     const data = await fetchData(API + 'search.php?s=' + cocktailName);
+//     const apiCocktail = data.drinks ? data.drinks[0] : null;
+
+//     if (!apiCocktail) {
+//       return res.status(404).send('Cocktail not found');
+//     }
+
+//     // Zorg ervoor dat img ook hier wordt doorgegeven
+//     res.render('instructies.ejs', {
+//       cocktail: apiCocktail,
+//       source: 'api',
+//       reviews: [],
+//       isFavorited: false,
+//       img: 'api' // Hier doorgeven van de img variabele
+//     });
+
+//   } catch (error) {
+//     console.error("❌ Fout bij ophalen cocktail:", error);
+//     res.status(500).send("Er is een probleem met het laden van de cocktail.");
+//   }
+// });
+
 
 
 // Random cocktail

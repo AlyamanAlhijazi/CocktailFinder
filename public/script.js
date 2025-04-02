@@ -35,36 +35,6 @@ function removeIngredient(event) {
 }
 
 
-<<<<<<< HEAD
-=======
-// FAVORITES 
-document.addEventListener('DOMContentLoaded', function() {
-  document.querySelectorAll('.favorite-btn').forEach(button => {
-    button.addEventListener('click', async function() {
-      const cocktailId = this.dataset.cocktailId;
-
-      try {
-        const response = await fetch(`/cocktail/${cocktailId}/favorite`, { method: 'POST' });
-        const data = await response.json();
-
-        if (data.status === 'added') {
-          this.classList.add('favorited');
-        } else {
-          this.classList.remove('favorited');
-        }
-      } catch (error) {
-        console.error('Fout bij favorieten:', error);
-      }
-    });
-  });
-});
-
-
-
->>>>>>> origin/main-dev
-
-
-
 // Image displaying
 document.addEventListener("DOMContentLoaded", function() {
   console.log(document.getElementById("image"))
