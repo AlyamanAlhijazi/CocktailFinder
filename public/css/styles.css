@@ -682,7 +682,7 @@ form {
 label {
     font-size: 1.2em;
     font-weight: bold;
-    display: ock;
+    display: block;
 }
 .image-upload {
     display: flex;
@@ -717,7 +717,7 @@ label {
 }
 
 .upload-box:hover {
-    background-color: var(--button-color);
+    background: var(--button-color);
     color: var(--white);
     border: 2px dashed var(--nav-color);
 }
@@ -837,6 +837,7 @@ input[type="file"] {
 /* rating */
 .rating {
     display: inline-block;
+    direction: rtl; 
 }
 
 .rating input {
@@ -844,20 +845,15 @@ input[type="file"] {
 }
 
 .rating label {
-    float: right;
+    float: left;
     padding: 10px;
     font-size: 30px;
     color: #444;
     transition: all 0.2s;
+    cursor: pointer; 
 }
 
 .rating input:checked ~ label {
-    color: #FDD017;
-
-}
-
-.rating label:hover,
-.rating label:hover ~ label {
     color: #FDD017;
 }
 

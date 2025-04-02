@@ -305,7 +305,6 @@ document.addEventListener("DOMContentLoaded", () => {
 const tabs = document.querySelectorAll('[data-tab-target]');
 const tabContents = document.querySelectorAll('[data-tab-content]');
 
-// Set the first tab (Ingredients) as active on page load
 document.addEventListener('DOMContentLoaded', () => {
     const defaultTab = document.querySelector('[data-tab-target="#Ingredients"]');
     const defaultContent = document.querySelector('#Ingredients');
