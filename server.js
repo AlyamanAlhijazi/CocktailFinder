@@ -707,7 +707,7 @@ app.get('/home', async (req, res) => {
 
     // Fetch top 5 cocktails from both Cocktail and apiCocktail collections
     const dbTopCocktails = await Cocktail.find().sort({ averageRating: -1 }).limit(5);
-    const apiTopCocktails = await apiCocktail.find().sort({ averageRating: -1 }).limit(5);
+    const apiTopCocktails = await APIcocktail.find().sort({ averageRating: -1 }).limit(5);
 
     // Combine, sort again, and take the top 5 overall
     const combinedTopCocktails = [...dbTopCocktails, ...apiTopCocktails]
