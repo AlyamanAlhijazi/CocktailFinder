@@ -418,8 +418,9 @@ app.post ("/cocktail/:cocktailId/review", isAuthenticated ,async (req, res) => {
   const { cocktailId } = req.params;
   const { rating, comment } = req.body;
   const userId = req.session.userId; // Haal de userId uit de sessie\
-  await review({ cocktailId }, {rating, comment}, userId, res);
-  
+  if(rating && comment) {
+    await review({ cocktailId }, {rating, comment}, userId, res);
+  }
 });
 
 app.post ("/cocktail/:cocktailId/APIreview", isAuthenticated ,async (req, res) => {
@@ -427,7 +428,10 @@ app.post ("/cocktail/:cocktailId/APIreview", isAuthenticated ,async (req, res) =
   const { rating, comment } = req.body;
   const userId = req.session.userId;
   await saveApiCocktailToDB(req, res, cocktailId);
-  await review({ cocktailId }, {rating, comment}, userId, res);
+  if(rating && comment) {
+    await review({ cocktailId }, {rating, comment}, userId, res);
+  }
+  
 });
 
 
