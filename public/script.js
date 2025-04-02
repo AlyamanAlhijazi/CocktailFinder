@@ -132,13 +132,14 @@ function removeIngredient(event) {
 
 // FAVORITES 
 document.addEventListener('DOMContentLoaded', function() {
-  const favoriteBtn = document.querySelector('.favorite-btn');
-  if (favoriteBtn) { // Controleer of de knop bestaat
-    favoriteBtn.addEventListener('click', async function() {
+  document.querySelectorAll('.favorite-btn').forEach(button => {
+    button.addEventListener('click', async function() {
       const cocktailId = this.dataset.cocktailId;
+
       try {
         const response = await fetch(`/cocktail/${cocktailId}/favorite`, { method: 'POST' });
         const data = await response.json();
+
         if (data.status === 'added') {
           this.classList.add('favorited');
         } else {
@@ -148,10 +149,9 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('Fout bij favorieten:', error);
       }
     });
-  } else {
-    console.warn('Geen favoriet knop gevonden op deze pagina.');
-  }
+  });
 });
+
 
 
 
@@ -231,7 +231,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
   // Form submission for the filters
   if (filtersForm) {
-      console.log(filtersForm);
       filtersForm.addEventListener("submit", async function(event) {
           event.preventDefault();
 
@@ -306,7 +305,6 @@ document.addEventListener("DOMContentLoaded", () => {
 const tabs = document.querySelectorAll('[data-tab-target]');
 const tabContents = document.querySelectorAll('[data-tab-content]');
 
-// Set the first tab (Ingredients) as active on page load
 document.addEventListener('DOMContentLoaded', () => {
     const defaultTab = document.querySelector('[data-tab-target="#Ingredients"]');
     const defaultContent = document.querySelector('#Ingredients');

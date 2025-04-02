@@ -314,6 +314,7 @@ main > .cocktail-list li{
 .view-all h2 {
     margin: 0;
     padding-left: 4%; 
+
 }
 .view-all a {
     text-decoration: none; 
@@ -324,6 +325,11 @@ main > .cocktail-list li{
     width: 80%;
     margin: 2em auto;
     padding: 1.5em;
+}
+.cocktail-details div:first-of-type{
+    display:flex;
+    justify-content:center;
+    align-items:center;
 }
 /* Heading for the cocktail name */
 .cocktail-details h1 {
@@ -375,17 +381,40 @@ main > .cocktail-list li{
     width: 97%;
 }
 /* favorite button */
-.full-heart {
-    display: none;
+.favorite-btn {
+    background-color: #f0f0f0;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
 }
-
-.favorite-btn.favorited .empty-heart {
+ 
+/* favorite button */
+.favorite-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 24px;
+    position: relative;
+  }
+  
+  .favorite-btn .full-heart {
+    color: red; /* Vol hart kleur */
     display: none;
-}
-
-.favorite-btn.favorited .full-heart {
+  }
+  
+  .favorite-btn .empty-heart {
+    color: gray; /* Leeg hart kleur */
+  }
+  
+  .favorite-btn.favorited .full-heart {
     display: inline;
-}
+  }
+  
+  .favorite-btn.favorited .empty-heart {
+    display: none;
+  }
+
 
 .ingredienttoggle button {
     background: none;
@@ -538,7 +567,7 @@ form {
 label {
     font-size: 1.2em;
     font-weight: bold;
-    display: ock;
+    display: block;
 }
 .image-upload {
     display: flex;
@@ -573,7 +602,7 @@ label {
 }
 
 .upload-box:hover {
-    background-color: var(--button-color);
+    background: var(--button-color);
     color: var(--white);
     border: 2px dashed var(--nav-color);
 }
@@ -693,6 +722,7 @@ input[type="file"] {
 /* rating */
 .rating {
     display: inline-block;
+    direction: rtl; /* Reverse the order so the first star is the lowest */
 }
 
 .rating input {
@@ -700,30 +730,25 @@ input[type="file"] {
 }
 
 .rating label {
-    float: right;
+    float: left; /* Change float to left so it works in correct order */
     padding: 10px;
     font-size: 30px;
     color: #444;
     transition: all 0.2s;
+    direction: rtl; /* Reverse the order so the first star is the lowest */
+    cursor: pointer; /* Makes it clear that stars are clickable */
 }
 
+/* Highlight selected stars correctly */
 .rating input:checked ~ label {
     color: #FDD017;
-
 }
 
+/* Hover effect to preview rating */
 .rating label:hover,
 .rating label:hover ~ label {
     color: #FDD017;
 }
-
-/* .favorite-btn {
-    background-color: #f0f0f0;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-} */
 
 /* favorite button */
 .full-heart {
@@ -1015,6 +1040,7 @@ input[type="file"] {
 }
 .recommendations h2{
     padding-left: 4%;
+
 }
 
  

@@ -1,5 +1,5 @@
 // Packages importeren
-import express from "express";
+import express, { response } from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import bcrypt from "bcrypt";
@@ -79,58 +79,123 @@ const reviewSchema = new mongoose.Schema({
 
 // 📌 COCKTAIL MODEL
 const cocktailSchema = new mongoose.Schema({
-  name: {
-    type: String,
+    name: { 
+      type: String, 
+      required: true,
+      trim: true,
+      maxlength: 100,
+    },
+    ingredients: [{ 
+      name: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+      amount: {
+        type: Number, 
+        required: true,
+        trim: true,
+      },
+      unit: {
+        type: String,
+        required: true,
+        enum: ["ml", "cl", "oz"],
+      },
+      isAlcoholic: {
+        type: Boolean,
+        default: false,
+      },
+      alcoholPercentage: {
+        type: Number,
+        min: 0,
+        max: 100,
+      },
+    }],
+    alcoholPercentage: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 100,
+    },
+    strength: {
+      type: String,
+      enum: ["Light", "Medium", "Strong"],
+      default: "Medium",
+    },
+    instructions: { 
+      type: String, 
+      required: true, 
+      trim: true, 
+    },
+    category: { 
+      type: String,
+      required: true,
+      enum: ["Alcoholic", "Non-alcoholic", "Optional alcohol"],
+    },
+    glassType: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    image: {
+      type: String,
+      required: true,
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    reviews: [reviewSchema],
+    averageRating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+    },
+  }, { 
+    collection: "usercocktails", 
+    timestamps: true 
+  });
+
+  // 📌 COCKTAIL MODEL
+const APIcocktailSchema = new mongoose.Schema({
+  
+  _id: Number,
+  
+  name: { 
+    type: String, 
     required: true,
     trim: true,
     maxlength: 100,
   },
-  ingredients: [{
+  ingredients: [{ 
     name: {
       type: String,
       required: true,
       trim: true,
     },
     amount: {
-      type: Number,
+      type: String, 
       required: true,
       trim: true,
-    },
-    unit: {
-      type: String,
-      required: true,
-      enum: ["ml", "cl", "oz"],
-    },
-    isAlcoholic: {
-      type: Boolean,
-      default: false,
-    },
-    alcoholPercentage: {
-      type: Number,
-      min: 0,
-      max: 100,
-    },
+    }
+    
   }],
-  alcoholPercentage: {
-    type: Number,
-    default: 0,
-    min: 0,
-    max: 100,
+  instructions: { 
+    type: String, 
+    required: true, 
+    trim: true, 
   },
-  strength: {
-    type: String,
-    enum: ["Light", "Medium", "Strong"],
-    default: "Medium",
+  category: { 
+    type: String, 
+    required: true, 
+    trim: true, 
   },
-  instructions: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  category: {
+  alcohol: { 
     type: String,
     required: true,
-    enum: ["Alcoholic", "Non-alcoholic", "Optional alcohol"],
+    enum: ["Alcoholic", "Non alcoholic", "Optional alcohol"],
   },
   glassType: {
     type: String,
@@ -141,11 +206,6 @@ const cocktailSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
   reviews: [reviewSchema],
   averageRating: {
     type: Number,
@@ -153,14 +213,16 @@ const cocktailSchema = new mongoose.Schema({
     min: 0,
     max: 5,
   },
-}, {
-  collection: "usercocktails",
-  timestamps: true
+}, { 
+  collection: "apiCocktails", 
+  timestamps: true 
 });
+  
+  const userCocktail = mongoose.model("userCocktail", cocktailSchema);
+  export default userCocktail;
+  const Cocktail = mongoose.model("Cocktail", cocktailSchema);
+  const APIcocktail = mongoose.model("APIcocktail", APIcocktailSchema);
 
-const userCocktail = mongoose.model("userCocktail", cocktailSchema);
-export default userCocktail;
-const Cocktail = mongoose.model("Cocktail", cocktailSchema);
 // export default Cocktail;
 
 //CL OMZETTEN NAAR ML
@@ -310,15 +372,18 @@ app.post("/logout", (req, res) => {
   }
 });
 
-// 🔹 REVIEW (POST)
-app.post("/cocktail/:cocktailId/review", isAuthenticated, async (req, res) => {
-  const { cocktailId } = req.params;
-  const { rating, comment } = req.body;
-  const userId = req.session.userId; // Haal de userId uit de sessie
-
+async function review({ cocktailId }, {rating, comment}, userId, res) {
   try {
+    let cocktail = '';
     // Zoek de cocktail
-    const cocktail = await userCocktail.findById(cocktailId);
+    if (cocktailId.length < 10) {
+      cocktail = await APIcocktail.findById(cocktailId);
+    }
+   
+    // console.log(cocktail);
+    if(cocktailId.length > 10) {
+      cocktail = await userCocktail.findById(cocktailId);
+    }
 
     if (!cocktail) {
       return res.status(404).send("Cocktail niet gevonden");
@@ -343,17 +408,39 @@ app.post("/cocktail/:cocktailId/review", isAuthenticated, async (req, res) => {
 
     // Sla de cocktail op
     await cocktail.save();
-
-    res.redirect(`/cocktail/${cocktail.name}`); // Redirect naar de cocktailpagina
+    res.redirect(`/cocktail/${cocktail.name}`); // Redirect naar de cocktailpagina) 
   } catch (error) {
     console.error("Fout bij het opslaan van de review:", error);
-    res.status(500).send("Er is een fout opgetreden bij het opslaan van de review.");
+    res.status(500).send("Er is een fout opgetreden bij het opslaan van de review.")
   }
+}
+
+
+// 🔹 REVIEW (POST)
+
+app.post ("/cocktail/:cocktailId/review", isAuthenticated ,async (req, res) => {
+  const { cocktailId } = req.params;
+  const { rating, comment } = req.body;
+  const userId = req.session.userId; // Haal de userId uit de sessie\
+  if(rating && comment) {
+    await review({ cocktailId }, {rating, comment}, userId, res);
+  }
+});
+
+app.post ("/cocktail/:cocktailId/APIreview", isAuthenticated ,async (req, res) => {
+  const { cocktailId } = req.params;
+  const { rating, comment } = req.body;
+  const userId = req.session.userId;
+  await saveApiCocktailToDB(req, res, cocktailId);
+  if(rating && comment) {
+    await review({ cocktailId }, {rating, comment}, userId, res);
+  }
+  
 });
 
 
 /// 🔹 FAVORITES (POST)
-app.post("/cocktail/:cocktailId/favorite", async (req, res) => {
+app.post("/cocktail/:cocktailId/favorite", isAuthenticated, async (req, res) => {
   if (!req.session.userId) {
     req.flash("error", "Sign in to add this cocktail to favorites");
     return res.redirect("/login");
@@ -500,44 +587,60 @@ app.get("/profile", async (req, res) => {
 
 
 // Middleware om API-cocktails op te slaan in de database
-const saveApiCocktailToDB = async (req, res, next) => {
-  const { cocktailName } = req.params;
 
-  try {
-    // Zoek eerst of de cocktail al in de database staat
-    let dbCocktail = await userCocktail.findOne({
-      name: { $regex: new RegExp("^" + cocktailName + "$", "i") }
-    });
+async function saveApiCocktailToDB(req, res, cocktailId) {
+    try {
+      // Zoek eerst of de cocktail al in de database staat
+      let dbCocktail = await APIcocktail.findOne({
+        _id: cocktailId
+      });
+      
+      if (!dbCocktail) {
+        // Als de cocktail niet in de database staat, haal deze op uit de API
+        const data = await fetchData(API + 'lookup.php?i=' + cocktailId);
+        const Cocktail = data.drinks ? data.drinks[0] : null;
+        let ingredients = [];
 
-    if (!dbCocktail) {
-      // Als de cocktail niet in de database staat, haal deze op uit de API
-      const data = await fetchData(API + 'search.php?s=' + cocktailName);
-      const apiCocktail = data.drinks ? data.drinks[0] : null;
+        for (let i = 1; i <= 15; i++) { 
+          if(Cocktail['strIngredient' + i]) {
+            const ingredient = Cocktail['strIngredient' + i];
+            let amount =  Cocktail['strMeasure' + i];
+            if(!amount) {
+              amount = 'To taste'
+            }
+            const object = {
+              name: ingredient,
+              amount: amount
+            }
+            ingredients.push(object)
+          }
+        }
 
-      if (apiCocktail) {
-        // Converteer de API-cocktail naar een database-cocktail
-        const newCocktail = new userCocktail({
-          name: apiCocktail.strDrink,
-          // ingredients: convertApiIngredients(apiCocktail), // Maak een functie om de ingrediënten te converteren
-          instructions: apiCocktail.strInstructions,
-          category: apiCocktail.strCategory,
-          glassType: apiCocktail.strGlass,
-          image: apiCocktail.strDrinkThumb,
-          createdBy: req.session.userId, // Gebruik de huidige gebruiker
-          reviews: [], // Maak een lege review array
-        });
-
-        // Sla de cocktail op in de database
-        dbCocktail = await newCocktail.save();
+        if (Cocktail) {
+          // Converteer de API-cocktail naar een database-cocktail
+          const newCocktail = new APIcocktail({
+            _id: cocktailId,
+            name: Cocktail.strDrink,
+            ingredients: ingredients,
+            instructions: Cocktail.strInstructions,
+            category: Cocktail.strCategory,
+            alcohol: Cocktail.strAlcoholic,
+            glassType: Cocktail.strGlass,
+            image: Cocktail.strDrinkThumb,
+            reviews: [], // Maak een lege review array
+          });
+  
+          // // Sla de cocktail op in de database
+          newCocktail.save();
+        }
       }
+      
+      
+
+    } catch (error) {
+      console.error("Fout bij opslaan API cocktail in database:", error);
+      res.status(500).send("Er is een fout opgetreden bij het laden van de cocktail.");
     }
-    // Sla de cocktailId op in favorites
-    req.dbCocktailId = dbCocktail._id;
-    next();
-  } catch (error) {
-    console.error("Fout bij opslaan API cocktail in database:", error);
-    res.status(500).send("Er is een fout opgetreden bij het laden van de cocktail.");
-  }
 };
 
 
@@ -609,13 +712,18 @@ app.get('/home', async (req, res) => {
   const sortOption = req.query.sort || '';
 
   try {
-    // Haal populaire cocktails van externe API
     console.log('Fetching popular cocktails...');
     const data = await fetchData(API + 'popular.php');
     const cocktails = data.drinks || [];
 
-    // Haal de top 5 cocktails op basis van rating uit de database
-    const topCocktails = await Cocktail.find().sort({ averageRating: -1 }).limit(5);
+    // Fetch top 5 cocktails from both Cocktail and apiCocktail collections
+    const dbTopCocktails = await Cocktail.find().sort({ averageRating: -1 }).limit(5);
+    const apiTopCocktails = await APIcocktail.find().sort({ averageRating: -1 }).limit(5);
+
+    // Combine, sort again, and take the top 5 overall
+    const combinedTopCocktails = [...dbTopCocktails, ...apiTopCocktails]
+      .sort((a, b) => b.averageRating - a.averageRating)
+      .slice(0, 5);
 
     // Haal alle userCocktails op en kies er willekeurig 10
     const allUserCocktails = await userCocktail.find();
@@ -626,8 +734,7 @@ app.get('/home', async (req, res) => {
     let glasses = await fetch_list('g');
     let ingredients = await fetch_list('i');
     let drinks = await filteren();
-    // console.log('Drinks example:', drinks[0]);
-
+    console.log('Drinks example:', drinks[0]);
 
     // **Aanbevolen cocktails op basis van favorieten**
     if (userId) {
@@ -662,25 +769,22 @@ app.get('/home', async (req, res) => {
         // console.log("🔍 Recommended cocktails:", recommendedCocktails);
       }
     }
-    // **Sorteer op naam (A-Z of Z-A)**
-    
-    
-    // console.log("sortOption0", sortOption)
+
+    // **Sorteren op naam (A-Z of Z-A)**
+    console.log("sortOption0", sortOption);
     if (sortOption === 'sorta-z') {
-      // console.log("sortOption", sortOption)
+      console.log("sortOption", sortOption);
       drinks.sort((a, b) => a.strDrink.localeCompare(b.strDrink));
     } else if (sortOption === 'sortz-a') {
-      // console.log("sortOption", sortOption)
-
+      console.log("sortOption", sortOption);
       drinks.sort((a, b) => b.strDrink.localeCompare(a.strDrink));
-    
-    
-    }    
-    // **Render slechts ÉÉN keer!**
+    }
+
+    // **Render de homepagina met gecombineerde top 5 cocktails**
     res.render('home', {
       cocktails,
       userCocktails: randomUserCocktails,
-      topCocktails,
+      topCocktails: combinedTopCocktails,
       categories,
       glasses,
       ingredients,
@@ -688,10 +792,8 @@ app.get('/home', async (req, res) => {
       recommendedCocktails,
       query: "",
       sortOption
-
     });
 
-    
   } catch (error) {
     console.error("❌ Error while retrieving cocktails:", error);
     res.status(500).send("There was a problem loading the cocktails");
@@ -699,6 +801,10 @@ app.get('/home', async (req, res) => {
 });
 
 
+
+app.get("/profile", isAuthenticated, async (req, res) => {
+  res.render("profile", { user: req.session.username });
+});
 
 app.get("/upload", isAuthenticated, async (req, res) => {
   res.locals.currentpath = req.path;
@@ -787,33 +893,60 @@ app.get("/usercocktails", async (req, res) => {
 
 
 
-
 app.get('/cocktail/:cocktailName', async (req, res) => {
-  try {
-    const cocktailName = req.params.cocktailName;
+    try {
+      const cocktailName = req.params.cocktailName;
+      const userId = req.session.userId;
+      let isFavorited = false;
+      let img = 'db'
 
-    const dbCocktail = await Cocktail.findOne({
-      name: { $regex: new RegExp("^" + cocktailName + "$", "i") }
-    }).populate("reviews.user");
+      let dbCocktail = await Cocktail.findOne({
+        name: { $regex: new RegExp("^" + cocktailName + "$", "i") }
+      }).populate("reviews.user");
 
-    if (dbCocktail) {
-      return res.render('instructies.ejs', { cocktail: dbCocktail, source: 'database', reviews: dbCocktail.reviews });
+      if(!dbCocktail) {
+        img = 'api'
+        dbCocktail = await APIcocktail.findOne({
+        name: { $regex: new RegExp("^" + cocktailName + "$", "i") }
+      }).populate("reviews.user");
+      }
+  
+      if (userId && dbCocktail) {
+        const user = await User.findById(userId);
+        if (user && user.favorites.some(fav => fav.equals(dbCocktail._id))) {
+          isFavorited = true;
+        }
+      }
+  
+      if (dbCocktail) {
+        return res.render('instructies.ejs', { 
+          cocktail: dbCocktail, 
+          source: 'database', 
+          reviews: dbCocktail.reviews, 
+          isFavorited, 
+          img
+        });
+      }
+  
+      const data = await fetchData(API + 'search.php?s=' + cocktailName);
+      const apiCocktail = data.drinks ? data.drinks[0] : null;
+  
+      if (!apiCocktail) {
+        return res.status(404).send('Cocktail not found');
+      }
+  
+      res.render('instructies.ejs', { 
+        cocktail: apiCocktail, 
+        source: 'api', 
+        reviews: [], 
+        isFavorited: false // API cocktails are not in the database, so can't be favorited
+      });
+  
+    } catch (error) {
+      console.error("❌ Fout bij ophalen cocktail:", error);
+      res.status(500).send("Er is een probleem met het laden van de cocktail.");
     }
-
-    const data = await fetchData(API + 'search.php?s=' + cocktailName);
-    const apiCocktail = data.drinks ? data.drinks[0] : null;
-
-    if (!apiCocktail) {
-      return res.status(404).send('Cocktail not found');
-    }
-
-    res.render('instructies.ejs', { cocktail: apiCocktail, source: 'api', reviews: [] });
-
-  } catch (error) {
-    console.error("❌ Fout bij ophalen cocktail:", error);
-    res.status(500).send("Er is een probleem met het laden van de cocktail.");
-  }
-});
+  });
 
 // Random cocktail
 app.get("/random", async (req, res) => {
