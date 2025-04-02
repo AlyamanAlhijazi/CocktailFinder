@@ -221,7 +221,7 @@ const APIcocktailSchema = new mongoose.Schema({
   const userCocktail = mongoose.model("userCocktail", cocktailSchema);
   export default userCocktail;
   const Cocktail = mongoose.model("Cocktail", cocktailSchema);
-  const apiCocktail = mongoose.model("apiCocktail", APIcocktailSchema);
+  const APIcocktail = mongoose.model("APIcocktail", APIcocktailSchema);
 
 // export default Cocktail;
 
@@ -375,7 +375,8 @@ app.post("/logout", (req, res) => {
 async function review({ cocktailId }, {rating, comment}, userId, res) {
   try {
     // Zoek de cocktail
-    let cocktail = await apiCocktail.findById(cocktailId);
+    let cocktail = await APIcocktail.findById(cocktailId);
+    // console.log(cocktail);
     if(!cocktail) {
       cocktail = await userCocktail.findById(cocktailId);
     }
@@ -575,7 +576,7 @@ app.get("/profile", async (req, res) => {
 async function saveApiCocktailToDB(req, res, cocktailId) {
     try {
       // Zoek eerst of de cocktail al in de database staat
-      let dbCocktail = await apiCocktail.findOne({
+      let dbCocktail = await APIcocktail.findOne({
         _id: cocktailId
       });
       
@@ -588,7 +589,10 @@ async function saveApiCocktailToDB(req, res, cocktailId) {
         for (let i = 1; i <= 15; i++) { 
           if(Cocktail['strIngredient' + i]) {
             const ingredient = Cocktail['strIngredient' + i];
-            const amount =  Cocktail['strMeasure' + i];
+            let amount =  Cocktail['strMeasure' + i];
+            if(!amount) {
+              amount = 'To taste'
+            }
             const object = {
               name: ingredient,
               amount: amount
@@ -599,7 +603,7 @@ async function saveApiCocktailToDB(req, res, cocktailId) {
 
         if (Cocktail) {
           // Converteer de API-cocktail naar een database-cocktail
-          const newCocktail = new apiCocktail({
+          const newCocktail = new APIcocktail({
             _id: cocktailId,
             name: Cocktail.strDrink,
             ingredients: ingredients,
@@ -880,10 +884,18 @@ app.get('/cocktail/:cocktailName', async (req, res) => {
       const cocktailName = req.params.cocktailName;
       const userId = req.session.userId;
       let isFavorited = false;
-  
-      const dbCocktail = await Cocktail.findOne({
+      let img = 'db'
+
+      let dbCocktail = await Cocktail.findOne({
         name: { $regex: new RegExp("^" + cocktailName + "$", "i") }
       }).populate("reviews.user");
+
+      if(!dbCocktail) {
+        img = 'api'
+        dbCocktail = await APIcocktail.findOne({
+        name: { $regex: new RegExp("^" + cocktailName + "$", "i") }
+      }).populate("reviews.user");
+      }
   
       if (userId && dbCocktail) {
         const user = await User.findById(userId);
@@ -897,7 +909,8 @@ app.get('/cocktail/:cocktailName', async (req, res) => {
           cocktail: dbCocktail, 
           source: 'database', 
           reviews: dbCocktail.reviews, 
-          isFavorited 
+          isFavorited, 
+          img
         });
       }
   
