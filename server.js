@@ -375,7 +375,6 @@ async function review({ cocktailId }, {rating, comment}, userId, res) {
   try {
     // Zoek de cocktail
     let cocktail = await apiCocktail.findById(cocktailId);
-    console.log(cocktail)
     if(!cocktail) {
       cocktail = await userCocktail.findById(cocktailId);
     }
@@ -403,7 +402,6 @@ async function review({ cocktailId }, {rating, comment}, userId, res) {
 
     // Sla de cocktail op
     await cocktail.save();
-    console.log(cocktail)
     res.redirect(`/cocktail/${cocktail.name}`); // Redirect naar de cocktailpagina) 
   } catch (error) {
     console.error("Fout bij het opslaan van de review:", error);
@@ -417,7 +415,6 @@ app.post ("/cocktail/:cocktailId/review", isAuthenticated ,async (req, res) => {
   const { cocktailId } = req.params;
   const { rating, comment } = req.body;
   const userId = req.session.userId; // Haal de userId uit de sessie\
-  console.log('db')
   await review({ cocktailId }, {rating, comment}, userId, res);
   
 });
@@ -427,8 +424,6 @@ app.post ("/cocktail/:cocktailId/APIreview", isAuthenticated ,async (req, res) =
   const { rating, comment } = req.body;
   const userId = req.session.userId;
   await saveApiCocktailToDB(req, res, cocktailId);
-  
-  console.log('api')
   await review({ cocktailId }, {rating, comment}, userId, res);
 });
 
@@ -521,7 +516,6 @@ async function saveApiCocktailToDB(req, res, cocktailId) {
         const data = await fetchData(API + 'lookup.php?i=' + cocktailId);
         const Cocktail = data.drinks ? data.drinks[0] : null;
         let ingredients = [];
-        let alcoholic = ''
 
         for (let i = 1; i <= 15; i++) { 
           if(Cocktail['strIngredient' + i]) {
