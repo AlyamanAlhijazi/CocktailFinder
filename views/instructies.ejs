@@ -8,19 +8,28 @@
     <main>
         <section class="cocktail-details">
             <h1><%= cocktail.name || cocktail.strDrink %></h1>
-            <img src="<%= source === 'database' ? '/uploads/' + cocktail.image : cocktail.strDrinkThumb %>" 
+            
+            <% if (source === 'database') { %> 
+                <img src="<%= img === 'db' ? '/uploads/' + cocktail.image : cocktail.image %>" 
                  alt="<%= cocktail.name || cocktail.strDrink %>">
+            <% } else { %>
+                <img src="<%= cocktail.strDrinkThumb %>" 
+                 alt="<%= cocktail.strDrink %>">
+            <% } %>
             
-            <form action="/cocktail/<%= cocktail.name %>/favorite" method="post">
-                <button class="favorite-btn" type="submit">
-                    <% if (user && user.favorites.some(fav => fav.equals(cocktail._id))) { %>
-                        <i class="fas fa-heart full-heart"></i> <!-- Gevuld hart -->
-                    <% } else { %>
-                        <i class="far fa-heart empty-heart"></i> <!-- Leeg hart -->
-                    <% } %>
-                </button>
-            </form>
+            <div>
+                 
+                <form action="/cocktail/<%= cocktail.name %>/favorite" method="post">
+                    <button class="favorite-btn <%= isFavorited ? 'favorited' : '' %>" type="submit">
+                        <% if (user && user.favorites.some(fav => fav.equals(cocktail._id))) { %>
+                                <i class="fas fa-heart full-heart"></i> <!-- Gevuld hart -->
+                            <% } else { %>
+                            <i class="far fa-heart empty-heart"></i> <!-- Leeg hart -->
+                            <% } %>
+                    </button>
             
+                </form>
+            </div>
                       
             
             <%- include("partials/messages") %> 
@@ -51,20 +60,33 @@
                 </article>
             </section>
             <!-- Star Rating Form -->
-             <section class="leaveReview">
-                <h3>Rate this Cocktail:</h3>
+
+         <section class="leaveReview">
+            <h3>Rate this Cocktail:</h3>
+            <% if (source === 'database') { %> 
                 <form action="/cocktail/<%= cocktail._id %>/review" method="POST">
-                    <div class="rating">
-                        <input type="radio" id="star5" name="rating" value="5" /><label for="star5">☆</label>
-                        <input type="radio" id="star4" name="rating" value="4" /><label for="star4">☆</label>
-                        <input type="radio" id="star3" name="rating" value="3" /><label for="star3">☆</label>
-                        <input type="radio" id="star2" name="rating" value="2" /><label for="star2">☆</label>
-                        <input type="radio" id="star1" name="rating" value="1" /><label for="star1">☆</label>
-                    </div>
-                    <textarea name="comment" placeholder="Write your review here"></textarea>
-                    <button type="submit">Submit Review</button>
-                </form>
-            </section>
+            <% } else { %>
+                <form action="/cocktail/<%= cocktail.idDrink %>/APIreview" method="POST">
+            <% } %>
+                <!-- <div class="rating">
+                    <input type="radio" id="star1" name="rating" value="1" /><label for="star1">☆</label>
+                    <input type="radio" id="star2" name="rating" value="2" /><label for="star2">☆</label>
+                    <input type="radio" id="star3" name="rating" value="3" /><label for="star3">☆</label>
+                    <input type="radio" id="star4" name="rating" value="4" /><label for="star4">☆</label>
+                    <input type="radio" id="star5" name="rating" value="5" /><label for="star5">☆</label>
+                </div> -->
+                <div class="rating">
+                    <input type="radio" id="star5" name="rating" value="5" /><label for="star5">☆</label>
+                    <input type="radio" id="star4" name="rating" value="4" /><label for="star4">☆</label>
+                    <input type="radio" id="star3" name="rating" value="3" /><label for="star3">☆</label>
+                    <input type="radio" id="star2" name="rating" value="2" /><label for="star2">☆</label>
+                    <input type="radio" id="star1" name="rating" value="1" /><label for="star1">☆</label>
+                </div>
+                <textarea name="comment" placeholder="Write your review here"></textarea>
+                <button type="submit">Submit Review</button>
+            </form>
+          </section>
+
 
             <!-- Gemiddelde beoordeling weergeven -->
             <section class="averageRating">

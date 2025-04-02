@@ -35,6 +35,34 @@ function removeIngredient(event) {
 }
 
 
+<<<<<<< HEAD
+=======
+// FAVORITES 
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.favorite-btn').forEach(button => {
+    button.addEventListener('click', async function() {
+      const cocktailId = this.dataset.cocktailId;
+
+      try {
+        const response = await fetch(`/cocktail/${cocktailId}/favorite`, { method: 'POST' });
+        const data = await response.json();
+
+        if (data.status === 'added') {
+          this.classList.add('favorited');
+        } else {
+          this.classList.remove('favorited');
+        }
+      } catch (error) {
+        console.error('Fout bij favorieten:', error);
+      }
+    });
+  });
+});
+
+
+
+>>>>>>> origin/main-dev
+
 
 
 // Image displaying
@@ -111,7 +139,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
   // Form submission for the filters
   if (filtersForm) {
-      console.log(filtersForm);
       filtersForm.addEventListener("submit", async function(event) {
           event.preventDefault();
 
@@ -152,11 +179,40 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 });
 
+// sorteing
+document.addEventListener("DOMContentLoaded", () => {
+  const sortSelect = document.getElementById("sort");
+  const cocktailList = document.querySelector(".cocktail-list"); // Selecteer de ul
+  let drinksList = Array.from(document.querySelectorAll(".cocktail-list li")); // Selecteer de li's als Array
+
+  if (sortSelect && cocktailList) {
+    sortSelect.addEventListener("change", () => {
+      let selectedOption = sortSelect.value;
+
+      if (selectedOption === "sorta-z") {
+        drinksList.sort((a, b) => {
+          let nameA = a.querySelector("h2").innerText.toLowerCase();
+          let nameB = b.querySelector("h2").innerText.toLowerCase();
+          return nameA.localeCompare(nameB);
+        });
+      } else if (selectedOption === "sortz-a") {
+        drinksList.sort((a, b) => {
+          let nameA = a.querySelector("h2").innerText.toLowerCase();
+          let nameB = b.querySelector("h2").innerText.toLowerCase();
+          return nameB.localeCompare(nameA);
+        });
+      }
+      // make sure the list is empty before appending sorted items
+      cocktailList.innerHTML = "";
+      drinksList.forEach((drink) => cocktailList.appendChild(drink));
+    });
+  }
+});
+
 // instructie toggle
 const tabs = document.querySelectorAll('[data-tab-target]');
 const tabContents = document.querySelectorAll('[data-tab-content]');
 
-// Set the first tab (Ingredients) as active on page load
 document.addEventListener('DOMContentLoaded', () => {
     const defaultTab = document.querySelector('[data-tab-target="#Ingredients"]');
     const defaultContent = document.querySelector('#Ingredients');
