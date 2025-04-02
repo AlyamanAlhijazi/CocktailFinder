@@ -231,7 +231,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
   // Form submission for the filters
   if (filtersForm) {
-      console.log(filtersForm);
       filtersForm.addEventListener("submit", async function(event) {
           event.preventDefault();
 
@@ -303,8 +302,8 @@ tabs.forEach(tab => {
     });
 });
 
-<<<<<<< HEAD
+
+
+
 
 console.log("Script.js is geladen!");
-=======
->>>>>>> 86f6e8ffe7bb2c6f10e0aa774522d63449ef3a2f

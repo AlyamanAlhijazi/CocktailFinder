@@ -43,7 +43,12 @@
             </section>
             <!-- Star Rating Form -->
             <h3>Rate this Cocktail:</h3>
-            <form action="/cocktail/<%= cocktail._id %>/review" method="POST">
+            <% if (source === 'database') { %> 
+                <form action="/cocktail/<%= cocktail._id %>/review" method="POST">
+            <% } else { %>
+                <form action="/cocktail/<%= cocktail.idDrink %>/APIreview" method="POST">
+            <% } %>
+            
                 <div class="rating">
                     <input type="radio" id="star5" name="rating" value="5" /><label for="star5">☆</label>
                     <input type="radio" id="star4" name="rating" value="4" /><label for="star4">☆</label>
