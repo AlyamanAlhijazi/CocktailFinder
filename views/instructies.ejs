@@ -18,11 +18,20 @@
             <% } %>
             
             <div>
-                 <button class="favorite-btn <%= isFavorited ? 'favorited' : '' %>" data-cocktail-id="<%= cocktail._id %>">
-                    <i class="far fa-heart empty-heart"></i>  <!-- Leeg hart icoon -->
-                    <i class="fas fa-heart full-heart"></i>   <!-- Vol hart icoon -->
-                </button>
+                 
+                <form action="/cocktail/<%= cocktail.name %>/favorite" method="post">
+                    <button class="favorite-btn <%= isFavorited ? 'favorited' : '' %>" type="submit">
+                        <% if (user && user.favorites.some(fav => fav.equals(cocktail._id))) { %>
+                                <i class="fas fa-heart full-heart"></i> <!-- Gevuld hart -->
+                            <% } else { %>
+                            <i class="far fa-heart empty-heart"></i> <!-- Leeg hart -->
+                            <% } %>
+                    </button>
+            
+                </form>
             </div>
+                      
+            
             <%- include("partials/messages") %> 
             <section class="ingredienttoggle">
                 <div>

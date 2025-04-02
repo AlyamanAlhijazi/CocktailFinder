@@ -34,18 +34,24 @@ app.use(session({
 );
 // flash messages instellen
 app.use(flash());
+
 // middleware om de ingelogde gebruiker op te halen
 app.use(async (req, res, next) => {
-  if (req.session.userId) {
-    req.user = await User.findById(req.session.userId);
-  }
+    if (req.session.userId) {
+        req.user = await User.findById(req.session.userId);
+    }
+    next();
+});
+
+app.use((req, res, next) => {
+  res.locals.query = req.query; // Maakt req.query beschikbaar in alle EJS-bestanden
   next();
 });
 
 // 📌 DATABASE CONNECTIE
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ Database verbonden"))
-  .catch(err => console.log("❌ Database fout:", err));
+  .then(() => console.log("✅ Database connected"))
+  .catch(err => console.log("❌ Database error:", err));
 
 
 // 📌 USER MODEL
@@ -273,13 +279,13 @@ app.post("/users/register", async (req, res) => {
   const { username, email, password } = req.body;
   if (!username || !email || !password) {
     req.flash("error", "All fields are required!");
-    return res.redirect("/register");
+    return res.redirect("register");
   }
   try {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       req.flash("error", "try a different email address");
-      return res.redirect("/register");
+      return res.redirect("register");
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -290,40 +296,33 @@ app.post("/users/register", async (req, res) => {
     // Sessies instellen na registratie (direct inloggen)
     req.session.userId = user._id;  // Zet de gebruikers-ID in de sessie
     req.flash("success", "Account has been succesfully registerd!");
-    res.redirect("/login");
+    res.redirect("login");
   } catch (err) {
-    res.redirect("register");
+    return res.redirect("register");
   }
 });
 
 
 // 🔹 LOGIN (GET)
 app.get("/login", async (req, res) => {
-  res.render("login", { messages: req.flash() });
+  res.render("login");
 });
 
 
 // 🔹 LOGIN (POST)
 app.post("/users/login", async (req, res) => {
   const { email, password } = req.body;
-  console.log("Inlogpoging voor email:", email); // Controleer de ingevoerde email
-
   const user = await User.findOne({ email });
-  console.log("Gevonden gebruiker:", user); // Controleer of een gebruiker wordt gevonden
 
   if (!user) {
-    req.flash("error", "User not found");
-    console.log("Flash Message (User Not Found):", req.flash("error"));
-    res.render("/login");
+    req.flash("error", "try a different email or password");
+    return res.redirect("/login");
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
-  console.log("Wachtwoord correct:", isMatch); // Controleer of het wachtwoord klopt
-
   if (!isMatch) {
     req.flash("error", "try a different email or password");
-    console.log("Flash Message (Incorrect Password):", req.flash("error"));
-    res.render("/login");
+    return res.redirect("/login");
   }
 
   // Sessies instellen bij succesvolle login
@@ -331,8 +330,7 @@ app.post("/users/login", async (req, res) => {
   req.session.username = user.username; // Sla de gebruikersnaam op in de sessie
 
   req.flash("success", "You are logged in");
-  res.redirect("/profile");
-  console.log("Sessie na login:", req.session);
+  return res.redirect("/profile");
 });
 
 // Check of de gebruiker ingelogd is
@@ -347,31 +345,37 @@ app.get("/check-session", (req, res) => {
   }
 });
 
-// 🔹 LOGOUT (GET)
 
 
 // 🔹 LOGOUT (POST)
 app.post("/logout", (req, res) => {
   if (req.session) {
-    // Flash berichten instellen voordat de sessie wordt vernietigd
-    req.flash("success", "You have been successfully logged out.");
-
     req.session.destroy((err) => {
       if (err) {
-        console.error("A failed logout:", err);
-        req.flash("error", "Something went wrong while logging out. Try again.");
-        return res.redirect("/profile");
+        console.error("Logout failed:", err);
       }
-
-      res.clearCookie("connect.sid"); // Verwijder de sessie cookie
-      res.redirect("/home"); // Redirect naar register pagina
+      res.clearCookie("connect.sid"); // Verwijder de sessiecookie
+      res.redirect("/home"); // Redirect naar homepagina
     });
   } else {
-    // Als er geen actieve sessie is, redirect naar register pagina
     res.redirect("/home");
   }
 });
 
+// Check of gebruiker is ingelogd
+// bericht geven als argument
+
+function isAuthenticated(message) {
+  return (req, res, next) => {
+    if (!req.session.userId) {
+      req.flash("error", message);
+      return res.redirect("/login");
+    }
+    next();
+  };
+}
+
+// Functie om reviews toe te voegen
 async function review({ cocktailId }, {rating, comment}, userId, res) {
   try {
     let cocktail = '';
@@ -386,7 +390,7 @@ async function review({ cocktailId }, {rating, comment}, userId, res) {
     }
 
     if (!cocktail) {
-      return res.status(404).send("Cocktail niet gevonden");
+      return res.status(404).send("Cocktail was not found");
     }
 
     // Maak een nieuwe review
@@ -410,15 +414,13 @@ async function review({ cocktailId }, {rating, comment}, userId, res) {
     await cocktail.save();
     res.redirect(`/cocktail/${cocktail.name}`); // Redirect naar de cocktailpagina) 
   } catch (error) {
-    console.error("Fout bij het opslaan van de review:", error);
-    res.status(500).send("Er is een fout opgetreden bij het opslaan van de review.")
+    res.status(500).send("Something went wrong retrieving the cocktaail page.")
   }
 }
 
 
 // 🔹 REVIEW (POST)
-
-app.post ("/cocktail/:cocktailId/review", isAuthenticated ,async (req, res) => {
+app.post ("/cocktail/:cocktailId/review", isAuthenticated("You must be signed in to leave reviews") ,async (req, res) => {
   const { cocktailId } = req.params;
   const { rating, comment } = req.body;
   const userId = req.session.userId; // Haal de userId uit de sessie\
@@ -427,7 +429,7 @@ app.post ("/cocktail/:cocktailId/review", isAuthenticated ,async (req, res) => {
   }
 });
 
-app.post ("/cocktail/:cocktailId/APIreview", isAuthenticated ,async (req, res) => {
+app.post ("/cocktail/:cocktailId/APIreview", isAuthenticated("You must be logged in to leave reviews"), async (req, res) => {
   const { cocktailId } = req.params;
   const { rating, comment } = req.body;
   const userId = req.session.userId;
@@ -439,53 +441,48 @@ app.post ("/cocktail/:cocktailId/APIreview", isAuthenticated ,async (req, res) =
 });
 
 
-/// 🔹 FAVORITES (POST)
-app.post("/cocktail/:cocktailId/favorite", isAuthenticated, async (req, res) => {
+// 🔹 FAVORITES (POST)
+app.post("/cocktail/:cocktailName/favorite", async (req, res) => {
   if (!req.session.userId) {
-    req.flash("error", "Sign in to add this cocktail to favorites");
+    req.flash("error", "Sign in to add cocktails to your favorites");
     return res.redirect("/login");
   }
 
-  const { cocktailId } = req.params;
+  const { cocktailName } = req.params;
   const userId = req.session.userId;
 
   try {
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      req.flash("error", "User was not found");
+      return res.redirect(`/cocktail/${cocktailName}`);
     }
-    // checken of de cocktailId wel een ObjectId is
-    if (!mongoose.Types.ObjectId.isValid(cocktailId)) {
-      return res.status(400).json({ error: "Invalid cocktail ID" });
-    }
-    // converten naar object id
-    const cocktailObjectId = new mongoose.Types.ObjectId(cocktailId);
-    // checken of de favoriet al favoriet is
-    const isFavorite = user.favorites.some(favorite => favorite.equals(cocktailObjectId));
 
-    console.log("🔥 Favoriete ID die wordt toegevoegd/verwijderd:", cocktailObjectId);
-    console.log("🔎 Huidige favorieten vóór update:", user.favorites);
+    const cocktail = await Cocktail.findOne({ name: { $regex: new RegExp("^" + cocktailName + "$", "i") } });
+    if (!cocktail) {
+      req.flash("error", "Cocktail was not found!");
+      return res.redirect(`/cocktail/${cocktailName}`);
+    }
+
+    const isFavorite = user.favorites.some(favorite => favorite.equals(cocktail._id));
+
     if (isFavorite) {
-      // Als al favoriet, dan verwijderen
-      user.favorites.pull(cocktailObjectId);
-      req.flash("success", "Cocktail added to favourites!");
-    } else {
-      // Als niet favoriet, dan toevoegen
-      user.favorites.push(cocktailObjectId);
+      user.favorites.pull(cocktail._id);
       req.flash("success", "Cocktail removed from favorites!");
+    } else {
+      user.favorites.push(cocktail._id);
+      req.flash("success", "Cocktail added to favorites!");
     }
 
     await user.save();
-    // 🚨 Check of de favorieten correct zijn opgeslagen in de database
-    const updatedUser = await User.findById(userId);
-    console.log("Favorieten na update:", updatedUser.favorites);
-
-    res.json({ status: isFavorite ? "removed" : "added" }); // Stuur status terug naar JS
+    return res.redirect(`/cocktail/${cocktailName}`); // Redirect terug naar de cocktail pagina
   } catch (error) {
-    console.error("Fout bij favorieten:", error);
-    res.status(500).json({ error: "Serverfout" });
+    req.flash("error", "Something went wrong, try again later");
+    return res.redirect(`/cocktail/${cocktailName}`);
   }
 });
+
+
 
 
 /// 🔹 RECOMMENDATIONS (user favorites) (GET)
@@ -505,8 +502,7 @@ app.get("/recommendations", async (req, res) => {
 
     res.json({ favoriteIngredients }); // Debugging
   } catch (error) {
-    console.error("Fout bij ophalen van aanbevelingen:", error);
-    res.status(500).json({ error: "Serverfout" });
+    res.status(500).json({ error: "Server error" });
   }
 });
 
@@ -516,7 +512,7 @@ app.get("/recommendations", async (req, res) => {
   const userId = req.session.userId;
 
   if (!userId) {
-    return res.status(401).json({ error: "Je moet ingelogd zijn om aanbevelingen te zien." });
+    return res.status(401).json({ error: "Sign in to get recommendations." });
   }
 
   try {
@@ -547,7 +543,6 @@ app.get("/recommendations", async (req, res) => {
 
     res.json(recommendedCocktails);
   } catch (error) {
-    console.error("Fout bij ophalen van aanbevelingen:", error);
     res.status(500).json({ error: "Serverfout" });
   }
 });
@@ -565,8 +560,6 @@ app.get("/profile", async (req, res) => {
     const user = await User.findById(req.session.userId).populate("favorites");
     const userCocktails = await Cocktail.find({ createdBy: req.session.userId });
 
-    // console.log("Opgehaalde favorieten:", user.favorites);
-    // console.log("Opgehaalde eigen cocktails:", userCocktails);
 
     res.render("profile", {
       user: user,
@@ -575,8 +568,7 @@ app.get("/profile", async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Fout bij laden profiel:", error);
-    res.status(500).send("Er is een fout opgetreden bij het laden van het profiel.");
+    res.status(500).send("Something went wrong retrieving the profile page.");
   }
 });
 
@@ -638,8 +630,7 @@ async function saveApiCocktailToDB(req, res, cocktailId) {
       
 
     } catch (error) {
-      console.error("Fout bij opslaan API cocktail in database:", error);
-      res.status(500).send("Er is een fout opgetreden bij het laden van de cocktail.");
+      res.status(500).send("Something went wrong retrieving cocktails.");
     }
 };
 
@@ -648,9 +639,9 @@ async function saveApiCocktailToDB(req, res, cocktailId) {
 // 🔹 BEVEILIGDE ROUTE (bijvoorbeeld: Favorieten, uploaden van cocktails)
 app.get("/cocktails/favorites", (req, res) => {
   if (!req.session.userId) {
-    req.flash("error", "You must be logged in to access this page");
+    req.flash("error", "You must be signed in to access this page");
+    return res.redirect("login");
   }
-  res.json({ message: "Dit is de beveiligde favorieten route" });
 });
 
 // 🔹 ZOEK COCKTAILS (GET)
@@ -662,24 +653,16 @@ app.get("/cocktails/search", async (req, res) => {
     });
     res.json(cocktails);
   } catch (err) {
-    res.status(500).json({ error: "Fout bij ophalen van cocktails." });
+    res.status(500).json({ error: "Something went wrong retrieving cocktails." });
   }
 });
 
-// Check of gebruiker is ingelogd
-function isAuthenticated(req, res, next) {
-  if (!req.session.userId) {
-    req.flash("error", "You must be logged in to access this page");
-    return res.redirect("/login");
-  }
-  next();
-}
 
 //  ZOEK COCKTAILS (post)  
 app.post('/search', async (req, res) => {
   const query = req.body.q;
+
   try {
-    console.log("Search Query:", query);
     const drinks = await filteren();
     const searchResultsByName = drinks.filter(drink =>
       drink.strDrink.toLowerCase().includes(query.toLowerCase())
@@ -697,8 +680,7 @@ app.post('/search', async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Fout bij ophalen van cocktails:", error);
-    res.status(500).send("Er is een probleem met het laden van cocktails.");
+    res.status(500).send("Something went wrong retrieving cocktails.");
   }
 
 });
@@ -711,10 +693,10 @@ app.get('/home', async (req, res) => {
   let recommendedCocktails = [];
   const sortOption = req.query.sort || '';
 
-  try {
-    console.log('Fetching popular cocktails...');
-    const data = await fetchData(API + 'popular.php');
-    const cocktails = data.drinks || [];
+    try {
+        // Haal populaire cocktails van externe API
+        const data = await fetchData(API + 'popular.php');
+        const cocktails = data.drinks || [];
 
     // Fetch top 5 cocktails from both Cocktail and apiCocktail collections
     const dbTopCocktails = await Cocktail.find().sort({ averageRating: -1 }).limit(5);
@@ -740,35 +722,27 @@ app.get('/home', async (req, res) => {
     if (userId) {
       const user = await User.findById(userId).populate("favorites");
 
-      if (user && user.favorites.length > 0) {
-        // console.log("👤 User ID:", userId);
-        // console.log("⭐ Favorite cocktails:", user.favorites.map(fav => fav.name));
 
-        const favoriteIngredients = [
-          ...new Set(user.favorites.flatMap(cocktail => cocktail.ingredients.map(ing => ing.name)))
-        ];
+            if (user && user.favorites.length > 0) {
 
-        // console.log("🍹 Favorite ingredients:", favoriteIngredients);
+                const favoriteIngredients = [
+                    ...new Set(user.favorites.flatMap(cocktail => cocktail.ingredients.map(ing => ing.name)))
+                ];
 
-        recommendedCocktails = await Cocktail.aggregate([
-          {
-            $match: {
-              "ingredients.name": { $in: favoriteIngredients },
-              _id: { $nin: user.favorites.map(fav => fav._id) }
+                recommendedCocktails = await Cocktail.aggregate([
+                    { $match: { 
+                        "ingredients.name": { $in: favoriteIngredients },
+                        _id: { $nin: user.favorites.map(fav => fav._id) }
+                    }},
+                    { $addFields: { 
+                        matchCount: { $size: { $setIntersection: ["$ingredients.name", favoriteIngredients] } }
+                    }},
+                    { $sort: { matchCount: -1 } },
+                    { $limit: 10 }
+                ]);
             }
-          },
-          {
-            $addFields: {
-              matchCount: { $size: { $setIntersection: ["$ingredients.name", favoriteIngredients] } }
-            }
-          },
-          { $sort: { matchCount: -1 } },
-          { $limit: 10 }
-        ]);
+        }
 
-        // console.log("🔍 Recommended cocktails:", recommendedCocktails);
-      }
-    }
 
     // **Sorteren op naam (A-Z of Z-A)**
     console.log("sortOption0", sortOption);
@@ -794,22 +768,21 @@ app.get('/home', async (req, res) => {
       sortOption
     });
 
-  } catch (error) {
-    console.error("❌ Error while retrieving cocktails:", error);
-    res.status(500).send("There was a problem loading the cocktails");
-  }
+    } catch (error) {
+        res.status(500).send("There was a problem loading the cocktails");
+    }
 });
 
 
 
-app.get("/profile", isAuthenticated, async (req, res) => {
-  res.render("profile", { user: req.session.username });
-});
-
-app.get("/upload", isAuthenticated, async (req, res) => {
-  res.locals.currentpath = req.path;
-  res.render("upload");
-});
+app.get("/profile", isAuthenticated("Sign in to acces this page"), async (req, res) => {
+    res.render("profile", { user: req.session.username });
+  });
+  
+  app.get("/upload", isAuthenticated("Sign in to upload your own cocktail"), async (req, res) => {
+    res.locals.currentpath = req.path;
+    res.render("upload");
+  });  
 
 const API = process.env.API_URL //iedereen URL van api even in env zetten
 
@@ -846,40 +819,39 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 app.post("/upload", upload.single("image"), (req, res) => {
-  const { name, ingredientName, ingredientAmount, ingredientUnit, isAlcoholic, alcoholPercentage, instructions, category, glassType } = req.body;
-
-  const ingredients = ingredientName.map((name, index) => ({
-    name: name,
-    amount: parseFloat(ingredientAmount[index]),
-    unit: ingredientUnit[index],
-    isAlcoholic: isAlcoholic[index] === "on",
-    alcoholPercentage: isAlcoholic[index] === "on" ? (parseFloat(alcoholPercentage[index]) || 0) : 0,
-  }));
-
-  const createdBy = req.session.userId;
-
-  const newCocktail = new userCocktail({
-    name,
-    ingredients,
-    instructions,
-    category,
-    glassType,
-    image: req.file.filename,
-    createdBy: createdBy // Zorg ervoor dat je de gebruiker-ID hebt
-  });
-
-  if (!req.user) {
-    return res.status(401).send('Gebruiker niet ingelogd');
-  }
-
-  newCocktail.save()
-    .then(() => res.redirect("/profile"))
-    .catch(err => {
-      console.error("Error saving cocktail:", err);
-      res.status(400).send("Error saving cocktail");
+    const { name, ingredientName, ingredientAmount, ingredientUnit, isAlcoholic, alcoholPercentage, instructions, category, glassType } = req.body;
+  
+    const ingredients = ingredientName.map((name, index) => ({
+      name: name,
+      amount: parseFloat(ingredientAmount[index]),
+      unit: ingredientUnit[index],
+      isAlcoholic: isAlcoholic[index] === "on",
+      alcoholPercentage: isAlcoholic[index] === "on" ? (parseFloat(alcoholPercentage[index]) || 0) : 0,
+    }));
+  
+    const createdBy = req.session.userId;
+  
+    const newCocktail = new userCocktail({
+      name,
+      ingredients,
+      instructions,
+      category,
+      glassType,
+      image: req.file.filename,
+      createdBy: createdBy // Zorg ervoor dat je de gebruiker-ID hebt
     });
-});
-
+  
+    if (!req.user) {
+      return res.status(401).send('User is not signed in');
+    }
+  
+    newCocktail.save()
+      .then(() => res.redirect("/profile"))
+      .catch(err => {
+          res.status(400).send("Error saving cocktail");
+      });
+  });
+  
 
 
 app.get("/usercocktails", async (req, res) => {
@@ -891,62 +863,64 @@ app.get("/usercocktails", async (req, res) => {
   }
 });
 
-
-
 app.get('/cocktail/:cocktailName', async (req, res) => {
-    try {
-      const cocktailName = req.params.cocktailName;
-      const userId = req.session.userId;
-      let isFavorited = false;
-      let img = 'db'
+  try {
+    const cocktailName = req.params.cocktailName;
+    const userId = req.session.userId;
+    let isFavorited = false;
+    let img = 'db'
 
-      let dbCocktail = await Cocktail.findOne({
-        name: { $regex: new RegExp("^" + cocktailName + "$", "i") }
-      }).populate("reviews.user");
+    let dbCocktail = await Cocktail.findOne({
+      name: { $regex: new RegExp("^" + cocktailName + "$", "i") }
+    }).populate("reviews.user");
 
-      if(!dbCocktail) {
-        img = 'api'
-        dbCocktail = await APIcocktail.findOne({
+    if(!dbCocktail) {
+      img = 'api'
+      dbCocktail = await APIcocktail.findOne({
         name: { $regex: new RegExp("^" + cocktailName + "$", "i") }
-      }).populate("reviews.user");
-      }
-  
-      if (userId && dbCocktail) {
-        const user = await User.findById(userId);
-        if (user && user.favorites.some(fav => fav.equals(dbCocktail._id))) {
-          isFavorited = true;
-        }
-      }
-  
-      if (dbCocktail) {
-        return res.render('instructies.ejs', { 
-          cocktail: dbCocktail, 
-          source: 'database', 
-          reviews: dbCocktail.reviews, 
-          isFavorited, 
-          img
-        });
-      }
-  
-      const data = await fetchData(API + 'search.php?s=' + cocktailName);
-      const apiCocktail = data.drinks ? data.drinks[0] : null;
-  
-      if (!apiCocktail) {
-        return res.status(404).send('Cocktail not found');
-      }
-  
-      res.render('instructies.ejs', { 
-        cocktail: apiCocktail, 
-        source: 'api', 
-        reviews: [], 
-        isFavorited: false // API cocktails are not in the database, so can't be favorited
-      });
-  
-    } catch (error) {
-      console.error("❌ Fout bij ophalen cocktail:", error);
-      res.status(500).send("Er is een probleem met het laden van de cocktail.");
+    }).populate("reviews.user");
     }
-  });
+
+    let user = null; // 🔹 Voeg dit toe
+    if (userId) {
+      user = await User.findById(userId).populate('favorites'); // 🔹 Ophalen en meegeven
+      if (user && dbCocktail && user.favorites.some(fav => fav.equals(dbCocktail._id))) {
+        isFavorited = true;
+      }
+    }
+
+    if (dbCocktail) {
+      return res.render('instructies.ejs', { 
+        cocktail: dbCocktail, 
+        source: 'database', 
+        reviews: dbCocktail.reviews, 
+        isFavorited, 
+        img,
+        user
+      });
+    }
+
+    const data = await fetchData(API + 'search.php?s=' + cocktailName);
+    const apiCocktail = data.drinks ? data.drinks[0] : null;
+
+    if (!apiCocktail) {
+      return res.status(404).send('Cocktail not found');
+    }
+
+    res.render('instructies.ejs', { 
+      cocktail: apiCocktail, 
+      source: 'api', 
+      reviews: [], 
+      isFavorited: false, // API cocktails are not in the database, so can't be favorited
+      user: null
+    });
+
+  } catch (error) {
+    console.error("❌ Fout bij ophalen cocktail:", error);
+    res.status(500).send("Er is een probleem met het laden van de cocktail.");
+  }
+});
+
 
 // Random cocktail
 app.get("/random", async (req, res) => {
@@ -970,10 +944,9 @@ app.get("/random", async (req, res) => {
 
     res.render("instructies", { cocktail, source });
 
-  } catch (err) {
-    console.error("❌ Error in /random route:", err);
-    res.status(500).send("Er is iets misgegaan");
-  }
+    } catch (err) {
+        res.status(500).send("Something went wrong");
+    }
 });
 
 
@@ -1099,7 +1072,7 @@ async function show_filter(req, res) {
   res.render('home', { categories, glasses, ingredients, cocktails });
 };
 
-
+  
 // 🔹 START SERVER
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Server draait op http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
