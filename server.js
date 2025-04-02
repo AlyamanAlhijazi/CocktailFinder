@@ -701,13 +701,18 @@ app.get('/home', async (req, res) => {
   const sortOption = req.query.sort || '';
 
   try {
-    // Haal populaire cocktails van externe API
     console.log('Fetching popular cocktails...');
     const data = await fetchData(API + 'popular.php');
     const cocktails = data.drinks || [];
 
-    // Haal de top 5 cocktails op basis van rating uit de database
-    const topCocktails = await Cocktail.find().sort({ averageRating: -1 }).limit(5);
+    // Fetch top 5 cocktails from both Cocktail and apiCocktail collections
+    const dbTopCocktails = await Cocktail.find().sort({ averageRating: -1 }).limit(5);
+    const apiTopCocktails = await apiCocktail.find().sort({ averageRating: -1 }).limit(5);
+
+    // Combine, sort again, and take the top 5 overall
+    const combinedTopCocktails = [...dbTopCocktails, ...apiTopCocktails]
+      .sort((a, b) => b.averageRating - a.averageRating)
+      .slice(0, 5);
 
     // Haal alle userCocktails op en kies er willekeurig 10
     const allUserCocktails = await userCocktail.find();
@@ -719,7 +724,6 @@ app.get('/home', async (req, res) => {
     let ingredients = await fetch_list('i');
     let drinks = await filteren();
     console.log('Drinks example:', drinks[0]);
-
 
     // **Aanbevolen cocktails op basis van favorieten**
     if (userId) {
@@ -753,27 +757,23 @@ app.get('/home', async (req, res) => {
 
         console.log("🔍 Recommended cocktails:", recommendedCocktails);
       }
-
     }
-    // **Sorteer op naam (A-Z of Z-A)**
-    
-    
-    console.log("sortOption0", sortOption)
+
+    // **Sorteren op naam (A-Z of Z-A)**
+    console.log("sortOption0", sortOption);
     if (sortOption === 'sorta-z') {
-      console.log("sortOption", sortOption)
+      console.log("sortOption", sortOption);
       drinks.sort((a, b) => a.strDrink.localeCompare(b.strDrink));
     } else if (sortOption === 'sortz-a') {
-      console.log("sortOption", sortOption)
-
+      console.log("sortOption", sortOption);
       drinks.sort((a, b) => b.strDrink.localeCompare(a.strDrink));
-    
-    
-    }    
-    // **Render slechts ÉÉN keer!**
+    }
+
+    // **Render de homepagina met gecombineerde top 5 cocktails**
     res.render('home', {
       cocktails,
       userCocktails: randomUserCocktails,
-      topCocktails,
+      topCocktails: combinedTopCocktails,
       categories,
       glasses,
       ingredients,
@@ -781,15 +781,14 @@ app.get('/home', async (req, res) => {
       recommendedCocktails,
       query: "",
       sortOption
-
     });
 
-    
   } catch (error) {
     console.error("❌ Error while retrieving cocktails:", error);
     res.status(500).send("There was a problem loading the cocktails");
   }
 });
+
 
 
 app.get("/profile", isAuthenticated, async (req, res) => {
