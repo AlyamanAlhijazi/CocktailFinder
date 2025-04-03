@@ -9,8 +9,9 @@ import multer from "multer";
 import path from "path";
 import { fileURLToPath } from "url";
 import { type } from "os";
+import sharp from "sharp";
 
-// Laad enviroment variabelen
+// Laad enviroment variabelen0
 dotenv.config();
 
 // express initaliseren
@@ -62,7 +63,7 @@ const userSchema = new mongoose.Schema({
   password: String,
   favorites: [
     { type: mongoose.Schema.Types.ObjectId, ref: "userCocktail", default: [] },
-  ],
+  ]
 });
 const User = mongoose.model("User", userSchema);
 
@@ -573,6 +574,36 @@ async function getRecommendations(userId, favorites) {
     .slice(0, 10);
 }
 
+//  Inloggegevens aanpassen
+app.post("/profile", async (req, res, next) => {
+  try {
+    console.log("Profile route aangeroepen");
+    const userId = req.session.userId;
+    const { username, email } = req.body;
+  
+    if (!userId) {
+      return res.status(401).json({ error: "Geen gebruiker ingelogd" });
+    }
+    const updateData = { username, email };
+    
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      updateData,
+      { new: true, runValidators: true } 
+    );
+
+    // console.log("updatedUser", updatedUser)
+    if (!updatedUser) {
+      return res.status(404).json({ error: "Gebruiker niet gevonden" });
+    }
+    res.redirect("/profile"); 
+  }
+  catch (error) {
+    console.error("Fout bij het updaten van profiel:", error);
+    res.status(500).json({ error: "Interne serverfout" });
+  }
+});
+
 // 🔹 PROFILE (GET)
 app.get("/profile", async (req, res) => {
   if (!req.session.userId) {
@@ -596,11 +627,32 @@ app.get("/profile", async (req, res) => {
 });
 
 async function saveApiCocktailToDB(req, res, cocktailId) {
-  try {
-    // Zoek eerst of de cocktail al in de database staat
-    let dbCocktail = await APIcocktail.findOne({
-      _id: cocktailId,
-    });
+    try {
+      // Zoek eerst of de cocktail al in de database staat
+      let dbCocktail = await APIcocktail.findOne({
+        _id: cocktailId
+      });
+      
+      if (!dbCocktail) {
+        // Als de cocktail niet in de database staat, haal deze op uit de API
+        const data = await fetchData(API + "lookup.php?i=" + cocktailId);
+        const Cocktail = data.drinks ? data.drinks[0] : null;
+        let ingredients = [];
+
+        for (let i = 1; i <= 15; i++) { 
+          if(Cocktail["strIngredient" + i]) {
+            const ingredient = Cocktail["strIngredient" + i];
+            let amount =  Cocktail["strMeasure" + i];
+            if(!amount) {
+              amount = "To taste"
+            }
+            const object = {
+              name: ingredient,
+              amount: amount
+            }
+            ingredients.push(object)
+          }
+        }
 
     if (!dbCocktail) {
       // Als de cocktail niet in de database staat, haal deze op uit de API
@@ -672,7 +724,9 @@ app.get("/cocktails/search", async (req, res) => {
   }
 });
 
-//  ZOEK COCKTAILS (post)
+
+
+//  ZOEK COCKTAILS (post)  
 app.post("/search", async (req, res) => {
   const query = req.body.q;
 
@@ -687,6 +741,9 @@ app.post("/search", async (req, res) => {
         .some((ingredientKey) =>
           drink[ingredientKey].toLowerCase().includes(query.toLowerCase())
         )
+        .filter(key => key.startsWith("strIngredient") && drink[key]) // Alleen niet-lege ingrediënten
+        .some(ingredientKey => drink[ingredientKey].toLowerCase().includes(query.toLowerCase()))
+
     );
 
     res.render("home", {
@@ -698,6 +755,7 @@ app.post("/search", async (req, res) => {
     res.status(500).send("Something went wrong retrieving cocktails.");
   }
 });
+
 
 // Helper voor sorteren drinks
 function sortDrinks(drinks, sortOption) {
@@ -730,6 +788,7 @@ app.get("/home", async (req, res) => {
       Cocktail.find().sort({ averageRating: -1 }).limit(5),
       APIcocktail.find().sort({ averageRating: -1 }).limit(5),
     ]);
+
     const combinedTopCocktails = [...dbTopCocktails, ...apiTopCocktails]
       .sort((a, b) => b.averageRating - a.averageRating)
       .slice(0, 5);
@@ -765,7 +824,7 @@ app.get("/home", async (req, res) => {
       sortOption: req.query.sort || "",
     });
   } catch (error) {
-    console.error("Homepage error:", error);
+ 
     res.status(500).send("Error loading homepage");
   }
 });
@@ -796,64 +855,74 @@ async function fetchData(url) {
   return data;
 }
 
-// popular coctails laten zien op pagina
-async function popularCocktails(req, res) {
-  const data = await fetchData(API + "popular.php");
-  const cocktails = data.drinks;
-  for (let i = 0; i < cocktails.length; i++) {
-    const cocktail = cocktails[i];
-    res.render("cocktail_list", { cocktails, cocktail });
-  }
-}
 
 // 🔹 MULTER FILE UPLOAD
 app.use("/uploads", express.static("uploads"));
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "public/uploads/");
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+app.post("/upload", upload.single("image"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).send("No file uploaded.");
+    }
+
+    const filename = `${Date.now()}-${Math.round(Math.random() * 1E9)}.webp`;
+    const outputPath = path.join(__dirname, "public/uploads", filename);
+
+    if (req.body.oldImage) {
+      const oldImagePath = path.join(__dirname, "public/uploads", req.body.oldImage);
+      try {
+        await fs.unlink(oldImagePath);
+      } catch (err) {
+        console.warn("Failed to delete old image:", err);
+      }
+    }
+    // Afbeelding kleiner maken
+    await sharp(req.file.buffer)
+      .resize(500) 
+      .webp({ quality: 75 }) 
+      .toFile(outputPath);
+
+    const { name, ingredientName, ingredientAmount, ingredientUnit, isAlcoholic, alcoholPercentage, instructions, category, glassType } = req.body;
+
+    const ingredients = ingredientName.map((name, index) => ({
+      name,
+      amount: parseFloat(ingredientAmount[index]),
+      unit: ingredientUnit[index],
+      isAlcoholic: isAlcoholic[index] === "on",
+      alcoholPercentage: isAlcoholic[index] === "on" ? (parseFloat(alcoholPercentage[index]) || 0) : 0,
+    }));
+
+    const createdBy = req.session.userId;
+
+    const newCocktail = new userCocktail({
+      name,
+      ingredients,
+      instructions,
+      category,
+      glassType,
+      image: filename, // Sla de nieuwe bestandsnaam op
+      createdBy
+    });
+
+    if (!req.user) {
+      return res.status(401).send("User is not signed in");
+    }
+
+    await newCocktail.save();
+    res.redirect("/profile");
+
+  } catch (error) {
+    console.error("Error processing image:", error);
+    res.status(500).send("Error processing image.");
+  }
 });
-const upload = multer({ storage: storage });
-
-app.post("/upload", upload.single("image"), (req, res) => {
-  const {
-    name,
-    ingredientName,
-    ingredientAmount,
-    ingredientUnit,
-    isAlcoholic,
-    alcoholPercentage,
-    instructions,
-    category,
-    glassType,
-  } = req.body;
-
-  const ingredients = ingredientName.map((name, index) => ({
-    name: name,
-    amount: parseFloat(ingredientAmount[index]),
-    unit: ingredientUnit[index],
-    isAlcoholic: isAlcoholic[index] === "on",
-    alcoholPercentage:
-      isAlcoholic[index] === "on"
-        ? parseFloat(alcoholPercentage[index]) || 0
-        : 0,
-  }));
-
-  const createdBy = req.session.userId;
-
-  const newCocktail = new userCocktail({
-    name,
-    ingredients,
-    instructions,
-    category,
-    glassType,
-    image: req.file.filename,
-    createdBy: createdBy, // Zorg ervoor dat je de gebruiker-ID hebt
-  });
+  
 
   if (!req.user) {
     return res.status(401).send("User is not signed in");
@@ -887,8 +956,10 @@ app.get("/cocktail/:cocktailName", async (req, res) => {
       name: { $regex: new RegExp("^" + cocktailName + "$", "i") },
     }).populate("reviews.user");
 
+
     if (!dbCocktail) {
       img = "api";
+      
       dbCocktail = await APIcocktail.findOne({
         name: { $regex: new RegExp("^" + cocktailName + "$", "i") },
       }).populate("reviews.user");
@@ -902,6 +973,7 @@ app.get("/cocktail/:cocktailName", async (req, res) => {
         dbCocktail &&
         user.favorites.some((fav) => fav.equals(dbCocktail._id))
       ) {
+
         isFavorited = true;
       }
     }
@@ -923,6 +995,7 @@ app.get("/cocktail/:cocktailName", async (req, res) => {
     if (!apiCocktail) {
       return res.status(404).send("Cocktail not found");
     }
+
 
     res.render("instructies.ejs", {
       cocktail: apiCocktail,
@@ -952,10 +1025,7 @@ app.get("/random", async (req, res) => {
       }
     }
     if (!cocktail) {
-      //Guys let op, dit is de betaalde api link en komt op github terecht! Alyaman
-      const response = await fetch(
-        "https://www.thecocktaildb.com/api/json/v2/961249867/random.php"
-      );
+      const response = await fetch(API + "random.php");
       const data = await response.json();
       cocktail = data.drinks[0];
       source = "api";
@@ -992,6 +1062,7 @@ let ingredients = [];
 let alcoholic = 0; // 0= no prefrance, 1= alcaholic, 2 = non_alcaholic
 let category = "";
 let glass = "";
+
 
 // ophalen van ingestelde filters en opslaan in variabelen
 app.post("/filter-list", (req, resp) => {
@@ -1034,7 +1105,7 @@ function glassFilter(object) {
   }
 }
 //filteren op ingredienten
-function filter_ingredients(object) {
+function filterIngredients(object) {
   // DIT MOET IK NOG EFFE FIXEN KOMT GOED :)
   const ingredientKeys = Object.keys(object).filter((element) =>
     element.includes("strIngredient")
@@ -1092,7 +1163,7 @@ async function fetch_letter() {
     cocktail_list = drink_list.filter((drink) => drink);
   }
 
-  return cocktail_list;
+  return cocktailList;
 }
 
 //functie die je moet aanroepen al wil je filteren
@@ -1103,10 +1174,10 @@ async function filteren() {
   detail_list = detail_list.filter(glassFilter);
   detail_list = detail_list.filter(filter_ingredients);
   return detail_list;
-}
+
 
 //ophalen van lijst van opties voor filter
-async function fetch_list(type) {
+async function fetchList(type) {
   let list = [];
   try {
     const data = await fetchData(API + "list.php?" + type + "=list");
@@ -1117,8 +1188,7 @@ async function fetch_list(type) {
   return list;
 }
 
-// app.get('/filter', show_filter);
-
+// app.get("/filter", show_filter);
 //filters laten zien
 async function show_filter(req, res) {
   let categories = await fetch_list("c");
@@ -1127,6 +1197,7 @@ async function show_filter(req, res) {
   let cocktails = await filteren();
   res.render("home", { categories, glasses, ingredients, cocktails });
 }
+
 
 // START SERVER
 const PORT = process.env.PORT || 3000;

@@ -211,3 +211,19 @@ tabs.forEach(tab => {
 
 
 console.log("Script.js is geladen!");
+
+
+// settings-dialog
+const openButton = document.querySelector(".openDialog");
+const settingsContent = document.querySelector(".settingsContent");
+const closeButton = document.querySelector(".closeDialog")
+function showDialog() {
+  console.log("openDialog");
+  settingsContent.showModal();
+
+}
+openButton.addEventListener("click", showDialog);
+function hideDialog () {
+  settingsContent.close();
+}
+closeButton.addEventListener("click", hideDialog);
