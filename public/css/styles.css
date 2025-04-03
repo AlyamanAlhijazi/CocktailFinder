@@ -139,17 +139,9 @@ header .active {
 /* zoekbalk home */
 
 .search-balk {
-  /* width: 100%;
-    flex-direction: row;
-    justify-content: center;
-    gap: .5em; */
-
-  /* background-color: #ED8A01; */
   padding: 0 0.5em;
   width: 100%;
   height: 4em;
-
-  /* margin-bottom: 1em; */
   margin: 0 auto 1em;
 }
 
@@ -182,14 +174,10 @@ header .active {
   flex-direction: row;
   position: relative;
   gap: 0.5em;
-
-  /* background-color: #78CCEE; */
 }
 
 .search-balk label a {
   background-color: #ff99ac;
-
-  /* background-color: linear-gradient(135deg, #FD9FA1, #ff6a88, #ff99ac); */
   width: 2.5em;
   height: 2.5em;
   display: grid;
@@ -454,12 +442,12 @@ article h3 {
 }
 
 .favorite-btn .full-heart {
-  color: red; /* Vol hart kleur */
+  color: red;
   display: none;
 }
 
 .favorite-btn .empty-heart {
-  color: gray; /* Leeg hart kleur */
+  color: gray;
 }
 
 .favorite-btn.favorited .full-heart {
@@ -763,7 +751,7 @@ input[type='file'] {
 
 .rating {
   display: inline-block;
-  direction: rtl; /* Reverse the order so the first star is the lowest */
+  direction: rtl;
 }
 
 .rating input {
@@ -771,22 +759,18 @@ input[type='file'] {
 }
 
 .rating label {
-  float: left; /* Change float to left so it works in correct order */
+  float: left;
   padding: 10px;
   font-size: 30px;
   color: #444;
   transition: all 0.2s;
-  direction: rtl; /* Reverse the order so the first star is the lowest */
-  cursor: pointer; /* Makes it clear that stars are clickable */
+  direction: rtl;
+  cursor: pointer;
 }
-
-/* Highlight selected stars correctly */
 
 .rating input:checked ~ label {
   color: #fdd017;
 }
-
-/* Hover effect to preview rating */
 
 .rating label:hover,
 .rating label:hover ~ label {
@@ -1129,13 +1113,6 @@ textarea {
   padding: 0;
   border: none;
   border-radius: 1em;
-
-  /* position: absolute;
-    top: calc(50% - 20em / 2); */
-
-  /* background-color: #4A90E2; */
-
-  /* z-index: 222; */
 }
 
 .settingsContent::backdrop {
@@ -1145,21 +1122,15 @@ textarea {
 
 #editProfileForm {
   width: 100%;
-
-  /* background-color: #7b9982; */
   display: flex;
   flex-direction: column;
   align-items: center;
-
-  /* padding: 0%; */
 }
 
 .settingsContent label {
   font-size: 1.5em;
   color: var(--color-text);
   text-align: left;
-
-  /* right: 1em; */
 }
 
 @media (min-width: 768px) {
@@ -1194,7 +1165,7 @@ textarea {
   .toggle-buttons {
     flex-direction: column;
     width: 100%;
-    gap: 1em; /* Added for toggle-buttons */
+    gap: 1em;
   }
 
   .ingredient-row input,
@@ -1219,7 +1190,6 @@ textarea {
   }
 }
 
-/* For screens smaller than or equal to specific widths */
 @media (max-width: 600px) {
   .top-cocktails ul {
     flex-direction: row;
