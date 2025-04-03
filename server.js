@@ -744,15 +744,7 @@ app.get('/home', async (req, res) => {
         }
 
 
-    // **Sorteren op naam (A-Z of Z-A)**
-    console.log("sortOption0", sortOption);
-    if (sortOption === 'sorta-z') {
-      console.log("sortOption", sortOption);
-      drinks.sort((a, b) => a.strDrink.localeCompare(b.strDrink));
-    } else if (sortOption === 'sortz-a') {
-      console.log("sortOption", sortOption);
-      drinks.sort((a, b) => b.strDrink.localeCompare(a.strDrink));
-    }
+    
 
     // **Render de homepagina met gecombineerde top 5 cocktails**
     res.render('home', {
