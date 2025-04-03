@@ -9,6 +9,7 @@ import multer from "multer";
 import path from "path";
 import { fileURLToPath } from "url";
 import { type } from "os";
+import sharp from "sharp";
 
 // Laad enviroment variabelen
 dotenv.config();
@@ -829,49 +830,69 @@ async function popularCocktails(req, res) {
 // 🔹 MULTER FILE UPLOAD
 app.use("/uploads", express.static("uploads"));
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'public/uploads/');
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
-  }
-});
-const upload = multer({ storage: storage });
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-app.post("/upload", upload.single("image"), (req, res) => {
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+app.post("/upload", upload.single("image"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).send("No file uploaded.");
+    }
+
+    const filename = `${Date.now()}-${Math.round(Math.random() * 1E9)}.webp`;
+    const outputPath = path.join(__dirname, "public/uploads", filename);
+
+    if (req.body.oldImage) {
+      const oldImagePath = path.join(__dirname, "public/uploads", req.body.oldImage);
+      try {
+        await fs.unlink(oldImagePath);
+      } catch (err) {
+        console.warn("Failed to delete old image:", err);
+      }
+    }
+    // Afbeelding kleiner maken
+    await sharp(req.file.buffer)
+      .resize(500) 
+      .webp({ quality: 75 }) 
+      .toFile(outputPath);
+
     const { name, ingredientName, ingredientAmount, ingredientUnit, isAlcoholic, alcoholPercentage, instructions, category, glassType } = req.body;
-  
+
     const ingredients = ingredientName.map((name, index) => ({
-      name: name,
+      name,
       amount: parseFloat(ingredientAmount[index]),
       unit: ingredientUnit[index],
       isAlcoholic: isAlcoholic[index] === "on",
       alcoholPercentage: isAlcoholic[index] === "on" ? (parseFloat(alcoholPercentage[index]) || 0) : 0,
     }));
-  
+
     const createdBy = req.session.userId;
-  
+
     const newCocktail = new userCocktail({
       name,
       ingredients,
       instructions,
       category,
       glassType,
-      image: req.file.filename,
-      createdBy: createdBy // Zorg ervoor dat je de gebruiker-ID hebt
+      image: filename, // Sla de nieuwe bestandsnaam op
+      createdBy
     });
-  
+
     if (!req.user) {
-      return res.status(401).send('User is not signed in');
+      return res.status(401).send("User is not signed in");
     }
-  
-    newCocktail.save()
-      .then(() => res.redirect("/profile"))
-      .catch(err => {
-          res.status(400).send("Error saving cocktail");
-      });
-  });
+
+    await newCocktail.save();
+    res.redirect("/profile");
+
+  } catch (error) {
+    console.error("Error processing image:", error);
+    res.status(500).send("Error processing image.");
+  }
+});
   
 
 
@@ -902,9 +923,9 @@ app.get('/cocktail/:cocktailName', async (req, res) => {
     }).populate("reviews.user");
     }
 
-    let user = null; // 🔹 Voeg dit toe
+    let user = null; //  Voeg dit toe
     if (userId) {
-      user = await User.findById(userId).populate('favorites'); // 🔹 Ophalen en meegeven
+      user = await User.findById(userId).populate('favorites'); //  Ophalen en meegeven
       if (user && dbCocktail && user.favorites.some(fav => fav.equals(dbCocktail._id))) {
         isFavorited = true;
       }
@@ -956,8 +977,7 @@ app.get("/random", async (req, res) => {
       }
     }
     if (!cocktail) {
-      //Guys let op, dit is de betaalde api link en komt op github terecht! Alyaman
-      const response = await fetch("https://www.thecocktaildb.com/api/json/v2/961249867/random.php");
+      const response = await fetch(API + "/random.php");
       const data = await response.json();
       cocktail = data.drinks[0];
       source = "api";
