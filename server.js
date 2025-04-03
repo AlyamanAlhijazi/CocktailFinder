@@ -21,27 +21,28 @@ const app = express();
 app.set("view engine", "ejs");
 app.set("views", "views");
 
-// Middleware toevoegen 
+// Middleware toevoegen
 app.use(express.json()); // Zorgt dat we JSON-data kunnen verwerken
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 // Sessies instellen
-app.use(session({
-  secret: process.env.SESSION_SECRET, // Kies een geheime sleutel
-  resave: false, // Niet elke keer opnieuw opslaan
-  saveUninitialized: true, // Sla onbewerkte sessies op
-  cookie: { secure: false, httpOnly: true }, // Dit moet `true` zijn als je HTTPS gebruikt
-}),
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET, // Kies een geheime sleutel
+    resave: false, // Niet elke keer opnieuw opslaan
+    saveUninitialized: true, // Sla onbewerkte sessies op
+    cookie: { secure: false, httpOnly: true }, // Dit moet `true` zijn als je HTTPS gebruikt
+  })
 );
 // flash messages instellen
 app.use(flash());
 
 // middleware om de ingelogde gebruiker op te halen
 app.use(async (req, res, next) => {
-    if (req.session.userId) {
-        req.user = await User.findById(req.session.userId);
-    }
-    next();
+  if (req.session.userId) {
+    req.user = await User.findById(req.session.userId);
+  }
+  next();
 });
 
 app.use((req, res, next) => {
@@ -49,75 +50,82 @@ app.use((req, res, next) => {
   next();
 });
 
-// 📌 DATABASE CONNECTIE
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ Database connected"))
-  .catch(err => console.log("❌ Database error:", err));
+// DATABASE CONNECTIE
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("Database connected"))
+  .catch((err) => console.log("Database error:", err));
 
-
-// 📌 USER MODEL
+// USER MODEL
 const userSchema = new mongoose.Schema({
   username: String,
   email: String,
   password: String,
-  favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "userCocktail", default: [] }]
-
+  favorites: [
+    { type: mongoose.Schema.Types.ObjectId, ref: "userCocktail", default: [] },
+  ]
 });
 const User = mongoose.model("User", userSchema);
 
-// 📌 REVIEW MODEL
-const reviewSchema = new mongoose.Schema({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
+// REVIEW MODEL
+const reviewSchema = new mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    rating: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 5,
+    },
+    comment: {
+      type: String,
+      maxlength: 500,
+    },
   },
-  rating: {
-    type: Number,
-    required: true,
-    min: 1,
-    max: 5,
-  },
-  comment: {
-    type: String,
-    maxlength: 500,
-  },
-}, { timestamps: true });
+  { timestamps: true }
+);
 
-// 📌 COCKTAIL MODEL
-const cocktailSchema = new mongoose.Schema({
-    name: { 
-      type: String, 
+// COCKTAIL MODEL
+const cocktailSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
       required: true,
       trim: true,
       maxlength: 100,
     },
-    ingredients: [{ 
-      name: {
-        type: String,
-        required: true,
-        trim: true,
+    ingredients: [
+      {
+        name: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        amount: {
+          type: Number,
+          required: true,
+          trim: true,
+        },
+        unit: {
+          type: String,
+          required: true,
+          enum: ["ml", "cl", "oz"],
+        },
+        isAlcoholic: {
+          type: Boolean,
+          default: false,
+        },
+        alcoholPercentage: {
+          type: Number,
+          min: 0,
+          max: 100,
+        },
       },
-      amount: {
-        type: Number, 
-        required: true,
-        trim: true,
-      },
-      unit: {
-        type: String,
-        required: true,
-        enum: ["ml", "cl", "oz"],
-      },
-      isAlcoholic: {
-        type: Boolean,
-        default: false,
-      },
-      alcoholPercentage: {
-        type: Number,
-        min: 0,
-        max: 100,
-      },
-    }],
+    ],
     alcoholPercentage: {
       type: Number,
       default: 0,
@@ -129,12 +137,12 @@ const cocktailSchema = new mongoose.Schema({
       enum: ["Light", "Medium", "Strong"],
       default: "Medium",
     },
-    instructions: { 
-      type: String, 
-      required: true, 
-      trim: true, 
+    instructions: {
+      type: String,
+      required: true,
+      trim: true,
     },
-    category: { 
+    category: {
       type: String,
       required: true,
       enum: ["Alcoholic", "Non-alcoholic", "Optional alcohol"],
@@ -160,84 +168,92 @@ const cocktailSchema = new mongoose.Schema({
       min: 0,
       max: 5,
     },
-  }, { 
-    collection: "usercocktails", 
-    timestamps: true 
-  });
-
-  // 📌 COCKTAIL MODEL
-const APIcocktailSchema = new mongoose.Schema({
-  
-  _id: Number,
-  
-  name: { 
-    type: String, 
-    required: true,
-    trim: true,
-    maxlength: 100,
   },
-  ingredients: [{ 
+  {
+    collection: "usercocktails",
+    timestamps: true,
+  }
+);
+
+// COCKTAIL MODEL
+const APIcocktailSchema = new mongoose.Schema(
+  {
+    _id: Number,
+
     name: {
       type: String,
       required: true,
       trim: true,
+      maxlength: 100,
     },
-    amount: {
-      type: String, 
+    ingredients: [
+      {
+        name: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        amount: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+      },
+    ],
+    instructions: {
+      type: String,
       required: true,
       trim: true,
-    }
-    
-  }],
-  instructions: { 
-    type: String, 
-    required: true, 
-    trim: true, 
+    },
+    category: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    alcohol: {
+      type: String,
+      required: true,
+      enum: ["Alcoholic", "Non alcoholic", "Optional alcohol"],
+    },
+    glassType: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    image: {
+      type: String,
+      required: true,
+    },
+    reviews: [reviewSchema],
+    averageRating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+    },
   },
-  category: { 
-    type: String, 
-    required: true, 
-    trim: true, 
-  },
-  alcohol: { 
-    type: String,
-    required: true,
-    enum: ["Alcoholic", "Non alcoholic", "Optional alcohol"],
-  },
-  glassType: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  image: {
-    type: String,
-    required: true,
-  },
-  reviews: [reviewSchema],
-  averageRating: {
-    type: Number,
-    default: 0,
-    min: 0,
-    max: 5,
-  },
-}, { 
-  collection: "apiCocktails", 
-  timestamps: true 
-});
-  
-  const userCocktail = mongoose.model("userCocktail", cocktailSchema);
-  export default userCocktail;
-  const Cocktail = mongoose.model("Cocktail", cocktailSchema);
-  const APIcocktail = mongoose.model("APIcocktail", APIcocktailSchema);
+  {
+    collection: "apiCocktails",
+    timestamps: true,
+  }
+);
+
+const userCocktail = mongoose.model("userCocktail", cocktailSchema);
+export default userCocktail;
+const Cocktail = mongoose.model("Cocktail", cocktailSchema);
+const APIcocktail = mongoose.model("APIcocktail", APIcocktailSchema);
 
 // export default Cocktail;
 
 //CL OMZETTEN NAAR ML
 function convertToMl(amount, unit) {
   switch (unit) {
-    case "cl": return amount * 10;
-    case "oz": return amount * 29.5735;
-    default: return amount;
+    case "cl":
+      return amount * 10;
+    case "oz":
+      return amount * 29.5735;
+    default:
+      return amount;
   }
 }
 
@@ -246,7 +262,7 @@ cocktailSchema.pre("save", function (next) {
   let totalVolume = 0;
   let totalAlcohol = 0;
 
-  this.ingredients.forEach(ing => {
+  this.ingredients.forEach((ing) => {
     const volumeInMl = convertToMl(ing.amount, ing.unit);
     totalVolume += volumeInMl;
 
@@ -268,14 +284,12 @@ cocktailSchema.pre("save", function (next) {
   next();
 });
 
-
-
-// 🔹 REGISTRATIE (GET)
+// REGISTRATIE (GET)
 app.get("/register", async (req, res) => {
   res.render("register");
 });
 
-// 🔹 REGISTRATIE (POST)
+// REGISTRATIE (POST)
 app.post("/users/register", async (req, res) => {
   const { username, email, password } = req.body;
   if (!username || !email || !password) {
@@ -286,7 +300,7 @@ app.post("/users/register", async (req, res) => {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       req.flash("error", "try a different email address");
-      return res.redirect("register");
+      return res.redirect("/register");
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -295,22 +309,20 @@ app.post("/users/register", async (req, res) => {
     await user.save();
 
     // Sessies instellen na registratie (direct inloggen)
-    req.session.userId = user._id;  // Zet de gebruikers-ID in de sessie
+    req.session.userId = user._id; // Zet de gebruikers-ID in de sessie
     req.flash("success", "Account has been succesfully registerd!");
-    res.redirect("login");
+    res.redirect("/login");
   } catch (err) {
-    return res.redirect("register");
+    return res.redirect("/register");
   }
 });
 
-
-// 🔹 LOGIN (GET)
+// LOGIN (GET)
 app.get("/login", async (req, res) => {
   res.render("login");
 });
 
-
-// 🔹 LOGIN (POST)
+// LOGIN (POST)
 app.post("/users/login", async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
@@ -336,7 +348,6 @@ app.post("/users/login", async (req, res) => {
 
 // Check of de gebruiker ingelogd is
 app.get("/check-session", (req, res) => {
-
   console.log("Huidige sessie bij check:", req.session);
 
   if (req.session.user) {
@@ -346,9 +357,7 @@ app.get("/check-session", (req, res) => {
   }
 });
 
-
-
-// 🔹 LOGOUT (POST)
+// LOGOUT (POST)
 app.post("/logout", (req, res) => {
   if (req.session) {
     req.session.destroy((err) => {
@@ -377,16 +386,16 @@ function isAuthenticated(message) {
 }
 
 // Functie om reviews toe te voegen
-async function review({ cocktailId }, {rating, comment}, userId, res) {
+async function review({ cocktailId }, { rating, comment }, userId, res) {
   try {
     let cocktail = "";
     // Zoek de cocktail
     if (cocktailId.length < 10) {
       cocktail = await APIcocktail.findById(cocktailId);
     }
-   
+
     // console.log(cocktail);
-    if(cocktailId.length > 10) {
+    if (cocktailId.length > 10) {
       cocktail = await userCocktail.findById(cocktailId);
     }
 
@@ -413,36 +422,41 @@ async function review({ cocktailId }, {rating, comment}, userId, res) {
 
     // Sla de cocktail op
     await cocktail.save();
-    res.redirect(`/cocktail/${cocktail.name}`); // Redirect naar de cocktailpagina) 
+    res.redirect(`/cocktail/${cocktail.name}`); // Redirect naar de cocktailpagina)
   } catch (error) {
-    res.status(500).send("Something went wrong retrieving the cocktaail page.")
+    res.status(500).send("Something went wrong retrieving the cocktaail page.");
   }
 }
 
-
-// 🔹 REVIEW (POST)
-app.post ("/cocktail/:cocktailId/review", isAuthenticated("You must be signed in to leave reviews") ,async (req, res) => {
-  const { cocktailId } = req.params;
-  const { rating, comment } = req.body;
-  const userId = req.session.userId; // Haal de userId uit de sessie\
-  if(rating && comment) {
-    await review({ cocktailId }, {rating, comment}, userId, res);
+// REVIEW (POST)
+app.post(
+  "/cocktail/:cocktailId/review",
+  isAuthenticated("You must be signed in to leave reviews"),
+  async (req, res) => {
+    const { cocktailId } = req.params;
+    const { rating, comment } = req.body;
+    const userId = req.session.userId; // Haal de userId uit de sessie\
+    if (rating && comment) {
+      await review({ cocktailId }, { rating, comment }, userId, res);
+    }
   }
-});
+);
 
-app.post ("/cocktail/:cocktailId/APIreview", isAuthenticated("You must be logged in to leave reviews"), async (req, res) => {
-  const { cocktailId } = req.params;
-  const { rating, comment } = req.body;
-  const userId = req.session.userId;
-  await saveApiCocktailToDB(req, res, cocktailId);
-  if(rating && comment) {
-    await review({ cocktailId }, {rating, comment}, userId, res);
+app.post(
+  "/cocktail/:cocktailId/APIreview",
+  isAuthenticated("You must be logged in to leave reviews"),
+  async (req, res) => {
+    const { cocktailId } = req.params;
+    const { rating, comment } = req.body;
+    const userId = req.session.userId;
+    await saveApiCocktailToDB(req, res, cocktailId);
+    if (rating && comment) {
+      await review({ cocktailId }, { rating, comment }, userId, res);
+    }
   }
-  
-});
+);
 
-
-// 🔹 FAVORITES (POST)
+// FAVORITES (POST)
 app.post("/cocktail/:cocktailName/favorite", async (req, res) => {
   if (!req.session.userId) {
     req.flash("error", "Sign in to add cocktails to your favorites");
@@ -459,13 +473,17 @@ app.post("/cocktail/:cocktailName/favorite", async (req, res) => {
       return res.redirect(`/cocktail/${cocktailName}`);
     }
 
-    const cocktail = await Cocktail.findOne({ name: { $regex: new RegExp("^" + cocktailName + "$", "i") } });
+    const cocktail = await Cocktail.findOne({
+      name: { $regex: new RegExp("^" + cocktailName + "$", "i") },
+    });
     if (!cocktail) {
       req.flash("error", "Cocktail was not found!");
       return res.redirect(`/cocktail/${cocktailName}`);
     }
 
-    const isFavorite = user.favorites.some(favorite => favorite.equals(cocktail._id));
+    const isFavorite = user.favorites.some((favorite) =>
+      favorite.equals(cocktail._id)
+    );
 
     if (isFavorite) {
       user.favorites.pull(cocktail._id);
@@ -483,70 +501,78 @@ app.post("/cocktail/:cocktailName/favorite", async (req, res) => {
   }
 });
 
-
-
-
-/// 🔹 RECOMMENDATIONS (user favorites) (GET)
-app.get("/recommendations", async (req, res) => {
-  const userId = req.session.userId;
-
-  if (!userId) {
-    return res.status(401).json({ error: "You should be signed in to get recommendations." });
+// RECOMMENDATIONS (HELPER FUNCTION)
+async function getRecommendations(userId, favorites) {
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    console.error("Invalid userId:", userId);
+    return [];
   }
 
-  try {
-    // Haal de favorieten van de gebruiker op
-    const user = await User.findById(userId).populate("favorites");
-    const favoriteIngredients = [
-      ...new Set(user.favorites.flatMap(cocktail => cocktail.ingredients.map(ing => ing.name)))
-    ]; // Unieke lijst met ingrediënten
+  // Ingredienten verzamelen (lowercase)
+  const favoriteIngredients = [
+    ...new Set(
+      favorites.flatMap((cocktail) =>
+        cocktail.ingredients.map((ing) => ing.name.toLowerCase())
+      )
+    ),
+  ];
 
-    res.json({ favoriteIngredients }); // Debugging
-  } catch (error) {
-    res.status(500).json({ error: "Server error" });
-  }
-});
-
-
-/// 🔹 MATCHING INGREDIENTS (recommendations) (GET)
-app.get("/recommendations", async (req, res) => {
-  const userId = req.session.userId;
-
-  if (!userId) {
-    return res.status(401).json({ error: "Sign in to get recommendations." });
-  }
-
-  try {
-    // Haal de favorieten van de gebruiker op
-    const user = await User.findById(userId).populate("favorites");
-    const favoriteIngredients = [
-      ...new Set(user.favorites.flatMap(cocktail => cocktail.ingredients.map(ing => ing.name)))
-    ];
-
-    // Zoek cocktails met overeenkomende ingrediënten, exclusief favorieten
-    const recommendedCocktails = await Cocktail.aggregate([
+  const [userCocktails, apiCocktails] = await Promise.all([
+    Cocktail.aggregate([
       {
         $match: {
-          ingredients: {
-            $in: favoriteIngredients
-          },
-          _id: { $nin: user.favorites.map(fav => fav._id) } // Exclusief huidige favorieten
-        }
+          "ingredients.name": { $in: favoriteIngredients },
+          _id: { $nin: favorites.map((fav) => fav._id) },
+        },
       },
       {
         $addFields: {
-          matchCount: { $size: { $setIntersection: ["$ingredients.name", favoriteIngredients] } }
-        }
+          matchCount: {
+            $size: {
+              $setIntersection: ["$ingredients.name", favoriteIngredients],
+            },
+          },
+        },
       },
-      { $sort: { matchCount: -1 } }, // Sorteer op aantal overeenkomende ingrediënten
-      { $limit: 10 } // Beperk tot 10 aanbevelingen
-    ]);
+      { $sort: { matchCount: -1 } },
+      { $limit: 10 },
+    ]),
+    APIcocktail.aggregate([
+      {
+        $match: {
+          "ingredients.name": {
+            $in: favoriteIngredients.map((ing) => new RegExp(ing, "i")),
+          },
+          _id: { $nin: favorites.map((fav) => fav._id.toString()) },
+        },
+      },
+      {
+        $addFields: {
+          matchCount: {
+            $size: {
+              $setIntersection: [
+                {
+                  $map: {
+                    input: "$ingredients.name",
+                    as: "ing",
+                    in: { $toLower: "$$ing" },
+                  },
+                },
+                favoriteIngredients,
+              ],
+            },
+          },
+        },
+      },
+      { $sort: { matchCount: -1 } },
+      { $limit: 5 },
+    ]),
+  ]);
 
-    res.json(recommendedCocktails);
-  } catch (error) {
-    res.status(500).json({ error: "Serverfout" });
-  }
-});
+  return [...userCocktails, ...apiCocktails]
+    .sort((a, b) => b.matchCount - a.matchCount)
+    .slice(0, 10);
+}
 
 //  Inloggegevens aanpassen
 app.post("/profile", async (req, res, next) => {
@@ -580,35 +606,25 @@ app.post("/profile", async (req, res, next) => {
 
 // 🔹 PROFILE (GET)
 app.get("/profile", async (req, res) => {
-  
-  
   if (!req.session.userId) {
     return res.redirect("/login");
   }
   try {
     res.locals.currentpath = req.path;
     const user = await User.findById(req.session.userId).populate("favorites");
-    const userCocktails = await Cocktail.find({ createdBy: req.session.userId });
-
+    const userCocktails = await Cocktail.find({
+      createdBy: req.session.userId,
+    });
 
     res.render("profile", {
       user: user,
       favoriteCocktails: user.favorites,
       userCocktails: userCocktails, // Pass the created cocktails to the template
     });
-
   } catch (error) {
     res.status(500).send("Something went wrong retrieving the profile page.");
   }
 });
-
-// app.get("/profile", isAuthenticated, async (req, res) => {
-//   res.locals.currentpath = req.path;
-//   res.render("profile", { user: req.session.username });
-// });
-
-
-// Middleware om API-cocktails op te slaan in de database
 
 async function saveApiCocktailToDB(req, res, cocktailId) {
     try {
@@ -638,35 +654,51 @@ async function saveApiCocktailToDB(req, res, cocktailId) {
           }
         }
 
-        if (Cocktail) {
-          // Converteer de API-cocktail naar een database-cocktail
-          const newCocktail = new APIcocktail({
-            _id: cocktailId,
-            name: Cocktail.strDrink,
-            ingredients: ingredients,
-            instructions: Cocktail.strInstructions,
-            category: Cocktail.strCategory,
-            alcohol: Cocktail.strAlcoholic,
-            glassType: Cocktail.strGlass,
-            image: Cocktail.strDrinkThumb,
-            reviews: [], // Maak een lege review array
-          });
-  
-          // // Sla de cocktail op in de database
-          newCocktail.save();
+    if (!dbCocktail) {
+      // Als de cocktail niet in de database staat, haal deze op uit de API
+      const data = await fetchData(API + "lookup.php?i=" + cocktailId);
+      const Cocktail = data.drinks ? data.drinks[0] : null;
+      let ingredients = [];
+
+      for (let i = 1; i <= 15; i++) {
+        if (Cocktail["strIngredient" + i]) {
+          const ingredient = Cocktail["strIngredient" + i];
+          let amount = Cocktail["strMeasure" + i];
+          if (!amount) {
+            amount = "To taste";
+          }
+          const object = {
+            name: ingredient,
+            amount: amount,
+          };
+          ingredients.push(object);
         }
       }
-      
-      
 
-    } catch (error) {
-      res.status(500).send("Something went wrong retrieving cocktails.");
+      if (Cocktail) {
+        // Converteer de API-cocktail naar een database-cocktail
+        const newCocktail = new APIcocktail({
+          _id: cocktailId,
+          name: Cocktail.strDrink,
+          ingredients: ingredients,
+          instructions: Cocktail.strInstructions,
+          category: Cocktail.strCategory,
+          alcohol: Cocktail.strAlcoholic,
+          glassType: Cocktail.strGlass,
+          image: Cocktail.strDrinkThumb,
+          reviews: [], // Maak een lege review array
+        });
+
+        // // Sla de cocktail op in de database
+        newCocktail.save();
+      }
     }
-};
+  } catch (error) {
+    res.status(500).send("Something went wrong retrieving cocktails.");
+  }
+}
 
-
-
-// 🔹 BEVEILIGDE ROUTE (bijvoorbeeld: Favorieten, uploaden van cocktails)
+// BEVEILIGDE ROUTE Favorieten
 app.get("/cocktails/favorites", (req, res) => {
   if (!req.session.userId) {
     req.flash("error", "You must be signed in to access this page");
@@ -674,18 +706,24 @@ app.get("/cocktails/favorites", (req, res) => {
   }
 });
 
-// 🔹 ZOEK COCKTAILS (GET)
+// ZOEK COCKTAILS (GET)
 app.get("/cocktails/search", async (req, res) => {
   const { query } = req.query;
   try {
     const cocktails = await userCocktail.find({
-      $or: [{ name: new RegExp(query, "i") }, { ingredients: new RegExp(query, "i") }],
+      $or: [
+        { name: new RegExp(query, "i") },
+        { ingredients: new RegExp(query, "i") },
+      ],
     });
     res.json(cocktails);
   } catch (err) {
-    res.status(500).json({ error: "Something went wrong retrieving cocktails." });
+    res
+      .status(500)
+      .json({ error: "Something went wrong retrieving cocktails." });
   }
 });
+
 
 
 //  ZOEK COCKTAILS (post)  
@@ -694,125 +732,127 @@ app.post("/search", async (req, res) => {
 
   try {
     const drinks = await filteren();
-    const searchResultsByName = drinks.filter(drink =>
+    const searchResultsByName = drinks.filter((drink) =>
       drink.strDrink.toLowerCase().includes(query.toLowerCase())
     );
-    const searchResultsByIngredient = drinks.filter(drink =>
+    const searchResultsByIngredient = drinks.filter((drink) =>
       Object.keys(drink)
+        .filter((key) => key.startsWith("strIngredient") && drink[key]) // Alleen niet-lege ingrediënten
+        .some((ingredientKey) =>
+          drink[ingredientKey].toLowerCase().includes(query.toLowerCase())
+        )
         .filter(key => key.startsWith("strIngredient") && drink[key]) // Alleen niet-lege ingrediënten
         .some(ingredientKey => drink[ingredientKey].toLowerCase().includes(query.toLowerCase()))
+
     );
 
-
     res.render("home", {
-      searchResultsByName, searchResultsByIngredient, query
-
+      searchResultsByName,
+      searchResultsByIngredient,
+      query,
     });
-
   } catch (error) {
     res.status(500).send("Something went wrong retrieving cocktails.");
   }
-
 });
 
-// 🔹 HOME PAGE & API FETCHING
+
+// Helper voor sorteren drinks
+function sortDrinks(drinks, sortOption) {
+  if (sortOption === "sorta-z") {
+    return [...drinks].sort((a, b) => a.strDrink.localeCompare(b.strDrink));
+  }
+  if (sortOption === "sortz-a") {
+    return [...drinks].sort((a, b) => b.strDrink.localeCompare(a.strDrink));
+  }
+  return drinks;
+}
+// HOME PAGE & API FETCHING
 app.get("/home", async (req, res) => {
   res.locals.currentpath = req.path;
   const userId = req.session.userId;
 
-  let recommendedCocktails = [];
-  const sortOption = req.query.sort || "";
+  try {
+    // Parallelle data fetching
+    const [popularData, categories, glasses, ingredients, drinks] =
+      await Promise.all([
+        fetchData(API + "popular.php"),
+        fetch_list("c"),
+        fetch_list("g"),
+        fetch_list("i"),
+        filteren(),
+      ]);
 
-    try {
-        // Haal populaire cocktails van externe API
-        const data = await fetchData(API + "popular.php");
-        const cocktails = data.drinks || [];
+    // Top-rated cocktails
+    const [dbTopCocktails, apiTopCocktails] = await Promise.all([
+      Cocktail.find().sort({ averageRating: -1 }).limit(5),
+      APIcocktail.find().sort({ averageRating: -1 }).limit(5),
+    ]);
 
-    // Fetch top 5 cocktails from both Cocktail and apiCocktail collections
-    const dbTopCocktails = await Cocktail.find().sort({ averageRating: -1 }).limit(5);
-    const apiTopCocktails = await APIcocktail.find().sort({ averageRating: -1 }).limit(5);
-
-    // Combine, sort again, and take the top 5 overall
     const combinedTopCocktails = [...dbTopCocktails, ...apiTopCocktails]
       .sort((a, b) => b.averageRating - a.averageRating)
       .slice(0, 5);
 
-    // Haal alle userCocktails op en kies er willekeurig 10
+    // Willekeurige user cocktails
     const allUserCocktails = await userCocktail.find();
-    const randomUserCocktails = allUserCocktails.sort(() => 0.5 - Math.random()).slice(0, 10);
+    const randomUserCocktails = allUserCocktails
+      .sort(() => 0.5 - Math.random())
+      .slice(0, 10);
 
-    // Haal de categorieën, glazen, ingrediënten en dranken op
-    let categories = await fetchList("c");
-    let glasses = await fetchList("g");
-    let ingredients = await fetchList("i");
-    let drinks = await filteren();
-    console.log("Drinks example:", drinks[0]);
-
-    // **Aanbevolen cocktails op basis van favorieten**
+    // Aanbevelingen
+    let recommendedCocktails = [];
     if (userId) {
       const user = await User.findById(userId).populate("favorites");
+      if (user?.favorites?.length > 0) {
+        recommendedCocktails = await getRecommendations(
+          userId, // ← Correcte parameterdoorgeven
+          user.favorites
+        );
+      }
+    }
 
-
-            if (user && user.favorites.length > 0) {
-
-                const favoriteIngredients = [
-                    ...new Set(user.favorites.flatMap(cocktail => cocktail.ingredients.map(ing => ing.name)))
-                ];
-
-                recommendedCocktails = await Cocktail.aggregate([
-                    { $match: { 
-                        "ingredients.name": { $in: favoriteIngredients },
-                        _id: { $nin: user.favorites.map(fav => fav._id) }
-                    }},
-                    { $addFields: { 
-                        matchCount: { $size: { $setIntersection: ["$ingredients.name", favoriteIngredients] } }
-                    }},
-                    { $sort: { matchCount: -1 } },
-                    { $limit: 10 }
-                ]);
-            }
-        }
-
-
-    
-
-    // **Render de homepagina met gecombineerde top 5 cocktails**
     res.render("home", {
-      cocktails,
+      cocktails: popularData.drinks || [],
       userCocktails: randomUserCocktails,
       topCocktails: combinedTopCocktails,
       categories,
       glasses,
       ingredients,
-      drinks,
+      drinks: sortDrinks(drinks, req.query.sort),
       recommendedCocktails,
       query: "",
-      sortOption
+      sortOption: req.query.sort || "",
     });
-
-    } catch (error) {
-        res.status(500).send("There was a problem loading the cocktails");
-    }
+  } catch (error) {
+ 
+    res.status(500).send("Error loading homepage");
+  }
 });
 
-
-
-app.get("/profile", isAuthenticated("Sign in to acces this page"), async (req, res) => {
+app.get(
+  "/profile",
+  isAuthenticated("Sign in to acces this page"),
+  async (req, res) => {
     res.render("profile", { user: req.session.username });
-  });
-  
-  app.get("/upload", isAuthenticated("Sign in to upload your own cocktail"), async (req, res) => {
+  }
+);
+
+app.get(
+  "/upload",
+  isAuthenticated("Sign in to upload your own cocktail"),
+  async (req, res) => {
     res.locals.currentpath = req.path;
     res.render("upload");
-  });  
+  }
+);
 
-const API = process.env.API_URL //iedereen URL van api even in env zetten
+const API = process.env.API_URL; //iedereen URL van api even in env zetten
 
 async function fetchData(url) {
   const response = await fetch(url);
   const data = await response.json();
 
-  return (data);
+  return data;
 }
 
 
@@ -884,6 +924,17 @@ app.post("/upload", upload.single("image"), async (req, res) => {
 });
   
 
+  if (!req.user) {
+    return res.status(401).send("User is not signed in");
+  }
+
+  newCocktail
+    .save()
+    .then(() => res.redirect("/profile"))
+    .catch((err) => {
+      res.status(400).send("Error saving cocktail");
+    });
+});
 
 app.get("/usercocktails", async (req, res) => {
   try {
@@ -899,35 +950,42 @@ app.get("/cocktail/:cocktailName", async (req, res) => {
     const cocktailName = req.params.cocktailName;
     const userId = req.session.userId;
     let isFavorited = false;
-    let img = "db"
+    let img = "db";
 
     let dbCocktail = await Cocktail.findOne({
-      name: { $regex: new RegExp("^" + cocktailName + "$", "i") }
+      name: { $regex: new RegExp("^" + cocktailName + "$", "i") },
     }).populate("reviews.user");
 
-    if(!dbCocktail) {
-      img = "api"
+
+    if (!dbCocktail) {
+      img = "api";
+      
       dbCocktail = await APIcocktail.findOne({
-        name: { $regex: new RegExp("^" + cocktailName + "$", "i") }
-    }).populate("reviews.user");
+        name: { $regex: new RegExp("^" + cocktailName + "$", "i") },
+      }).populate("reviews.user");
     }
 
-    let user = null; //  Voeg dit toe
+    let user = null;
     if (userId) {
-      user = await User.findById(userId).populate("favorites"); //  Ophalen en meegeven
-      if (user && dbCocktail && user.favorites.some(fav => fav.equals(dbCocktail._id))) {
+      user = await User.findById(userId).populate("favorites"); // Ophalen en meegeven
+      if (
+        user &&
+        dbCocktail &&
+        user.favorites.some((fav) => fav.equals(dbCocktail._id))
+      ) {
+
         isFavorited = true;
       }
     }
 
     if (dbCocktail) {
-      return res.render("instructies.ejs", { 
-        cocktail: dbCocktail, 
-        source: "database", 
-        reviews: dbCocktail.reviews, 
-        isFavorited, 
+      return res.render("instructies.ejs", {
+        cocktail: dbCocktail,
+        source: "database",
+        reviews: dbCocktail.reviews,
+        isFavorited,
         img,
-        user
+        user,
       });
     }
 
@@ -938,26 +996,27 @@ app.get("/cocktail/:cocktailName", async (req, res) => {
       return res.status(404).send("Cocktail not found");
     }
 
-    res.render("instructies.ejs", { 
-      cocktail: apiCocktail, 
-      source: "api", 
-      reviews: [], 
-      isFavorited: false, // API cocktails are not in the database, so can"t be favorited
-      user: null
-    });
 
+    res.render("instructies.ejs", {
+      cocktail: apiCocktail,
+      source: "api",
+      reviews: [],
+      isFavorited: false, // API cocktails are not in the database, so can't be favorited
+      user: null,
+    });
   } catch (error) {
-    console.error("❌ Fout bij ophalen cocktail:", error);
+    console.error("Fout bij ophalen cocktail:", error);
     res.status(500).send("Er is een probleem met het laden van de cocktail.");
   }
 });
-
 
 // Random cocktail
 app.get("/random", async (req, res) => {
   try {
     let cocktail;
     let source;
+    let isFavorited = false;
+    let img = "db";
     if (Math.random() < 0.1) {
       const cocktails = await userCocktail.find();
       if (cocktails.length > 0) {
@@ -966,28 +1025,44 @@ app.get("/random", async (req, res) => {
       }
     }
     if (!cocktail) {
-      const response = await fetch(API + "/random.php");
+      const response = await fetch(API + "random.php");
       const data = await response.json();
       cocktail = data.drinks[0];
       source = "api";
+      img = "api";
     }
 
-    res.render("instructies", { cocktail, source });
-
-    } catch (err) {
-        res.status(500).send("Something went wrong");
+    const userId = req.session.userId;
+    let user = null;
+    if (userId && source === "database") {
+      user = await User.findById(userId).populate("favorites");
+      if (
+        user &&
+        cocktail &&
+        user.favorites.some((fav) => fav.equals(cocktail._id))
+      ) {
+        isFavorited = true;
+      }
     }
+    res.render("instructies", {
+      cocktail,
+      source,
+      isFavorited,
+      img,
+      user,
+    });
+  } catch (err) {
+    res.status(500).send("Something went wrong");
+  }
 });
 
-
-
-
-// OPHALEN EN FILTEREN API
+// OPHALEN EN FILTEREN APi
 //variabelen om toegepaste filters in op te slaan
 let ingredients = [];
-let alcoholic = 0;    // 0= no prefrance, 1= alcaholic, 2 = non_alcaholic
-let category = ""
-let glass = ""
+let alcoholic = 0; // 0= no prefrance, 1= alcaholic, 2 = non_alcaholic
+let category = "";
+let glass = "";
+
 
 // ophalen van ingestelde filters en opslaan in variabelen
 app.post("/filter-list", (req, resp) => {
@@ -999,7 +1074,7 @@ app.post("/filter-list", (req, resp) => {
     return e;
   });
   return resp.redirect("/home");
-})
+});
 
 //filter op alcahol
 function alcohol(object) {
@@ -1020,8 +1095,6 @@ function categoryFilter(object) {
   } else {
     return true;
   }
-
-
 }
 //filteren op glas
 function glassFilter(object) {
@@ -1030,39 +1103,64 @@ function glassFilter(object) {
   } else {
     return true;
   }
-
-
 }
 //filteren op ingredienten
 function filterIngredients(object) {
   // DIT MOET IK NOG EFFE FIXEN KOMT GOED :)
-  const ingredientKeys = Object.keys(object).filter((element) => element.includes("strIngredient"));
+  const ingredientKeys = Object.keys(object).filter((element) =>
+    element.includes("strIngredient")
+  );
 
   const matchingFilters = [];
   ingredientKeys.forEach((element) => {
     const ingredientValue = object[element] ?? "";
     if (ingredients.includes(ingredientValue.toLowerCase())) {
-      matchingFilters.push(ingredientValue)
+      matchingFilters.push(ingredientValue);
     }
-  })
+  });
   // TODO: MAKE IT SO THAT IT SUPPORTS ONLY ONE INGREDIENT MATCHES
   return matchingFilters.length === ingredients.length;
-
 }
 
-
 // ophalen van alle drankjes en in array zetten zodat ze niet meerdere keren opgehaald hoeven worden
-let cocktailList = [];
-async function fetchLetter() {
-  if (cocktailList.length === 0) {
-    let drinkList = [];
-    const letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
+let cocktail_list = [];
+async function fetch_letter() {
+  if (cocktail_list.length === 0) {
+    let drink_list = [];
+    const letters = [
+      "a",
+      "b",
+      "c",
+      "d",
+      "e",
+      "f",
+      "g",
+      "h",
+      "i",
+      "j",
+      "k",
+      "l",
+      "m",
+      "n",
+      "o",
+      "p",
+      "q",
+      "r",
+      "s",
+      "t",
+      "u",
+      "v",
+      "w",
+      "x",
+      "y",
+      "z",
+    ];
     for (let i = 0; i < letters.length; i++) {
       let letter = letters[i];
       const data = await fetchData(API + "/search.php?f=" + letter);
-      drinkList = drinkList.concat(data.drinks);
-    };
-    cocktailList = drinkList.filter(drink => drink);
+      drink_list = drink_list.concat(data.drinks);
+    }
+    cocktail_list = drink_list.filter((drink) => drink);
   }
 
   return cocktailList;
@@ -1070,13 +1168,13 @@ async function fetchLetter() {
 
 //functie die je moet aanroepen al wil je filteren
 async function filteren() {
-  let detaillist = await fetchLetter();
-  detailList = detailList.filter(categoryFilter);
-  detailList = detailList.filter(alcohol);
-  detailList = detailList.filter(glassFilter);
-  detailList = detailList.filter(filterIngredients);
-  return (detailList);
-}
+  let detail_list = await fetch_letter();
+  detail_list = detail_list.filter(categoryFilter);
+  detail_list = detail_list.filter(alcohol);
+  detail_list = detail_list.filter(glassFilter);
+  detail_list = detail_list.filter(filter_ingredients);
+  return detail_list;
+
 
 //ophalen van lijst van opties voor filter
 async function fetchList(type) {
@@ -1087,22 +1185,22 @@ async function fetchList(type) {
   } catch (e) {
     console.log(e);
   }
-  return (list);
+  return list;
 }
 
 // app.get("/filter", show_filter);
-
-
-//filters laten zien  
-async function showFilter(req, res) {
-  let categories = await fetchList("c");
-  let glasses = await fetchList("g");
-  let ingredients = await fetchList("i");
+//filters laten zien
+async function show_filter(req, res) {
+  let categories = await fetch_list("c");
+  let glasses = await fetch_list("g");
+  let ingredients = await fetch_list("i");
   let cocktails = await filteren();
   res.render("home", { categories, glasses, ingredients, cocktails });
-};
+}
 
-  
-// 🔹 START SERVER
+
+// START SERVER
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+app.listen(PORT, () =>
+  console.log(`Server running on http://localhost:${PORT}`)
+);
