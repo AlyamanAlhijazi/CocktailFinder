@@ -59,7 +59,8 @@ const userSchema = new mongoose.Schema({
   username: String,
   email: String,
   password: String,
-  favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'userCocktail', default: [] }]
+  favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'userCocktail', default: [] }],
+  favoritesAPI: [{ type: mongoose.Types.ObjectId, ref: 'APIcocktail', default: [] }]
 });
 const User = mongoose.model("User", userSchema);
 
@@ -166,7 +167,10 @@ const cocktailSchema = new mongoose.Schema({
   // 📌 COCKTAIL MODEL
 const APIcocktailSchema = new mongoose.Schema({
   
-  _id: Number,
+  _id: {
+    type: mongoose.Types.ObjectId, 
+    auto: true
+  },
   
   name: { 
     type: String, 
@@ -462,9 +466,10 @@ app.post("/cocktail/:cocktailId/APIfavorite", async (req, res) => {
 
   const data = await fetchData(API + 'lookup.php?i=' + cocktailId);
   const cocktail = data.drinks ? data.drinks[0] : null;
-  console.log(cocktail)
   const { cocktailName } = cocktail.strDrink;
+  console.log(cocktailName);
   await saveApiCocktailToDB(req, res, cocktailId);
+
   await favorite(req, res, userId, { cocktailName })
 });
 
@@ -476,11 +481,14 @@ async function favorite(req, res, userId, { cocktailName }) {
       req.flash("error", "User was not found");
       return res.redirect(`/cocktail/${cocktailName}`);
     }
+    let isDb = 'db'
 
     let cocktail = await Cocktail.findOne({ name: { $regex: new RegExp("^" + cocktailName + "$", "i") } });
 
     if(!cocktail) {
       cocktail = await APIcocktail.findOne({ name: { $regex: new RegExp("^" + cocktailName + "$", "i") } });
+      isDb = 'api'
+      // console.log(cocktail)
     }
     
     if (!cocktail) {
@@ -488,13 +496,28 @@ async function favorite(req, res, userId, { cocktailName }) {
       return res.redirect(`/cocktail/${cocktailName}`);
     }
 
-    const isFavorite = user.favorites.some(favorite => favorite.equals(cocktail._id));
+    let isFavorite = ''
+    if (isDb == 'db') {
+      isFavorite = user.favorites.some(favorite => favorite.equals(cocktail._id));
+    } else{
+      isFavorite = user.favoritesAPI.some(favorite => favorite.equals(cocktail._id));
+      console.log(isFavorite)
+    }
+    
 
     if (isFavorite) {
-      user.favorites.pull(cocktail._id);
+      if(isDb == 'db'){
+        user.favorites.pull(cocktail._id);
+      } else {
+        user.favoritesAPI.pull(cocktail._id);
+      }
       req.flash("success", "Cocktail removed from favorites!");
     } else {
-      user.favorites.push(cocktail._id);
+      if(isDb == 'db'){
+        user.favorites.push(cocktail._id);
+      }else {
+        user.favoritesAPI.push(cocktail._id);
+      }  
       req.flash("success", "Cocktail added to favorites!");
     }
 
@@ -610,7 +633,12 @@ async function saveApiCocktailToDB(req, res, cocktailId) {
       let dbCocktail = await APIcocktail.findOne({
         _id: cocktailId
       });
+      console.log(dbCocktail);
       
+      // const ObjectId = mongoose.Types.ObjectId;
+      // const objID = ObjectId.fromString(cocktailId);
+      // console.log(objID);
+
       if (!dbCocktail) {
         // Als de cocktail niet in de database staat, haal deze op uit de API
         const data = await fetchData(API + 'lookup.php?i=' + cocktailId);
@@ -635,7 +663,7 @@ async function saveApiCocktailToDB(req, res, cocktailId) {
         if (Cocktail) {
           // Converteer de API-cocktail naar een database-cocktail
           const newCocktail = new APIcocktail({
-            _id: cocktailId,
+            _id: ObjectId,
             name: Cocktail.strDrink,
             ingredients: ingredients,
             instructions: Cocktail.strInstructions,
@@ -903,6 +931,7 @@ app.get('/cocktail/:cocktailName', async (req, res) => {
       dbCocktail = await APIcocktail.findOne({
         name: { $regex: new RegExp("^" + cocktailName + "$", "i") }
     }).populate("reviews.user");
+      console.log(dbCocktail)
     }
 
     let user = null; // 🔹 Voeg dit toe
@@ -931,13 +960,16 @@ app.get('/cocktail/:cocktailName', async (req, res) => {
       return res.status(404).send('Cocktail not found');
     }
 
-    res.render('instructies.ejs', { 
-      cocktail: apiCocktail, 
-      source: 'api', 
-      reviews: [], 
-      isFavorited: false, // API cocktails are not in the database, so can't be favorited
-      user: null
-    });
+    if(apiCocktail){
+      res.render('instructies.ejs', { 
+        cocktail: apiCocktail, 
+        source: 'api', 
+        reviews: [], 
+        isFavorited: false, // API cocktails are not in the database, so can't be favorited
+        user: null
+      });
+    }
+    
 
   } catch (error) {
     console.error("❌ Fout bij ophalen cocktail:", error);
