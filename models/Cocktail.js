@@ -15,10 +15,10 @@ const cocktailSchema = new mongoose.Schema({
       comment: { type: String },
     },
   ],
-  image: { type: String }, 
-});
+  image: { type: String } 
+}, { collection: "usercocktails" }); // 👈 Dit zorgt ervoor dat de collectie correct wordt aangesproken
 
-// Maak en exporteer het Cocktail model
+
+// Exporteer het model
 const Cocktail = mongoose.model("Cocktail", cocktailSchema);
 export default Cocktail;
-

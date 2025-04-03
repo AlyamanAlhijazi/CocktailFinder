@@ -1,29 +1,232 @@
 <!DOCTYPE html>
 <html lang="en">
-    <%- include('partials/head.ejs') %>
-<body>  
-    <header>
-        <%- include('partials/header.ejs') %>
-    </header>
-     <main>     
-        <h1>All cocktails</h1>
-        <form id="searchForm" action="/home" method="GET">
-            <input id="searchInput" type="text" name="query" placeholder="Search for cocktails..." />
-            <button type="submit">
-                <svg aria-labelledby="title desc" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 19.9 19.7"><title id="title">Search Icon</title><desc id="desc">A magnifying glass icon.</desc><g class="search-path" fill="none" stroke="#848F91"><path stroke-linecap="square" d="M18.5 18.3l-5.4-5.4"/><circle cx="8" cy="8" r="7"/></g></svg>
-            </button>
+  <%- include('partials/head.ejs') %>
+  <body>
+    <header><%- include('partials/header.ejs') %></header>
+    <%- include('partials/messages') %>
+    <main>
+        <div class="bglogo">
+            <div class="logo">
+                <img src="/images/logo.png" alt=""> 
+            </div>
+            <h1>The place to find cocktails!</h1>
+        </div>   
+        <form class="search-balk" action="/search" method="post">
+          <label><input type="text" name="q" placeholder="search for cocktail..." value="<%= query %>" required>
+            <% if (query)  { %>
+            <a href="/home"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6.758 17.243L12.001 12m5.243-5.243L12 12m0 0L6.758 6.757M12.001 12l5.243 5.243"/></svg></a>
+           <% } %>
+          </label>            
         </form>
-        <ul class="cocktail-list">
-            <% cocktails.forEach(cocktail => { %>
-                <li>
-                    <a href="/cocktail/<%= cocktail.strDrink %>" class="cocktail-link">
-                        <h2><%= cocktail.strDrink %></h2>
-                        <img src="<%= cocktail.strDrinkThumb %>" alt="<%= cocktail.strDrink %>">
-                    </a>
-                </li>
-            <% }) %>
-        </ul>             
-    </main>
+        <% if (query) { %>
+            <% if (searchResultsByName.length === 0 && searchResultsByIngredient.length === 0) { %>
+                <h2>No matching results found by name and ingredients</h2> 
+                <% } else { %>
+                <% if (searchResultsByName.length === 0) { %>
+                    <h2>No matching results found by name</h2> 
+                <% } else { %> 
+                
+                <h2>Search results by name</h2>
+                <ul class="cocktail-list">
+                    <% searchResultsByName.forEach(searchResultByName => { %>
+    
+                        <li>
+                            <a class="cocktail-link" href="/cocktail/<%= searchResultByName.strDrink %>" class="cocktail-link">
+    
+                                <h3><%= searchResultByName.strDrink%></h3>
+                            <img src="<%= searchResultByName.strDrinkThumb %>" alt="<%= searchResultByName.strDrink %>">
+                            </a>
+    
+                        </li>
+                    <% }) %>
+                </ul>
+                <% } %>
+    
+                <% if (searchResultsByIngredient.length === 0) { %>
+                    <h2>No matching results found by ingredients</h2> 
+                <% } else { %> 
+                <h2>Search results by ingredients</h2>
+                <ul class="cocktail-list">
+                    <% searchResultsByIngredient.forEach(searchResultByIngredient => { %>
+    
+                        <li>
+                            <a class="cocktail-link" href="/cocktail/<%= searchResultByIngredient.strDrink %>" class="cocktail-link">
+    
+                                <h3><%= searchResultByIngredient.strDrink%></h3>
+                            <img src="<%= searchResultByIngredient.strDrinkThumb %>" alt="<%= searchResultByIngredient.strDrink %>">
+                            </a>
+    
+                        </li>
+                    <% }) %>
+                </ul>
+                <% } %>
+      <h2>Search results by name</h2>
+      <ul class="cocktail-list">
+        <% searchResultsByName.forEach(searchResultByName => { %>
 
-</body>
+        <li>
+          <a
+            class="cocktail-link"
+            href="/cocktail/<%= searchResultByName.strDrink %>"
+            class="cocktail-link"
+          >
+            <h3><%= searchResultByName.strDrink%></h3>
+            <img
+              src="<%= searchResultByName.strDrinkThumb %>"
+              alt="<%= searchResultByName.strDrink %>"
+            />
+          </a>
+        </li>
+        <% }) %>
+      </ul>
+      <% } %> <% if (searchResultsByIngredient.length === 0) { %>
+      <h2>No matching results found by ingredients</h2>
+      <% } else { %>
+      <h2>Search results by ingredients</h2>
+      <ul class="cocktail-list">
+        <% searchResultsByIngredient.forEach(searchResultByIngredient => { %>
+
+        <li>
+          <a
+            class="cocktail-link"
+            href="/cocktail/<%= searchResultByIngredient.strDrink %>"
+            class="cocktail-link"
+          >
+            <h3><%= searchResultByIngredient.strDrink%></h3>
+            <img
+              src="<%= searchResultByIngredient.strDrinkThumb %>"
+              alt="<%= searchResultByIngredient.strDrink %>"
+            />
+          </a>
+        </li>
+        <% }) %>
+      </ul>
+      <% } %> <% } %> <% } else { %>
+      <section class="top-cocktails">
+        <h2>Top Rated Cocktails</h2>
+        <ul>
+          <% topCocktails.forEach(cocktail => { %>
+          <li>
+            <img
+              src="<%= cocktail.image.startsWith('http') ? cocktail.image : '/uploads/' + cocktail.image %>"
+              alt="<%= cocktail.name %>"
+            />
+            <h3><%= cocktail.name %></h3>
+            <p>
+              ⭐ <%= cocktail.averageRating ? cocktail.averageRating.toFixed(1)
+              : 'N/A' %> / 5
+            </p>
+            <a href="/cocktail/<%= cocktail.name %>">View Recipe</a>
+          </li>
+          <% }) %>
+        </ul>
+      </section>
+      <section class="surprise-me">
+        <h3>Dont know what to make?</h3>
+        <button onclick="window.location.href='/random'">Surprise Me!</button>
+      </section>
+      <section class="recommendations">
+        <h2>Recommended for You</h2>
+        <% if (recommendedCocktails.length > 0) { %>
+        <div class="cocktail-scroll-container">
+          <ul class="cocktail-scroll-list">
+            <% recommendedCocktails.forEach(cocktail => { %>
+            <li class="cocktail-card">
+              <a href="/cocktail/<%= cocktail.name %>" class="cocktail-link">
+                <img
+                  src="<%= cocktail.image.startsWith('http') ? cocktail.image : '/uploads/' + cocktail.image %>"
+                  alt="<%= cocktail.name %>"
+                />
+                <h3><%= cocktail.name %></h3>
+              </a>
+            </li>
+            <% }) %>
+          </ul>
+        </div>
+        <% } else { %>
+        <p class="noRecommendations">
+          No recommendations available. Add some favorites to get started!
+        </p>
+        <% } %>
+      </section>
+
+      <section class="random-user-cocktails">
+        <div class="view-all">
+          <h2>User Cocktails</h2>
+          <a href="/usercocktails">View all</a>
+        </div>
+        <div class="cocktail-scroll-container">
+          <ul class="cocktail-scroll-list">
+            <% userCocktails.forEach(cocktail => { %>
+            <li class="cocktail-card">
+              <a href="/cocktail/<%= cocktail.name %>" class="cocktail-link">
+                <img
+                  src="/uploads/<%= cocktail.image %>"
+                  alt="<%= cocktail.name %>"
+                />
+                <h3><%= cocktail.name %></h3>
+              </a>
+            </li>
+            <% }) %>
+          </ul>
+        </div>
+      </section>
+      <section class="allCocktails">
+        <div class="titel-contener">
+          <h2>All Cocktails</h2>
+          <div class="sort-filter-contener">
+            <%- include('partials/sortering.ejs') %>
+            <button class="filterOpen">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                xmlns:xlink="http://www.w3.org/1999/xlink"
+                version="1.1"
+                width="25"
+                height="25"
+                viewBox="0 0 256 256"
+                xml:space="preserve"
+              >
+                <!-- bron: Icon by <a href='https://iconpacks.net/?utm_source=link-attribution&utm_content=6556'>Iconpacks</a> -->
+                <g
+                  style="
+                    stroke: none;
+                    stroke-width: 0;
+                    stroke-dasharray: none;
+                    stroke-linecap: butt;
+                    stroke-linejoin: miter;
+                    stroke-miterlimit: 10;
+                    fill: white;
+                    fill-rule: nonzero;
+                    opacity: 1;
+                  "
+                  transform="translate(1.4065934065934016 1.4065934065934016) scale(2.81 2.81)"
+                >
+                  <path
+                    d="M 52.537 80.466 V 45.192 L 84.53 2.999 C 85.464 1.768 84.586 0 83.041 0 H 6.959 C 5.414 0 4.536 1.768 5.47 2.999 l 31.994 42.192 v 43.441 c 0 1.064 1.163 1.719 2.073 1.167 l 11.758 -7.127 C 52.065 82.205 52.537 81.368 52.537 80.466 z"
+                    style="
+                      stroke: none;
+                      stroke-width: 1;
+                      stroke-dasharray: none;
+                      stroke-linecap: butt;
+                      stroke-linejoin: miter;
+                      stroke-miterlimit: 10;
+                      fill: rgb(0, 0, 0);
+                      fill-rule: nonzero;
+                      opacity: 1;
+                    "
+                    transform=" matrix(1 0 0 1 0 0) "
+                    stroke-linecap="round"
+                  />
+                </g>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <%- include('partials/filters.ejs') %> <%-
+        include('partials/resultaten.ejs') %>
+      </section>
+      <% } %>
+    </main>
+    <script src="/script.js"></script>
+  </body>
 </html>

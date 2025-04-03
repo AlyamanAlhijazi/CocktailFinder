@@ -2,32 +2,35 @@
 <html lang="en">
     <%- include('partials/head.ejs') %>
 <body>
-    <h1>A sign up form</h1>
+    <header>
+        <%- include('partials/header.ejs') %>
+    </header>
     <%- include('partials/messages') %>
-    <div class="container">
-        <h2>Sign in</h2>
-        <!-- Het formulier voor het inloggen -->
-        <form id="loginForm" method="POST" action="/users/login">
-            <div>
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" required placeholder="Email">
-            </div>
-            <div>
-                <label for="password">Wachtwoord:</label>
-                <input type="password" id="password" name="password" required placeholder="Password">
-            </div>
-            <div>
-                <button type="submit">Inloggen</button>
-            </div>
-        </form>
+    <main>
+        <h1>Sign in</h1>
+        <div class="container">
+            <!-- Het formulier voor het inloggen -->
+            <form id="loginForm" method="POST" action="/users/login">
+                <div>
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required placeholder="Email">
+                </div>
+                <div>
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required placeholder="Password">
+                </div>
+                <div>
+                    <button type="submit">Log in</button>
+                </div>
+            </form>
 
-        <!-- Bericht voor foutmeldingen of succes -->
-        <p id="message"></p>
+            <!-- Bericht voor foutmeldingen of succes -->
+            <p id="message"></p>
 
-        <!-- Link naar registratiepagina -->
-        <p>Still have no account?<a href="/register">Registreer hier</a></p>
-    </div>
-
+            <!-- Link naar registratiepagina -->
+            <p>Haven't made an account yet? <a href="/register">sign up here</a></p>
+        </div>
+    </main> 
     <script src="/script.js"></script>
 </body>
 </html>
