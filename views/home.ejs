@@ -7,8 +7,12 @@
     </header>
     <%- include('partials/messages') %>
     <main>
-        <img class="logo" src="/images/logo.png" alt="">    
-        <h1>The place to find cocktails!</h1> 
+        <div class="bglogo">
+            <div class="logo">
+                <img src="/images/logo.png" alt=""> 
+            </div>
+            <h1>The place to find cocktails!</h1>
+        </div>   
         <form class="search-balk" action="/search" method="post">
           <label><input type="text" name="q" placeholder="search for cocktail..." value="<%= query %>" required>
             <% if (query)  { %>

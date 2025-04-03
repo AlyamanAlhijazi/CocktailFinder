@@ -1,1 +1,14 @@
-{ "extends": ["stylelint-config-standard"] }
+{
+  "extends": "stylelint-config-standard",
+  "rules": {
+    "string-quotes": "single",
+    "selector-attribute-quotes": "always",
+    "font-family-name-quotes": "always-unless-keyword",
+    "function-url-quotes": "always",
+    "declaration-block-trailing-semicolon": "always",
+    "color-hex-case": "lower",
+    "color-hex-length": "short",
+    "indentation": 2,
+    "no-duplicate-selectors": true
+  }
+}
