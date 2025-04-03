@@ -54,6 +54,7 @@ const userSchema = new mongoose.Schema({
   email: String,
   password: String,
   favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'userCocktail', default: [] }]
+  
 
 });
 const User = mongoose.model("User", userSchema);
@@ -284,7 +285,7 @@ app.post("/users/register", async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = new User({ username, email, password: hashedPassword });
+    const user = new User({ username, email, password: hashedPassword});
     await user.save();
 
     // Sessies instellen na registratie (direct inloggen)
@@ -553,20 +554,55 @@ app.get("/recommendations", async (req, res) => {
 });
 
 
+// app.get("/profile", isAuthenticated, async (req, res) => {
+//   res.locals.currentpath = req.path;
+//   res.render("profile", { user: req.session.username });
+// });
+//  Inloggegevens aanpassen
+app.post("/profile", async (req, res, next) => {
+  try {
+    console.log("Profile route aangeroepen");
+    const userId = req.session.userId;
+    const { username, email } = req.body;
+  
+    if (!userId) {
+      return res.status(401).json({ error: "Geen gebruiker ingelogd" });
+    }
+    const updateData = { username, email };
+    
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      updateData,
+      { new: true, runValidators: true } 
+    );
+
+    // console.log("updatedUser", updatedUser)
+    if (!updatedUser) {
+      return res.status(404).json({ error: "Gebruiker niet gevonden" });
+    }
+    res.redirect("/profile"); 
+  }
+  catch (error) {
+    console.error("Fout bij het updaten van profiel:", error);
+    res.status(500).json({ error: "Interne serverfout" });
+  }
+});
+
 // 🔹 PROFILE (GET)
 app.get("/profile", async (req, res) => {
-  
-  
   if (!req.session.userId) {
     return res.redirect("/login");
   }
   try {
     res.locals.currentpath = req.path;
+    console.log("i am in the profile");
+    
     const user = await User.findById(req.session.userId).populate("favorites");
     const userCocktails = await Cocktail.find({ createdBy: req.session.userId });
+    console.log("=== userCocktails:", userCocktails);
 
-    // console.log("Opgehaalde favorieten:", user.favorites);
-    // console.log("Opgehaalde eigen cocktails:", userCocktails);
+    // console.log("++++ Opgehaalde favorieten:", user.favorites);
+    // console.log("=== Opgehaalde eigen cocktails:", userCocktails);
 
     res.render("profile", {
       user: user,
@@ -579,12 +615,6 @@ app.get("/profile", async (req, res) => {
     res.status(500).send("Er is een fout opgetreden bij het laden van het profiel.");
   }
 });
-
-// app.get("/profile", isAuthenticated, async (req, res) => {
-//   res.locals.currentpath = req.path;
-//   res.render("profile", { user: req.session.username });
-// });
-
 
 // Middleware om API-cocktails op te slaan in de database
 
@@ -734,7 +764,7 @@ app.get('/home', async (req, res) => {
     let glasses = await fetch_list('g');
     let ingredients = await fetch_list('i');
     let drinks = await filteren();
-    console.log('Drinks example:', drinks[0]);
+    // console.log('Drinks example:', drinks[0]);
 
     // **Aanbevolen cocktails op basis van favorieten**
     if (userId) {
@@ -879,9 +909,6 @@ app.post("/upload", upload.single("image"), (req, res) => {
       res.status(400).send("Error saving cocktail");
     });
 });
-
-
-
 app.get("/usercocktails", async (req, res) => {
   try {
     const cocktails = await userCocktail.find();
@@ -890,9 +917,6 @@ app.get("/usercocktails", async (req, res) => {
     res.status(500).json({ error: "Error fetching cocktails" });
   }
 });
-
-
-
 app.get('/cocktail/:cocktailName', async (req, res) => {
     try {
       const cocktailName = req.params.cocktailName;
