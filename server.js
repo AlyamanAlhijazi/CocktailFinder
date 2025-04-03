@@ -547,6 +547,35 @@ app.get("/recommendations", async (req, res) => {
   }
 });
 
+//  Inloggegevens aanpassen
+app.post("/profile", async (req, res, next) => {
+  try {
+    console.log("Profile route aangeroepen");
+    const userId = req.session.userId;
+    const { username, email } = req.body;
+  
+    if (!userId) {
+      return res.status(401).json({ error: "Geen gebruiker ingelogd" });
+    }
+    const updateData = { username, email };
+    
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      updateData,
+      { new: true, runValidators: true } 
+    );
+
+    // console.log("updatedUser", updatedUser)
+    if (!updatedUser) {
+      return res.status(404).json({ error: "Gebruiker niet gevonden" });
+    }
+    res.redirect("/profile"); 
+  }
+  catch (error) {
+    console.error("Fout bij het updaten van profiel:", error);
+    res.status(500).json({ error: "Interne serverfout" });
+  }
+});
 
 // 🔹 PROFILE (GET)
 app.get("/profile", async (req, res) => {

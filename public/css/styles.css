@@ -1140,4 +1140,34 @@ input[type="file"] {
     font-weight: 500;
     color: var(--color-text);
 }
+/* settings style */
+.settingsContent{
+    width: 20em;
+    padding: 0;
+    border: none;
+    border-radius: 1em;
+    /* position: absolute;
+    top: calc(50% - 20em / 2); */
+    /* background-color: #4A90E2; */
+    /* z-index: 222; */
+}
+.settingsContent::backdrop{
+    background-color: rgba(0, 0, 0, .3);
+    backdrop-filter: blur(5px);
+    
+}
+#editProfileForm{
+    width: 100%;
+    /* background-color: #7b9982; */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* padding: 0%; */
 
+}
+.settingsContent label{
+    font-size: 1.5em;
+    color: var(--color-text);
+    text-align: left;
+    /* right: 1em; */
+}
